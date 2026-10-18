@@ -32,22 +32,95 @@
     h1 {
       font-size: 28px;
       font-weight: 700;
-      margin-bottom: 8px;
+      margin-bottom: 16px;
       letter-spacing: -0.5px;
+      text-align: center;
     }
 
-    #progress {
-      font-size: 14px;
+    /* Календарь */
+    .calendar-strip {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 8px calc(50% - 26px);
+      margin-bottom: 12px;
+      scrollbar-width: none;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .calendar-strip::-webkit-scrollbar { display: none; }
+
+    .day-cell {
+      flex-shrink: 0;
+      width: 52px;
+      padding: 6px 0;
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      scroll-snap-align: center;
+      background: transparent;
+      border: none;
+      color: var(--text-color);
+      font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .day-cell .weekday {
+      font-size: 11px;
+      text-transform: uppercase;
       color: var(--hint-color);
-      margin-bottom: 24px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .day-cell .date-num {
+      font-size: 18px;
+      font-weight: 600;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .day-cell.selected .date-num {
+      background: var(--button-color);
+      color: var(--button-text-color);
+    }
+    .day-cell.selected .weekday {
+      color: var(--button-color);
+    }
+    .day-cell.today:not(.selected) .date-num {
+      color: var(--button-color);
+      border-color: var(--button-color);
+    }
+
+    #date-label {
+      text-align: center;
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    #progress {
+      text-align: center;
+      font-size: 13px;
+      color: var(--hint-color);
+      margin-bottom: 20px;
+      min-height: 16px;
     }
 
     .add-form {
       display: flex;
       gap: 8px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
-
     .add-form input {
       flex: 1;
       padding: 14px 16px;
@@ -59,11 +132,9 @@
       outline: none;
       transition: box-shadow 0.2s;
     }
-
     .add-form input:focus {
       box-shadow: 0 0 0 2px var(--button-color);
     }
-
     .add-form button {
       width: 52px;
       height: 52px;
@@ -76,7 +147,6 @@
       cursor: pointer;
       transition: transform 0.1s, opacity 0.2s;
     }
-
     .add-form button:active {
       transform: scale(0.95);
       opacity: 0.8;
@@ -88,7 +158,6 @@
       flex-direction: column;
       gap: 10px;
     }
-
     .task-item {
       display: flex;
       align-items: center;
@@ -99,21 +168,15 @@
       transition: all 0.3s ease;
       animation: slideIn 0.3s ease;
     }
-
     @keyframes slideIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-
-    .task-item.done {
-      opacity: 0.6;
-    }
-
+    .task-item.done { opacity: 0.6; }
     .task-item.done .task-text {
       text-decoration: line-through;
       color: var(--hint-color);
     }
-
     .task-checkbox {
       width: 24px;
       height: 24px;
@@ -127,26 +190,22 @@
       flex-shrink: 0;
       transition: all 0.2s;
     }
-
     .task-checkbox.checked {
       background-color: var(--button-color);
       border-color: var(--button-color);
     }
-
     .task-checkbox.checked::after {
       content: "✓";
       color: var(--button-text-color);
       font-size: 14px;
       font-weight: bold;
     }
-
     .task-text {
       flex: 1;
       font-size: 16px;
       line-height: 1.4;
       word-break: break-word;
     }
-
     .delete-btn {
       background: none;
       border: none;
@@ -157,12 +216,10 @@
       border-radius: 8px;
       transition: color 0.2s, background-color 0.2s;
     }
-
     .delete-btn:active {
       color: var(--danger-color);
       background-color: rgba(255, 59, 48, 0.1);
     }
-
     #empty-state {
       text-align: center;
       color: var(--hint-color);
@@ -174,7 +231,9 @@
 </head>
 <body>
   <h1>Logit</h1>
-  <p id="progress">Загрузка...</p>
+  <div class="calendar-strip" id="calendar-strip"></div>
+  <p id="date-label">Загрузка...</p>
+  <p id="progress"></p>
 
   <div class="add-form">
     <input type="text" id="task-input" placeholder="Что нужно сделать?" maxlength="100">
@@ -182,7 +241,7 @@
   </div>
 
   <ul id="task-list"></ul>
-  <div id="empty-state">Пока нет задач. Добавь первую! 🚀</div>
+  <div id="empty-state">На этот день задач нет</div>
 
   <script>
     const tg = window.Telegram.WebApp;
@@ -190,16 +249,130 @@
     tg.expand();
 
     let tasks = [];
-    const STORAGE_KEY = 'my_tasks_v1';       // Ключ в облаке Telegram
-    const FALLBACK_KEY = 'my_tasks_local_v1'; // Ключ в localStorage (запасной)
+    const STORAGE_KEY = 'my_tasks_v1';
+    const FALLBACK_KEY = 'my_tasks_local_v1';
 
-    const input = document.getElementById('task-input');
-    const addBtn = document.getElementById('add-btn');
-    const list = document.getElementById('task-list');
-    const progress = document.getElementById('progress');
-    const emptyState = document.getElementById('empty-state');
+    function todayISO() { return dateToISO(new Date()); }
+    function dateToISO(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+    function isoToDate(iso) {
+      const [y, m, d] = iso.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
 
-    // --- 1. ЗАГРУЗКА ---
+    let selectedDate = todayISO();
+    let calendarDays = [];
+    let suppressScrollSelect = false;
+
+    function formatDateLabel(iso) {
+      const d = isoToDate(iso);
+      const today = new Date(); today.setHours(0,0,0,0);
+      const diffDays = Math.round((d - today) / 86400000);
+      const weekdays = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+      const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+      let prefix;
+      if (diffDays === 0) prefix = 'Сегодня';
+      else if (diffDays === 1) prefix = 'Завтра';
+      else if (diffDays === -1) prefix = 'Вчера';
+      else {
+        prefix = weekdays[d.getDay()];
+        prefix = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+      }
+      return `${prefix}, ${d.getDate()} ${months[d.getMonth()]}`;
+    }
+
+    // --- Календарь ---
+    function buildCalendar() {
+      const today = new Date(); today.setHours(0,0,0,0);
+      const days = [];
+      for (let i = -60; i <= 90; i++) {
+        const d = new Date(today);
+        d.setDate(d.getDate() + i);
+        days.push(dateToISO(d));
+      }
+      calendarDays = days;
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      const strip = document.getElementById('calendar-strip');
+      strip.innerHTML = '';
+      const todayStr = todayISO();
+      const weekdays = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+
+      calendarDays.forEach(iso => {
+        const d = isoToDate(iso);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'day-cell';
+        if (iso === selectedDate) btn.classList.add('selected');
+        if (iso === todayStr) btn.classList.add('today');
+        btn.dataset.date = iso;
+        btn.innerHTML = `
+          <span class="weekday">${weekdays[d.getDay()]}</span>
+          <span class="date-num">${d.getDate()}</span>
+        `;
+        btn.addEventListener('click', () => selectDate(iso, true));
+        strip.appendChild(btn);
+      });
+
+      requestAnimationFrame(() => scrollToSelected(false));
+      attachScrollHandler();
+    }
+
+    function attachScrollHandler() {
+      const strip = document.getElementById('calendar-strip');
+      if (strip.dataset.hasScrollHandler) return;
+      strip.dataset.hasScrollHandler = '1';
+
+      let timer;
+      strip.addEventListener('scroll', () => {
+        if (suppressScrollSelect) return;
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          const center = strip.scrollLeft + strip.clientWidth / 2;
+          let closest = null, minDist = Infinity;
+          strip.querySelectorAll('.day-cell').forEach(cell => {
+            const cc = cell.offsetLeft + cell.offsetWidth / 2;
+            const dist = Math.abs(cc - center);
+            if (dist < minDist) { minDist = dist; closest = cell; }
+          });
+          if (closest && closest.dataset.date !== selectedDate) {
+            selectDate(closest.dataset.date, false);
+          }
+        }, 120);
+      }, { passive: true });
+    }
+
+    function scrollToSelected(smooth) {
+      const strip = document.getElementById('calendar-strip');
+      const sel = strip.querySelector('.selected');
+      if (!sel) return;
+      suppressScrollSelect = true;
+      const target = sel.offsetLeft - strip.clientWidth / 2 + sel.clientWidth / 2;
+      strip.scrollTo({ left: target, behavior: smooth ? 'smooth' : 'auto' });
+      setTimeout(() => { suppressScrollSelect = false; }, smooth ? 500 : 100);
+    }
+
+    function selectDate(iso, scroll) {
+      if (iso === selectedDate) {
+        if (scroll) scrollToSelected(true);
+        return;
+      }
+      selectedDate = iso;
+      document.querySelectorAll('.day-cell').forEach(cell => {
+        cell.classList.toggle('selected', cell.dataset.date === iso);
+      });
+      render();
+      if (scroll) scrollToSelected(true);
+      try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
+    }
+
+    // --- Загрузка / сохранение ---
     async function loadTasks() {
       try {
         if (tg.CloudStorage && typeof tg.CloudStorage.getItem === 'function') {
@@ -207,6 +380,7 @@
           if (saved) {
             tasks = JSON.parse(saved);
             console.log('Загружено из облака');
+            migrateTasks();
             render();
             return;
           }
@@ -221,105 +395,113 @@
         const localSaved = localStorage.getItem(FALLBACK_KEY);
         if (localSaved) tasks = JSON.parse(localSaved);
       }
+      migrateTasks();
       render();
     }
 
-    // --- 2. СОХРАНЕНИЕ ---
+    function migrateTasks() {
+      let changed = false;
+      tasks = tasks.map(t => {
+        if (!t.date) { changed = true; return { ...t, date: todayISO() }; }
+        return t;
+      });
+      if (changed) saveTasks();
+    }
+
     async function saveTasks() {
       try {
         localStorage.setItem(FALLBACK_KEY, JSON.stringify(tasks));
       } catch (e) {
         console.error('Ошибка локального сохранения:', e);
       }
-
       try {
         if (tg.CloudStorage && typeof tg.CloudStorage.setItem === 'function') {
           await tg.CloudStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-          console.log('Сохранено в облако');
         }
       } catch (e) {
-        console.warn('Облако не ответило, но данные уже в localStorage:', e);
+        console.warn('Облако не ответило:', e);
       }
     }
 
-    // --- 3. ОТРИСОВКА ---
+    // --- Отрисовка задач ---
     function render() {
-      list.innerHTML = '';
+      const list = document.getElementById('task-list');
+      const progress = document.getElementById('progress');
+      const emptyState = document.getElementById('empty-state');
+      const dateLabel = document.getElementById('date-label');
 
-      const doneCount = tasks.filter(t => t.done).length;
-      if (tasks.length === 0) {
-        progress.textContent = 'Добавь свою первую задачу';
-      } else if (doneCount === tasks.length) {
-        progress.textContent = 'Все задачи выполнены! 🎉';
+      dateLabel.textContent = formatDateLabel(selectedDate);
+
+      const dayTasks = tasks.filter(t => t.date === selectedDate);
+      const doneCount = dayTasks.filter(t => t.done).length;
+
+      if (dayTasks.length === 0) {
+        progress.textContent = '';
+      } else if (doneCount === dayTasks.length) {
+        progress.textContent = 'Все выполнены 🎉';
       } else {
-        progress.textContent = `Выполнено ${doneCount} из ${tasks.length}`;
+        progress.textContent = `Выполнено ${doneCount} из ${dayTasks.length}`;
       }
 
-      emptyState.style.display = tasks.length === 0 ? 'block' : 'none';
+      list.innerHTML = '';
+      emptyState.style.display = dayTasks.length === 0 ? 'block' : 'none';
 
-      tasks.forEach((task, index) => {
+      dayTasks.forEach((task) => {
+        const globalIndex = tasks.indexOf(task);
         const li = document.createElement('li');
         li.className = 'task-item' + (task.done ? ' done' : '');
-        li.dataset.index = index;
-
         li.innerHTML = `
           <div class="task-checkbox ${task.done ? 'checked' : ''}"></div>
           <span class="task-text">${escapeHtml(task.text)}</span>
           <button class="delete-btn">✕</button>
         `;
-
-        li.querySelector('.task-checkbox').addEventListener('click', () => toggleTask(index));
+        li.querySelector('.task-checkbox').addEventListener('click', () => toggleTask(globalIndex));
         li.querySelector('.delete-btn').addEventListener('click', (e) => {
           e.stopPropagation();
-          deleteTask(index);
+          deleteTask(globalIndex);
         });
-
         list.appendChild(li);
       });
     }
 
-    // --- 4. ДОБАВЛЕНИЕ ---
+    // --- Действия ---
     function addTask() {
+      const input = document.getElementById('task-input');
       const text = input.value.trim();
       if (!text) return;
-
-      tasks.push({ text: text, done: false });
+      tasks.push({ text, done: false, date: selectedDate });
       input.value = '';
       render();
       saveTasks();
-      tg.HapticFeedback.impactOccurred('light');
+      try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
     }
 
-    // --- 5. ПЕРЕКЛЮЧЕНИЕ ---
     function toggleTask(index) {
       tasks[index].done = !tasks[index].done;
       render();
       saveTasks();
-      tg.HapticFeedback.impactOccurred('medium');
+      try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
     }
 
-    // --- 6. УДАЛЕНИЕ ---
     function deleteTask(index) {
       tasks.splice(index, 1);
       render();
       saveTasks();
-      tg.HapticFeedback.impactOccurred('rigid');
+      try { tg.HapticFeedback.impactOccurred('rigid'); } catch (e) {}
     }
 
-    // --- 7. ЗАЩИТА ОТ XSS ---
     function escapeHtml(str) {
       const div = document.createElement('div');
       div.textContent = str;
       return div.innerHTML;
     }
 
-    // --- 8. СОБЫТИЯ ---
-    addBtn.addEventListener('click', addTask);
-    input.addEventListener('keypress', (e) => {
+    document.getElementById('add-btn').addEventListener('click', addTask);
+    document.getElementById('task-input').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') addTask();
     });
 
-    // --- 9. ЗАПУСК ---
+    buildCalendar();
     loadTasks();
   </script>
 </body>
