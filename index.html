@@ -854,6 +854,7 @@
       51%, 100% { opacity: 0; }
     }
 
+    /* Кнопка — скрыта до конца анимации */
     .welcome-start-btn {
       padding: 15px 44px;
       border-radius: 14px;
@@ -865,11 +866,19 @@
       font-weight: 600;
       letter-spacing: -0.2px;
       cursor: pointer;
-      transition: transform 0.1s, opacity 0.2s;
-      -webkit-tap-highlight-color: transparent;
       min-width: 160px;
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events: none;
+      transition: opacity 0.4s ease, transform 0.4s ease, background-color 0.2s;
+      -webkit-tap-highlight-color: transparent;
     }
-    .welcome-start-btn:active {
+    .welcome-start-btn.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .welcome-start-btn.visible:active {
       transform: scale(0.96);
       opacity: 0.85;
     }
@@ -1105,6 +1114,9 @@
 
     async function playWelcome() {
       const screen = document.getElementById('welcome-screen');
+      const startBtn = document.getElementById('welcome-start');
+      startBtn.classList.remove('visible');
+
       screen.classList.add('active');
       document.body.classList.add('welcome-open');
 
@@ -1119,6 +1131,11 @@
       await typeText(greeting, 'Привет, ' + userName + '!', 40);
       await sleep(150);
       await typeText(subtitle, 'Твой день начинается здесь', 22);
+
+      // Показываем кнопку только после завершения всей анимации
+      await sleep(200);
+      startBtn.classList.add('visible');
+      try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
     }
 
     document.getElementById('welcome-start').addEventListener('click', () => {
