@@ -24,7 +24,7 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
-      padding: 20px 16px 100px; /* Отступ снизу для кнопки */
+      padding: 20px 16px 100px;
       min-height: 100vh;
       transition: background-color 0.3s, color 0.3s;
     }
@@ -42,7 +42,6 @@
       margin-bottom: 24px;
     }
 
-    /* Форма добавления */
     .add-form {
       display: flex;
       gap: 8px;
@@ -83,7 +82,6 @@
       opacity: 0.8;
     }
 
-    /* Список задач */
     #task-list {
       list-style: none;
       display: flex;
@@ -175,7 +173,7 @@
   </style>
 </head>
 <body>
-  <h1>Мои задачи</h1>
+  <h1>Logit</h1>
   <p id="progress">Загрузка...</p>
 
   <div class="add-form">
@@ -191,46 +189,63 @@
     tg.ready();
     tg.expand();
 
-    let tasks = []; // Здесь будем хранить все задачи
-    const STORAGE_KEY = 'my_tasks_v1'; // Ключ для облачного хранилища
+    let tasks = [];
+    const STORAGE_KEY = 'my_tasks_v1';       // Ключ в облаке Telegram
+    const FALLBACK_KEY = 'my_tasks_local_v1'; // Ключ в localStorage (запасной)
 
-    // Элементы страницы
     const input = document.getElementById('task-input');
     const addBtn = document.getElementById('add-btn');
     const list = document.getElementById('task-list');
     const progress = document.getElementById('progress');
     const emptyState = document.getElementById('empty-state');
 
-    // --- 1. ЗАГРУЗКА ДАННЫХ ИЗ ОБЛАКА ---
+    // --- 1. ЗАГРУЗКА ---
     async function loadTasks() {
       try {
-        const saved = await tg.CloudStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          tasks = JSON.parse(saved);
+        if (tg.CloudStorage && typeof tg.CloudStorage.getItem === 'function') {
+          const saved = await tg.CloudStorage.getItem(STORAGE_KEY);
+          if (saved) {
+            tasks = JSON.parse(saved);
+            console.log('Загружено из облака');
+            render();
+            return;
+          }
+        }
+        const localSaved = localStorage.getItem(FALLBACK_KEY);
+        if (localSaved) {
+          tasks = JSON.parse(localSaved);
+          console.log('Загружено из localStorage');
         }
       } catch (e) {
-        console.error('Ошибка загрузки:', e);
-        tasks = [];
+        console.error('Ошибка загрузки из облака, пробуем локально:', e);
+        const localSaved = localStorage.getItem(FALLBACK_KEY);
+        if (localSaved) tasks = JSON.parse(localSaved);
       }
       render();
     }
 
-    // --- 2. СОХРАНЕНИЕ ДАННЫХ В ОБЛАКО ---
+    // --- 2. СОХРАНЕНИЕ ---
     async function saveTasks() {
       try {
-        await tg.CloudStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+        localStorage.setItem(FALLBACK_KEY, JSON.stringify(tasks));
       } catch (e) {
-        console.error('Ошибка сохранения:', e);
-        // Показываем ошибку пользователю через нативную всплывашку
-        tg.showAlert('Не удалось сохранить задачи. Попробуй ещё раз.');
+        console.error('Ошибка локального сохранения:', e);
+      }
+
+      try {
+        if (tg.CloudStorage && typeof tg.CloudStorage.setItem === 'function') {
+          await tg.CloudStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+          console.log('Сохранено в облако');
+        }
+      } catch (e) {
+        console.warn('Облако не ответило, но данные уже в localStorage:', e);
       }
     }
 
-    // --- 3. ОТРИСОВКА СПИСКА ---
+    // --- 3. ОТРИСОВКА ---
     function render() {
       list.innerHTML = '';
 
-      // Обновляем прогресс
       const doneCount = tasks.filter(t => t.done).length;
       if (tasks.length === 0) {
         progress.textContent = 'Добавь свою первую задачу';
@@ -240,7 +255,6 @@
         progress.textContent = `Выполнено ${doneCount} из ${tasks.length}`;
       }
 
-      // Показываем заглушку, если задач нет
       emptyState.style.display = tasks.length === 0 ? 'block' : 'none';
 
       tasks.forEach((task, index) => {
@@ -254,12 +268,9 @@
           <button class="delete-btn">✕</button>
         `;
 
-        // Обработчик для чекбокса
         li.querySelector('.task-checkbox').addEventListener('click', () => toggleTask(index));
-
-        // Обработчик для удаления
         li.querySelector('.delete-btn').addEventListener('click', (e) => {
-          e.stopPropagation(); // Чтобы клик не срабатывал на весь li
+          e.stopPropagation();
           deleteTask(index);
         });
 
@@ -267,7 +278,7 @@
       });
     }
 
-    // --- 4. ДОБАВЛЕНИЕ ЗАДАЧИ ---
+    // --- 4. ДОБАВЛЕНИЕ ---
     function addTask() {
       const text = input.value.trim();
       if (!text) return;
@@ -276,33 +287,33 @@
       input.value = '';
       render();
       saveTasks();
-      tg.HapticFeedback.impactOccurred('light'); // Лёгкая вибрация
+      tg.HapticFeedback.impactOccurred('light');
     }
 
-    // --- 5. ПЕРЕКЛЮЧЕНИЕ СТАТУСА ---
+    // --- 5. ПЕРЕКЛЮЧЕНИЕ ---
     function toggleTask(index) {
       tasks[index].done = !tasks[index].done;
       render();
       saveTasks();
-      tg.HapticFeedback.impactOccurred('medium'); // Вибрация
+      tg.HapticFeedback.impactOccurred('medium');
     }
 
-    // --- 6. УДАЛЕНИЕ ЗАДАЧИ ---
+    // --- 6. УДАЛЕНИЕ ---
     function deleteTask(index) {
       tasks.splice(index, 1);
       render();
       saveTasks();
-      tg.HapticFeedback.impactOccurred('rigid'); // Сильная вибрация
+      tg.HapticFeedback.impactOccurred('rigid');
     }
 
-    // --- 7. ЗАЩИТА ОТ XSS (чтобы HTML-теги не ломали вёрстку) ---
+    // --- 7. ЗАЩИТА ОТ XSS ---
     function escapeHtml(str) {
       const div = document.createElement('div');
       div.textContent = str;
       return div.innerHTML;
     }
 
-    // --- 8. ОБРАБОТЧИКИ СОБЫТИЙ ---
+    // --- 8. СОБЫТИЯ ---
     addBtn.addEventListener('click', addTask);
     input.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') addTask();
