@@ -118,36 +118,150 @@
       to { opacity: 1; transform: translateY(-50%) scale(1); }
     }
 
-    /* Сегмент-контрол фильтра */
-    .segmented-control {
+    /* ===== ПИЛЮЛЯ ФИЛЬТРА ===== */
+    .category-pill-wrap {
       display: flex;
-      background: var(--secondary-bg-color);
-      border-radius: 9px;
-      padding: 2px;
-      margin: 0 auto 12px;
-      max-width: 320px;
+      justify-content: center;
+      margin-bottom: 12px;
     }
-    .seg-btn {
-      flex: 1;
-      padding: 7px 0;
-      border: none;
-      background: transparent;
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 500;
-      letter-spacing: -0.1px;
-      color: var(--text-color);
-      border-radius: 7px;
-      cursor: pointer;
-      transition: background 0.15s, box-shadow 0.15s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .seg-btn.active {
-      background: var(--bg-color);
+    #category-pill {
+      font-size: 15px;
       font-weight: 600;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.08), 0 1px 1px rgba(0,0,0,0.04);
+      padding: 7px 14px;
+      background: var(--secondary-bg-color);
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: 0.3px;
+      color: var(--text-color);
+      cursor: pointer;
+      user-select: none;
+      font-family: inherit;
+      border: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: opacity 0.15s, transform 0.1s;
+      font-variant-numeric: tabular-nums;
     }
-    .seg-btn:active { opacity: 0.7; }
+    #category-pill:active {
+      opacity: 0.7;
+      transform: scale(0.97);
+    }
+    #category-pill .cat-pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--hint-color);
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    #category-pill[data-cat="personal"] .cat-pill-dot { background: var(--cat-personal); }
+    #category-pill[data-cat="work"] .cat-pill-dot { background: var(--cat-work); }
+    #category-pill .chevron {
+      font-size: 9px;
+      opacity: 0.5;
+      transform: translateY(1px);
+      margin-left: 2px;
+    }
+
+    /* ===== BOTTOM SHEET ФИЛЬТРА ===== */
+    .cat-filter-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      visibility: hidden;
+      opacity: 0;
+      z-index: 1000;
+      transition: opacity 0.25s, visibility 0.25s;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .cat-filter-overlay.active { visibility: visible; opacity: 1; }
+    .cat-filter-sheet {
+      background: var(--bg-color);
+      border-radius: 16px 16px 0 0;
+      padding-bottom: env(safe-area-inset-bottom);
+      width: 100%;
+      max-width: 500px;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+      overflow: hidden;
+      box-shadow: 0 -2px 20px rgba(0,0,0,0.15);
+    }
+    .cat-filter-overlay.active .cat-filter-sheet { transform: translateY(0); }
+
+    .cat-filter-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 0.5px solid var(--separator);
+    }
+    .cat-filter-header button {
+      background: none;
+      border: none;
+      font-size: 17px;
+      font-weight: 400;
+      letter-spacing: -0.2px;
+      font-family: inherit;
+      cursor: pointer;
+      padding: 6px 4px;
+      color: var(--button-color);
+      -webkit-tap-highlight-color: transparent;
+      min-width: 60px;
+      text-align: left;
+    }
+    .cat-filter-header button:active { opacity: 0.5; }
+    .cat-filter-title {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      color: var(--text-color);
+    }
+    .cat-filter-spacer { min-width: 60px; }
+
+    .cat-filter-list { padding: 8px 0; }
+    .cat-filter-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 20px;
+      background: none;
+      border: none;
+      font-family: inherit;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background-color 0.15s;
+      color: var(--text-color);
+    }
+    .cat-filter-item:active { background: var(--secondary-bg-color); }
+
+    .cat-filter-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .cat-filter-label {
+      flex: 1;
+      text-align: left;
+      font-size: 17px;
+      font-weight: 400;
+      letter-spacing: -0.2px;
+    }
+    .cat-filter-item.active .cat-filter-label {
+      font-weight: 600;
+    }
+    .cat-filter-check {
+      width: 22px;
+      height: 22px;
+      color: var(--button-color);
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .cat-filter-item.active .cat-filter-check { opacity: 1; }
 
     .date-pill-wrapper {
       position: relative;
@@ -980,10 +1094,12 @@
       </button>
     </div>
 
-    <div class="segmented-control" id="category-filter">
-      <button class="seg-btn active" data-cat="all">Все</button>
-      <button class="seg-btn" data-cat="personal">Личное</button>
-      <button class="seg-btn" data-cat="work">Работа</button>
+    <div class="category-pill-wrap">
+      <button id="category-pill" data-cat="all">
+        <span class="cat-pill-dot"></span>
+        <span id="category-pill-label">Все задачи</span>
+        <span class="chevron">▼</span>
+      </button>
     </div>
 
     <div class="calendar-strip" id="calendar-strip"></div>
@@ -1056,7 +1172,7 @@
     </button>
   </nav>
 
-  <!-- ============ ПИКЕР ============ -->
+  <!-- ============ ПИКЕР МЕСЯЦА ============ -->
   <div class="picker-overlay" id="picker-overlay">
     <div class="picker-sheet">
       <div class="picker-header">
@@ -1068,6 +1184,40 @@
         <div class="wheel-highlight"></div>
         <div class="wheel" id="wheel-month"><div class="wheel-inner"></div></div>
         <div class="wheel" id="wheel-year"><div class="wheel-inner"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ФИЛЬТР КАТЕГОРИЙ ============ -->
+  <div class="cat-filter-overlay" id="cat-filter-overlay">
+    <div class="cat-filter-sheet">
+      <div class="cat-filter-header">
+        <button id="cat-filter-cancel">Отмена</button>
+        <span class="cat-filter-title">Фильтр</span>
+        <span class="cat-filter-spacer"></span>
+      </div>
+      <div class="cat-filter-list">
+        <button class="cat-filter-item" data-cat="all">
+          <span class="cat-filter-dot" style="background: var(--hint-color);"></span>
+          <span class="cat-filter-label">Все задачи</span>
+          <svg class="cat-filter-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 12 10 18 20 6"/>
+          </svg>
+        </button>
+        <button class="cat-filter-item" data-cat="personal">
+          <span class="cat-filter-dot" style="background: var(--cat-personal);"></span>
+          <span class="cat-filter-label">Личное</span>
+          <svg class="cat-filter-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 12 10 18 20 6"/>
+          </svg>
+        </button>
+        <button class="cat-filter-item" data-cat="work">
+          <span class="cat-filter-dot" style="background: var(--cat-work);"></span>
+          <span class="cat-filter-label">Работа</span>
+          <svg class="cat-filter-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 12 10 18 20 6"/>
+          </svg>
+        </button>
       </div>
     </div>
   </div>
@@ -1112,8 +1262,8 @@
     let calendarDays = [];
     let suppressScrollSelect = false;
     let currentView = 'tasks';
-    let currentCategory = 'all';  // 'all' | 'personal' | 'work'
-    let addCategory = 'personal'; // категория для новых задач
+    let currentCategory = 'all';
+    let addCategory = 'personal';
 
     let pickerMonth = new Date().getMonth();
     let pickerYearValue = new Date().getFullYear();
@@ -1180,11 +1330,14 @@
     function catLabel(cat) {
       return cat === 'work' ? 'Работа' : 'Личное';
     }
+    function filterLabel(cat) {
+      if (cat === 'personal') return 'Личное';
+      if (cat === 'work') return 'Работа';
+      return 'Все задачи';
+    }
 
     // ============ ПРИВЕТСТВЕННЫЙ ЭКРАН ============
-    function sleep(ms) {
-      return new Promise(r => setTimeout(r, ms));
-    }
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
     function typeText(el, text, delay) {
       return new Promise(resolve => {
         el.textContent = '';
@@ -1262,14 +1415,16 @@
 
     // ============ ФИЛЬТР КАТЕГОРИЙ ============
     function updateCategoryUI() {
-      document.querySelectorAll('#category-filter .seg-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.cat === currentCategory);
-      });
-      // Категория для новых задач следует за фильтром (если выбран не «Все»)
+      updateCatPillUI();
       if (currentCategory !== 'all') {
         addCategory = currentCategory;
         updateCatToggleUI();
       }
+    }
+    function updateCatPillUI() {
+      const pill = document.getElementById('category-pill');
+      pill.dataset.cat = currentCategory;
+      document.getElementById('category-pill-label').textContent = filterLabel(currentCategory);
     }
     function updateCatToggleUI() {
       const toggle = document.getElementById('cat-toggle');
@@ -1281,6 +1436,21 @@
       toggle.dataset.cat = editCategory;
       document.getElementById('edit-cat-label').textContent = catLabel(editCategory);
     }
+    function updateCategoryFilterUI() {
+      document.querySelectorAll('.cat-filter-item').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.cat === currentCategory);
+      });
+    }
+    function openCategoryFilter() {
+      updateCategoryFilterUI();
+      document.getElementById('cat-filter-overlay').classList.add('active');
+      document.body.classList.add('picker-open');
+      try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
+    }
+    function closeCategoryFilter() {
+      document.getElementById('cat-filter-overlay').classList.remove('active');
+      document.body.classList.remove('picker-open');
+    }
     function setFilter(cat) {
       if (currentCategory === cat) return;
       currentCategory = cat;
@@ -1291,9 +1461,6 @@
       if (currentView === 'detail') renderDetailView();
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
-    document.querySelectorAll('#category-filter .seg-btn').forEach(btn => {
-      btn.addEventListener('click', () => setFilter(btn.dataset.cat));
-    });
     document.getElementById('cat-toggle').addEventListener('click', () => {
       addCategory = addCategory === 'personal' ? 'work' : 'personal';
       updateCatToggleUI();
@@ -1400,7 +1567,7 @@
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
 
-    // ============ БАРАБАНЫ ============
+    // ============ БАРАБАНЫ МЕСЯЦА ============
     function buildWheels() {
       const currentYear = new Date().getFullYear();
       const mw = document.querySelector('#wheel-month .wheel-inner');
@@ -1601,7 +1768,6 @@
 
       dateLabel.textContent = formatDateLabel(selectedDate);
 
-      // Фильтр по дате + категории
       const dayTasks = tasks.filter(t => t.date === selectedDate && matchesCategory(t));
       const doneCount = dayTasks.filter(t => t.done).length;
 
@@ -1802,7 +1968,6 @@
       input.value = '';
       timeInput.value = '';
       updateTimeBtn();
-      // Если задача не попадает в текущий фильтр — переключаем фильтр на её категорию
       if (currentCategory !== 'all' && currentCategory !== addCategory) {
         currentCategory = addCategory;
         saveState();
@@ -1857,6 +2022,19 @@
     document.getElementById('picker-done').addEventListener('click', applyPicker);
     document.getElementById('picker-overlay').addEventListener('click', (e) => {
       if (e.target.id === 'picker-overlay') closePicker();
+    });
+
+    // Пилюля фильтра → открыть sheet
+    document.getElementById('category-pill').addEventListener('click', openCategoryFilter);
+    document.getElementById('cat-filter-cancel').addEventListener('click', closeCategoryFilter);
+    document.getElementById('cat-filter-overlay').addEventListener('click', (e) => {
+      if (e.target.id === 'cat-filter-overlay') closeCategoryFilter();
+    });
+    document.querySelectorAll('.cat-filter-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        setFilter(btn.dataset.cat);
+        closeCategoryFilter();
+      });
     });
 
     document.getElementById('to-today-btn').addEventListener('click', () => {
