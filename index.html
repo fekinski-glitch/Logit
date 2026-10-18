@@ -294,20 +294,20 @@
       opacity: 0.8;
     }
 
-    /* Список задач */
+    /* ===== Список задач (главный экран) ===== */
     #task-list {
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
     .task-item {
       display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 15px 16px;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 18px 18px;
       background-color: var(--secondary-bg-color);
-      border-radius: 14px;
+      border-radius: 16px;
       transition: all 0.3s ease;
       animation: slideIn 0.3s ease;
     }
@@ -315,18 +315,19 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .task-item.done { opacity: 0.6; }
+    .task-item.done { opacity: 0.55; }
     .task-item.done .task-text {
       text-decoration: line-through;
       color: var(--hint-color);
     }
     .task-item.overdue {
       border-left: 3px solid var(--danger-color);
-      padding-left: 13px;
+      padding-left: 15px;
     }
+
     .task-checkbox {
-      width: 24px;
-      height: 24px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
       border: 2px solid var(--hint-color);
       background: transparent;
@@ -335,6 +336,7 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      margin-top: 1px;
       transition: all 0.2s;
     }
     .task-checkbox.checked {
@@ -344,48 +346,57 @@
     .task-checkbox.checked::after {
       content: "✓";
       color: var(--button-text-color);
-      font-size: 13px;
-      font-weight: 600;
+      font-size: 14px;
+      font-weight: 700;
       line-height: 1;
     }
+
     .task-content {
       flex: 1;
       min-width: 0;
       display: flex;
       flex-direction: column;
-      gap: 3px;
-    }
-    .task-time {
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
-      color: var(--button-color);
-      font-variant-numeric: tabular-nums;
-      line-height: 1;
-    }
-    .task-item.overdue .task-time {
-      color: var(--danger-color);
+      gap: 5px;
     }
     .task-text {
-      font-size: 17px;
-      font-weight: 400;
-      line-height: 1.35;
-      letter-spacing: -0.2px;
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 1.3;
+      letter-spacing: -0.3px;
       word-break: break-word;
     }
+    .task-time {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.1px;
+      color: var(--button-color);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.2;
+    }
+    .task-time.empty {
+      color: var(--hint-color);
+      font-weight: 500;
+      font-size: 12px;
+      letter-spacing: 0.1px;
+    }
+    .task-item.overdue .task-time:not(.empty) {
+      color: var(--danger-color);
+    }
+
     .delete-btn {
       background: none;
       border: none;
       color: var(--hint-color);
-      font-size: 17px;
-      font-weight: 400;
+      font-size: 15px;
+      font-weight: 500;
       line-height: 1;
       cursor: pointer;
-      padding: 8px;
-      margin: -4px -4px -4px 0;
+      padding: 6px;
+      margin: -4px -6px 0 0;
       border-radius: 8px;
       transition: color 0.2s, background-color 0.2s;
       font-family: inherit;
+      flex-shrink: 0;
     }
     .delete-btn:active {
       color: var(--danger-color);
@@ -432,40 +443,50 @@
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
       margin-bottom: 32px;
     }
     .day-task-item {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 12px;
-      padding: 13px 14px;
+      padding: 16px 16px;
       background: var(--secondary-bg-color);
-      border-radius: 12px;
-      font-size: 15px;
+      border-radius: 14px;
     }
     .day-task-item.done { opacity: 0.55; }
     .day-task-item.done .day-task-text {
       text-decoration: line-through;
       color: var(--hint-color);
     }
+    .day-task-content {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .day-task-text {
+      font-size: 16px;
+      font-weight: 500;
+      letter-spacing: -0.2px;
+      line-height: 1.3;
+      word-break: break-word;
+    }
     .day-task-time {
       font-size: 12px;
       font-weight: 600;
       color: var(--button-color);
       font-variant-numeric: tabular-nums;
-      flex-shrink: 0;
-      min-width: 44px;
       letter-spacing: 0.2px;
+      line-height: 1.2;
+    }
+    .day-task-time.empty {
+      color: var(--hint-color);
+      font-weight: 500;
     }
     .day-task-item.done .day-task-time {
       color: var(--hint-color);
-    }
-    .day-task-text {
-      flex: 1;
-      letter-spacing: -0.1px;
-      line-height: 1.35;
-      word-break: break-word;
     }
     .day-empty {
       text-align: center;
@@ -1125,8 +1146,10 @@
         li.innerHTML = `
           <div class="task-checkbox ${task.done ? 'checked' : ''}"></div>
           <div class="task-content">
-            ${task.time ? `<span class="task-time">${escapeHtml(task.time)}</span>` : ''}
             <span class="task-text">${escapeHtml(task.text)}</span>
+            ${task.time
+              ? `<span class="task-time">${escapeHtml(task.time)}</span>`
+              : `<span class="task-time empty">Без времени</span>`}
           </div>
           <button class="delete-btn">✕</button>
         `;
@@ -1159,7 +1182,6 @@
       const doneCount = dayTasks.filter(t => t.done).length;
       const total = dayTasks.length;
 
-      // Кольцо
       const ring = document.getElementById('ring-fill');
       const percentEl = document.getElementById('ring-percent');
       const labelEl = document.getElementById('ring-label');
@@ -1176,7 +1198,6 @@
         labelEl.textContent = doneCount + ' из ' + total;
       }
 
-      // Список
       const list = document.getElementById('detail-task-list');
       const emptyEl = document.getElementById('detail-empty');
       list.innerHTML = '';
@@ -1195,8 +1216,12 @@
           const li = document.createElement('li');
           li.className = 'day-task-item' + (task.done ? ' done' : '');
           li.innerHTML = `
-            ${task.time ? `<span class="day-task-time">${escapeHtml(task.time)}</span>` : '<span class="day-task-time"></span>'}
-            <span class="day-task-text">${escapeHtml(task.text)}</span>
+            <div class="day-task-content">
+              <span class="day-task-text">${escapeHtml(task.text)}</span>
+              ${task.time
+                ? `<span class="day-task-time">${escapeHtml(task.time)}</span>`
+                : `<span class="day-task-time empty">Без времени</span>`}
+            </div>
           `;
           list.appendChild(li);
         });
@@ -1278,7 +1303,6 @@
       if (e.target.id === 'picker-overlay') closePicker();
     });
 
-    // Выбор даты для экрана «Подробнее» через нативный iOS-пикер
     document.getElementById('detail-date-input').addEventListener('change', (e) => {
       if (e.target.value) {
         detailDate = e.target.value;
