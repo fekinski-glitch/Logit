@@ -58,7 +58,7 @@
       justify-content: center;
       margin-bottom: 14px;
     }
-    #month-label, .pill-static {
+    #month-label, .pill-static, #detail-date-pill {
       font-size: 15px;
       font-weight: 600;
       padding: 7px 14px;
@@ -83,10 +83,31 @@
       opacity: 0.7;
       transform: scale(0.97);
     }
-    #month-label .chevron {
+    #month-label .chevron, #detail-date-pill .chevron {
       font-size: 9px;
       opacity: 0.5;
       transform: translateY(1px);
+    }
+    .date-pill-wrapper {
+      position: relative;
+      display: inline-flex;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .date-pill-wrapper:active {
+      opacity: 0.7;
+      transform: scale(0.97);
+    }
+    .date-input-overlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      -webkit-appearance: none;
+      appearance: none;
     }
 
     /* Календарь */
@@ -380,8 +401,8 @@
       display: none;
     }
 
-    /* ===== Экран «Этот день» ===== */
-    #day-date {
+    /* ===== Экран «Подробнее» ===== */
+    #detail-date {
       text-align: center;
       font-size: 30px;
       font-weight: 700;
@@ -390,7 +411,7 @@
       line-height: 1.15;
       font-variant-numeric: tabular-nums;
     }
-    #day-weekday {
+    #detail-weekday {
       text-align: center;
       font-size: 15px;
       font-weight: 400;
@@ -689,17 +710,20 @@
     <div id="empty-state">На этот день задач нет</div>
   </div>
 
-  <!-- ============ ЭКРАН 2: ЭТОТ ДЕНЬ ============ -->
-  <div class="view" id="view-day">
+  <!-- ============ ЭКРАН 2: ПОДРОБНЕЕ ============ -->
+  <div class="view" id="view-detail">
     <div class="header-wrap">
-      <span class="pill-static" id="day-weekday-pill">СЕГОДНЯ</span>
+      <div class="date-pill-wrapper">
+        <span class="pill-static" id="detail-date-pill">Загрузка... <span class="chevron">▼</span></span>
+        <input type="date" id="detail-date-input" class="date-input-overlay">
+      </div>
     </div>
-    <h2 id="day-date">19 октября</h2>
-    <p id="day-weekday">воскресенье</p>
+    <h2 id="detail-date">19 октября</h2>
+    <p id="detail-weekday">воскресенье</p>
 
-    <h3 class="day-section-title">Задачи на сегодня</h3>
-    <ul id="day-task-list" class="day-task-list"></ul>
-    <div id="day-empty" class="day-empty">На сегодня задач нет</div>
+    <h3 class="day-section-title">Задачи</h3>
+    <ul id="detail-task-list" class="day-task-list"></ul>
+    <div id="detail-empty" class="day-empty">На этот день задач нет</div>
 
     <div class="ring-progress">
       <svg viewBox="0 0 120 120">
@@ -726,14 +750,12 @@
       </svg>
       <span>Задачи</span>
     </button>
-    <button class="tab-item" data-view="day">
+    <button class="tab-item" data-view="detail">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="5" width="18" height="16" rx="3"/>
-        <line x1="8" y1="3" x2="8" y2="7"/>
-        <line x1="16" y1="3" x2="16" y2="7"/>
-        <line x1="3" y1="10" x2="21" y2="10"/>
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M12 3 v9 h9"/>
       </svg>
-      <span>Этот день</span>
+      <span>Подробнее</span>
     </button>
   </nav>
 
@@ -765,6 +787,7 @@
     const FALLBACK_KEY = 'my_tasks_local_v1';
 
     let selectedDate = todayISO();
+    let detailDate = todayISO();
     let calendarDays = [];
     let suppressScrollSelect = false;
     let currentView = 'tasks';
@@ -803,12 +826,11 @@
       }
       return `${prefix}, ${d.getDate()} ${MONTHS_GEN[d.getMonth()]}`;
     }
-    function formatMonthYear();
-iso) {
-      const d = iso       ToDate(iso);
-      return MON constTHS[d.getMonth()].to btnUpperCase() + ' ' + d.getFullYear();
- =    }
-    function isOverdue(task) document {
+    function formatMonthYear(iso) {
+      const d = isoToDate(iso);
+      return MONTHS[d.getMonth()].toUpperCase() + ' ' + d.getFullYear();
+    }
+    function isOverdue(task) {
       if (task.done || !task.time) return false;
       const d = isoToDate(task.date);
       const [h, m] = task.time.split(':').map(Number);
@@ -837,7 +859,8 @@ iso) {
       const weekdays = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
 
       calendarDays.forEach(iso => {
-        const d = isoToDate(iso.createElement('button');
+        const d = isoToDate(iso);
+        const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'day-cell';
         if (iso === selectedDate) btn.classList.add('selected');
@@ -1118,19 +1141,23 @@ iso) {
       updateCalendarDots();
     }
 
-    // ============ РЕНДЕР ЭКРАНА 2 ============
-    function renderDayView() {
-      const today = todayISO();
-      const todayDate = isoToDate(today);
+    // ============ РЕНДЕР ЭКРАНА 2 «ПОДРОБНЕЕ» ============
+    function renderDetailView() {
+      const d = isoToDate(detailDate);
 
-      document.getElementById('day-date').textContent =
-        todayDate.getDate() + ' ' + MONTHS_GEN[todayDate.getMonth()];
-      document.getElementById('day-weekday').textContent =
-        WEEKDAYS_FULL[todayDate.getDay()];
+      document.getElementById('detail-date').textContent =
+        d.getDate() + ' ' + MONTHS_GEN[d.getMonth()];
+      document.getElementById('detail-weekday').textContent =
+        WEEKDAYS_FULL[d.getDay()];
 
-      const todayTasks = tasks.filter(t => t.date === today);
-      const doneCount = todayTasks.filter(t => t.done).length;
-      const total = todayTasks.length;
+      document.getElementById('detail-date-pill').innerHTML =
+        d.getDate() + ' ' + MONTHS_GEN[d.getMonth()] + ' ' + d.getFullYear() +
+        ' <span class="chevron">▼</span>';
+      document.getElementById('detail-date-input').value = detailDate;
+
+      const dayTasks = tasks.filter(t => t.date === detailDate);
+      const doneCount = dayTasks.filter(t => t.done).length;
+      const total = dayTasks.length;
 
       // Кольцо
       const ring = document.getElementById('ring-fill');
@@ -1149,16 +1176,16 @@ iso) {
         labelEl.textContent = doneCount + ' из ' + total;
       }
 
-      // Список на сегодня
-      const list = document.getElementById('day-task-list');
-      const emptyEl = document.getElementById('day-empty');
+      // Список
+      const list = document.getElementById('detail-task-list');
+      const emptyEl = document.getElementById('detail-empty');
       list.innerHTML = '';
 
-      if (todayTasks.length === 0) {
+      if (dayTasks.length === 0) {
         emptyEl.style.display = 'block';
       } else {
         emptyEl.style.display = 'none';
-        const sorted = [...todayTasks].sort((a, b) => {
+        const sorted = [...dayTasks].sort((a, b) => {
           if (a.time && b.time) return a.time.localeCompare(b.time);
           if (a.time) return -1;
           if (b.time) return 1;
@@ -1225,13 +1252,13 @@ iso) {
       currentView = view;
 
       document.getElementById('view-tasks').classList.toggle('active', view === 'tasks');
-      document.getElementById('view-day').classList.toggle('active', view === 'day');
+      document.getElementById('view-detail').classList.toggle('active', view === 'detail');
 
       document.querySelectorAll('.tab-item').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.view === view);
       });
 
-      if (view === 'day') renderDayView();
+      if (view === 'detail') renderDetailView();
 
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
@@ -1246,12 +1273,21 @@ iso) {
 
     document.getElementById('month-label').addEventListener('click', openPicker);
     document.getElementById('picker-cancel').addEventListener('click', closePicker);
-    document.getElementByIdAll('picker-done').addEventListener('click', applyPicker);
-    document.getElementById('picker-overlay').addEventListener('.('click', (e) =>tab {
-      if (e.target.id-item === 'picker-overlay') closePicker();
+    document.getElementById('picker-done').addEventListener('click', applyPicker);
+    document.getElementById('picker-overlay').addEventListener('click', (e) => {
+      if (e.target.id === 'picker-overlay') closePicker();
     });
 
-    document.querySelector').forEach(btn => {
+    // Выбор даты для экрана «Подробнее» через нативный iOS-пикер
+    document.getElementById('detail-date-input').addEventListener('change', (e) => {
+      if (e.target.value) {
+        detailDate = e.target.value;
+        renderDetailView();
+        try { tg.HapticFeedback.impactOccurred('light'); } catch (err) {}
+      }
+    });
+
+    document.querySelectorAll('.tab-item').forEach(btn => {
       btn.addEventListener('click', () => switchView(btn.dataset.view));
     });
 
@@ -1260,6 +1296,7 @@ iso) {
     buildWheels();
     updateTimeBtn();
     loadTasks();
+    renderDetailView();
   </script>
 </body>
 </html>
