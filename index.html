@@ -22,7 +22,15 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+                   "Helvetica Neue", "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      font-feature-settings: "kern" 1, "liga" 1;
+      font-size: 17px;
+      line-height: 1.4;
+      letter-spacing: -0.2px;
       background-color: var(--bg-color);
       color: var(--text-color);
       padding: 16px 16px 100px;
@@ -31,11 +39,17 @@
     }
     body.picker-open { overflow: hidden; }
 
-    /* Заголовок-пилюля */
+    ::placeholder {
+      color: var(--hint-color);
+      opacity: 1;
+      letter-spacing: -0.2px;
+    }
+
+    /* Заголовок-пилюля — размер и вид не меняем */
     .header-wrap {
       display: flex;
       justify-content: center;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
     #month-label {
       font-size: 15px;
@@ -54,6 +68,7 @@
       transition: opacity 0.15s, transform 0.1s;
       border: none;
       font-family: inherit;
+      font-variant-numeric: tabular-nums;
     }
     #month-label:active {
       opacity: 0.7;
@@ -71,7 +86,7 @@
       gap: 8px;
       overflow-x: auto;
       padding: 8px calc(50% - 26px);
-      margin-bottom: 12px;
+      margin-bottom: 14px;
       scrollbar-width: none;
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
@@ -99,19 +114,19 @@
 
     .day-cell .weekday {
       font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.6px;
       text-transform: uppercase;
       color: var(--hint-color);
-      font-weight: 600;
-      letter-spacing: 0.5px;
+      line-height: 1;
     }
 
-    /* Выходные — красный день недели */
     .day-cell.weekend:not(.selected) .weekday {
       color: var(--danger-color);
     }
 
     .day-cell .date-num {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 600;
       width: 36px;
       height: 36px;
@@ -121,6 +136,8 @@
       border-radius: 50%;
       border: 2px solid transparent;
       transition: all 0.2s;
+      letter-spacing: -0.2px;
+      font-variant-numeric: tabular-nums;
     }
 
     .day-dot {
@@ -148,28 +165,36 @@
 
     #date-label {
       text-align: center;
-      font-size: 15px;
+      font-size: 17px;
       font-weight: 600;
+      letter-spacing: -0.3px;
       margin-bottom: 4px;
     }
     #progress {
       text-align: center;
       font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0;
       color: var(--hint-color);
-      margin-bottom: 20px;
+      margin-bottom: 22px;
       min-height: 16px;
+      font-variant-numeric: tabular-nums;
     }
 
     /* Форма добавления */
     .add-form { margin-bottom: 8px; }
     .add-form input {
       width: 100%;
-      padding: 14px 16px;
+      height: 52px;
+      padding: 0 16px;
       border-radius: 12px;
       border: none;
       background-color: var(--secondary-bg-color);
       color: var(--text-color);
-      font-size: 16px;
+      font-size: 17px;
+      font-weight: 400;
+      letter-spacing: -0.2px;
+      font-family: inherit;
       outline: none;
       transition: box-shadow 0.2s;
     }
@@ -180,10 +205,9 @@
     .add-form-2 {
       display: flex;
       gap: 8px;
-      margin-bottom: 20px;
+      margin-bottom: 22px;
     }
 
-    /* Кнопка-обёртка времени */
     .time-btn-wrapper {
       flex: 1;
       height: 52px;
@@ -199,14 +223,18 @@
       padding: 0 16px;
       background-color: var(--secondary-bg-color);
       color: var(--hint-color);
-      font-size: 16px;
+      font-size: 17px;
+      font-weight: 400;
+      letter-spacing: -0.2px;
       font-family: inherit;
       pointer-events: none;
       transition: color 0.2s;
     }
     .time-btn-display.has-value {
       color: var(--text-color);
-      font-weight: 600;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.1px;
     }
     .time-input-overlay {
       position: absolute;
@@ -216,7 +244,7 @@
       opacity: 0;
       border: none;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 17px;
       font-family: inherit;
       -webkit-appearance: none;
       appearance: none;
@@ -230,10 +258,13 @@
       background-color: var(--button-color);
       color: var(--button-text-color);
       font-size: 24px;
-      font-weight: 600;
+      font-weight: 400;
+      line-height: 1;
       cursor: pointer;
       transition: transform 0.1s, opacity 0.2s;
       flex-shrink: 0;
+      font-family: inherit;
+      padding-bottom: 2px;
     }
     .add-form-2 button#add-btn:active {
       transform: scale(0.95);
@@ -251,7 +282,7 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 16px;
+      padding: 15px 16px;
       background-color: var(--secondary-bg-color);
       border-radius: 14px;
       transition: all 0.3s ease;
@@ -291,8 +322,9 @@
     .task-checkbox.checked::after {
       content: "✓";
       color: var(--button-text-color);
-      font-size: 14px;
-      font-weight: bold;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1;
     }
 
     .task-content {
@@ -300,20 +332,24 @@
       min-width: 0;
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 3px;
     }
     .task-time {
       font-size: 12px;
-      font-weight: 700;
-      color: var(--button-color);
+      font-weight: 600;
       letter-spacing: 0.3px;
+      color: var(--button-color);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
     }
     .task-item.overdue .task-time {
       color: var(--danger-color);
     }
     .task-text {
-      font-size: 16px;
-      line-height: 1.4;
+      font-size: 17px;
+      font-weight: 400;
+      line-height: 1.35;
+      letter-spacing: -0.2px;
       word-break: break-word;
     }
 
@@ -321,11 +357,15 @@
       background: none;
       border: none;
       color: var(--hint-color);
-      font-size: 20px;
+      font-size: 17px;
+      font-weight: 400;
+      line-height: 1;
       cursor: pointer;
-      padding: 4px 8px;
+      padding: 8px;
+      margin: -4px -4px -4px 0;
       border-radius: 8px;
       transition: color 0.2s, background-color 0.2s;
+      font-family: inherit;
     }
     .delete-btn:active {
       color: var(--danger-color);
@@ -336,7 +376,9 @@
       text-align: center;
       color: var(--hint-color);
       padding: 40px 20px;
-      font-size: 16px;
+      font-size: 15px;
+      font-weight: 400;
+      letter-spacing: -0.1px;
       display: none;
     }
 
@@ -382,7 +424,9 @@
     .picker-header button {
       background: none;
       border: none;
-      font-size: 16px;
+      font-size: 17px;
+      font-weight: 400;
+      letter-spacing: -0.2px;
       font-family: inherit;
       cursor: pointer;
       padding: 6px 4px;
@@ -392,15 +436,16 @@
     .picker-cancel { color: var(--button-color); }
     .picker-done { color: var(--button-color); font-weight: 600; }
     .picker-title {
-      font-size: 15px;
+      font-size: 17px;
       font-weight: 600;
+      letter-spacing: -0.3px;
       color: var(--text-color);
     }
 
     .wheel-container {
       position: relative;
       height: 216px;
-      display: flex;
+      display: flex:;
       justify-content: center;
       padding: 0 8px;
     }
@@ -409,7 +454,7 @@
       left: 8px;
       right: 8px;
       top: 50%;
-      height: 40px;
+      height 40px;
       transform: translateY(-50%);
       background: var(--secondary-bg-color);
       border-radius: 10px;
@@ -438,8 +483,11 @@
       align-items: center;
       justify-content: center;
       scroll-snap-align: center;
-      font-size: 20px;
+      font-size: 21px;
+      font-weight: 400;
+      letter-spacing: -0.3px;
       color: var(--hint-color);
+      font-variant-numeric: tabular-nums;
       transition: color 0.15s;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
