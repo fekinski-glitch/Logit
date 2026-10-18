@@ -1011,7 +1011,6 @@
     const STORAGE_KEY = 'my_tasks_v1';
     const FALLBACK_KEY = 'my_tasks_local_v1';
     const UI_STATE_KEY = 'logit_ui_state';
-    const ONBOARDED_KEY = 'logit_welcomed_v1';
 
     let selectedDate = todayISO();
     let detailDate = todayISO();
@@ -1030,7 +1029,6 @@
     const MONTHS_GEN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
     const CIRCUMFERENCE = 2 * Math.PI * 52;
 
-    // ASCII-арт приветствия
     const ASCII_ART =
       '╭────────────────────╮\n' +
       '│                    │\n' +
@@ -1080,13 +1078,6 @@
     }
 
     // ============ ПРИВЕТСТВЕННЫЙ ЭКРАН ============
-    function isWelcomed() {
-      try { return localStorage.getItem(ONBOARDED_KEY) === '1'; } catch (e) { return false; }
-    }
-    function setWelcomed() {
-      try { localStorage.setItem(ONBOARDED_KEY, '1'); } catch (e) {}
-    }
-
     function sleep(ms) {
       return new Promise(r => setTimeout(r, ms));
     }
@@ -1128,9 +1119,6 @@
       await typeText(greeting, 'Привет, ' + userName + '!', 40);
       await sleep(150);
       await typeText(subtitle, 'Твой день начинается здесь', 22);
-
-      // Устанавливаем флаг — больше не показываем
-      setWelcomed();
     }
 
     document.getElementById('welcome-start').addEventListener('click', () => {
@@ -1732,10 +1720,8 @@
     loadTasks();
     renderDetailView();
 
-    // Приветствие при первом запуске
-    if (!isWelcomed()) {
-      setTimeout(playWelcome, 150);
-    }
+    // Приветствие при каждом открытии/перезапуске
+    setTimeout(playWelcome, 150);
   </script>
 </body>
 </html>
