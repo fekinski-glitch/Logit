@@ -16,6 +16,7 @@
       --button-text-color: var(--tg-theme-button-text-color, #ffffff);
       --secondary-bg-color: var(--tg-theme-secondary-bg-color, #f1f1f1);
       --danger-color: #ff3b30;
+      --separator: rgba(128,128,128,0.2);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -24,28 +25,44 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
-      padding: 20px 16px 100px;
+      padding: 16px 16px 100px;
       min-height: 100vh;
       transition: background-color 0.3s, color 0.3s;
     }
     body.picker-open { overflow: hidden; }
 
-    h1 {
-      font-size: 28px;
-      font-weight: 700;
+    /* Заголовок-пилюля */
+    .header-wrap {
+      display: flex;
+      justify-content: center;
       margin-bottom: 12px;
-      letter-spacing: -0.5px;
-      text-align: center;
+    }
+    #month-label {
+      font-size: 15px;
+      font-weight: 600;
+      padding: 7px 14px;
+      background: var(--secondary-bg-color);
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       cursor: pointer;
-      padding: 4px 0;
+      letter-spacing: 0.3px;
+      color: var(--text-color);
       -webkit-tap-highlight-color: transparent;
       user-select: none;
+      transition: opacity 0.15s, transform 0.1s;
+      border: none;
+      font-family: inherit;
     }
-    #month-label::after {
-      content: " ▾";
-      font-size: 0.6em;
-      opacity: 0.4;
-      font-weight: 400;
+    #month-label:active {
+      opacity: 0.7;
+      transform: scale(0.97);
+    }
+    #month-label .chevron {
+      font-size: 9px;
+      opacity: 0.5;
+      transform: translateY(1px);
     }
 
     /* Календарь */
@@ -289,15 +306,15 @@
       display: none;
     }
 
-    /* Пикер месяца/года */
+    /* ===== Пикер в iOS-стиле ===== */
     .picker-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.4);
       visibility: hidden;
       opacity: 0;
       z-index: 1000;
-      transition: opacity 0.2s, visibility 0.2s;
+      transition: opacity 0.25s, visibility 0.25s;
       display: flex;
       align-items: flex-end;
       justify-content: center;
@@ -308,90 +325,101 @@
     }
     .picker-sheet {
       background: var(--bg-color);
-      border-radius: 20px 20px 0 0;
-      padding: 20px 16px;
-      padding-bottom: calc(24px + env(safe-area-inset-bottom));
+      border-radius: 16px 16px 0 0;
+      padding-bottom: env(safe-area-inset-bottom);
       width: 100%;
       max-width: 500px;
       transform: translateY(100%);
       transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+      overflow: hidden;
+      box-shadow: 0 -2px 20px rgba(0,0,0,0.15);
     }
     .picker-overlay.active .picker-sheet {
       transform: translateY(0);
     }
-    .picker-years {
+
+    .picker-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 0.5px solid var(--separator);
+    }
+    .picker-header button {
+      background: none;
+      border: none;
+      font-size: 16px;
+      font-family: inherit;
+      cursor: pointer;
+      padding: 6px 4px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .picker-header button:active { opacity: 0.5; }
+    .picker-cancel { color: var(--button-color); }
+    .picker-done { color: var(--button-color); font-weight: 600; }
+    .picker-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-color);
+    }
+
+    .wheel-container {
+      position: relative;
+      height: 216px;
+      display: flex;
+      justify-content: center;
+      padding: 0 8px;
+    }
+    .wheel-highlight {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      top: 50%;
+      height: 40px;
+      transform: translateY(-50%);
+      background: var(--secondary-bg-color);
+      border-radius: 10px;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .wheel {
+      flex: 1;
+      height: 100%;
+      overflow-y: auto;
+      scroll-snap-type: y mandatory;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
+      z-index: 1;
+      mask-image: linear-gradient(to bottom, transparent 0%, #000 25%, #000 75%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 25%, #000 75%, transparent 100%);
+    }
+    .wheel::-webkit-scrollbar { display: none; }
+    .wheel-inner {
+      padding: 88px 0;
+    }
+    .wheel-item {
+      height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 20px;
-      margin-bottom: 20px;
+      scroll-snap-align: center;
+      font-size: 20px;
+      color: var(--hint-color);
+      transition: color 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
     }
-    .year-btn {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      border: none;
-      background: var(--secondary-bg-color);
+    .wheel-item.active {
       color: var(--text-color);
-      font-size: 22px;
-      cursor: pointer;
-      font-family: inherit;
-      -webkit-tap-highlight-color: transparent;
-      transition: opacity 0.15s;
-    }
-    .year-btn:active { opacity: 0.6; }
-    #picker-year {
-      font-size: 22px;
-      font-weight: 700;
-      min-width: 90px;
-      text-align: center;
-      letter-spacing: -0.5px;
-    }
-    .picker-months {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-    .month-btn {
-      padding: 16px 0;
-      border-radius: 12px;
-      border: none;
-      background: var(--secondary-bg-color);
-      color: var(--text-color);
-      font-size: 15px;
       font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-      -webkit-tap-highlight-color: transparent;
-      transition: background 0.15s, color 0.15s, transform 0.1s;
     }
-    .month-btn:active {
-      transform: scale(0.95);
-    }
-    .month-btn.active {
-      background: var(--button-color);
-      color: var(--button-text-color);
-    }
-    .today-btn {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: none;
-      background: transparent;
-      color: var(--button-color);
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .today-btn:active { opacity: 0.6; }
   </style>
 </head>
 <body>
-  <h1 id="month-label">Загрузка...</h1>
+  <div class="header-wrap">
+    <h1 id="month-label">Загрузка... <span class="chevron">▼</span></h1>
+  </div>
   <div class="calendar-strip" id="calendar-strip"></div>
   <p id="date-label">Загрузка...</p>
   <p id="progress"></p>
@@ -409,13 +437,20 @@
 
   <div class="picker-overlay" id="picker-overlay">
     <div class="picker-sheet">
-      <div class="picker-years">
-        <button class="year-btn" id="year-prev">‹</button>
-        <span id="picker-year">2026</span>
-        <button class="year-btn" id="year-next">›</button>
+      <div class="picker-header">
+        <button class="picker-cancel" id="picker-cancel">Отмена</button>
+        <span class="picker-title">Выбор месяца</span>
+        <button class="picker-done" id="picker-done">Готово</button>
       </div>
-      <div class="picker-months" id="picker-months"></div>
-      <button class="today-btn" id="today-btn">К сегодня</button>
+      <div class="wheel-container">
+        <div class="wheel-highlight"></div>
+        <div class="wheel" id="wheel-month">
+          <div class="wheel-inner"></div>
+        </div>
+        <div class="wheel" id="wheel-year">
+          <div class="wheel-inner"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -431,7 +466,12 @@
     let selectedDate = todayISO();
     let calendarDays = [];
     let suppressScrollSelect = false;
-    let pickerYear = new Date().getFullYear();
+
+    let pickerMonth = new Date().getMonth();
+    let pickerYearValue = new Date().getFullYear();
+
+    const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь',
+                    'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 
     function todayISO() { return dateToISO(new Date()); }
     function dateToISO(d) {
@@ -463,9 +503,7 @@
 
     function formatMonthYear(iso) {
       const d = isoToDate(iso);
-      const months = ['Январь','Февраль','Март','Апрель','Май','Июнь',
-                      'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
-      return months[d.getMonth()].toUpperCase() + ' ' + d.getFullYear();
+      return MONTHS[d.getMonth()].toUpperCase() + ' ' + d.getFullYear();
     }
 
     function isOverdue(task) {
@@ -574,12 +612,92 @@
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
 
-    // --- Пикер месяца / года ---
+    // --- Барабаны (wheels) ---
+    function buildWheels() {
+      const currentYear = new Date().getFullYear();
+
+      const mw = document.querySelector('#wheel-month .wheel-inner');
+      mw.innerHTML = '';
+      MONTHS.forEach((name, i) => {
+        const el = document.createElement('div');
+        el.className = 'wheel-item';
+        el.dataset.value = i;
+        el.textContent = name;
+        mw.appendChild(el);
+      });
+
+      const yw = document.querySelector('#wheel-year .wheel-inner');
+      yw.innerHTML = '';
+      for (let y = currentYear - 10; y <= currentYear + 10; y++) {
+        const el = document.createElement('div');
+        el.className = 'wheel-item';
+        el.dataset.value = y;
+        el.textContent = y;
+        yw.appendChild(el);
+      }
+
+      attachWheelScroll('wheel-month', v => { pickerMonth = v; });
+      attachWheelScroll('wheel-year', v => { pickerYearValue = v; });
+    }
+
+    function scrollWheelTo(wheelId, value) {
+      const wheel = document.getElementById(wheelId);
+      const item = wheel.querySelector(`.wheel-item[data-value="${value}"]`);
+      if (!item) return;
+      const target = item.offsetTop - wheel.clientHeight / 2 + item.offsetHeight / 2;
+      wheel.scrollTop = target;
+      updateActiveItem(wheel);
+    }
+
+    function updateActiveItem(wheel) {
+      const center = wheel.scrollTop + wheel.clientHeight / 2;
+      let closest = null, minDist = Infinity;
+      wheel.querySelectorAll('.wheel-item').forEach(item => {
+        const ic = item.offsetTop + item.offsetHeight / 2;
+        const dist = Math.abs(ic - center);
+        if (dist < minDist) { minDist = dist; closest = item; }
+      });
+      wheel.querySelectorAll('.wheel-item').forEach(el => el.classList.remove('active'));
+      if (closest) {
+        closest.classList.add('active');
+        return parseInt(closest.dataset.value);
+      }
+      return null;
+    }
+
+    function attachWheelScroll(wheelId, onUpdate) {
+      const wheel = document.getElementById(wheelId);
+      let lastValue = null;
+      let hapticTimer;
+
+      const update = () => {
+        const v = updateActiveItem(wheel);
+        if (v !== null && v !== lastValue) {
+          lastValue = v;
+          onUpdate(v);
+          clearTimeout(hapticTimer);
+          hapticTimer = setTimeout(() => {
+            try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
+          }, 80);
+        }
+      };
+
+      wheel.addEventListener('scroll', update, { passive: true });
+      setTimeout(update, 50);
+    }
+
     function openPicker() {
-      pickerYear = isoToDate(selectedDate).getFullYear();
-      renderPicker();
+      const d = isoToDate(selectedDate);
+      pickerMonth = d.getMonth();
+      pickerYearValue = d.getFullYear();
+
       document.getElementById('picker-overlay').classList.add('active');
       document.body.classList.add('picker-open');
+
+      setTimeout(() => {
+        scrollWheelTo('wheel-month', pickerMonth);
+        scrollWheelTo('wheel-year', pickerYearValue);
+      }, 80);
     }
 
     function closePicker() {
@@ -587,25 +705,9 @@
       document.body.classList.remove('picker-open');
     }
 
-    function renderPicker() {
-      document.getElementById('picker-year').textContent = pickerYear;
-      const grid = document.getElementById('picker-months');
-      const months = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
-      const sel = isoToDate(selectedDate);
-      const selMonth = sel.getMonth();
-      const selYear = sel.getFullYear();
-      grid.innerHTML = '';
-      months.forEach((name, idx) => {
-        const btn = document.createElement('button');
-        btn.className = 'month-btn';
-        btn.textContent = name;
-        if (idx === selMonth && pickerYear === selYear) btn.classList.add('active');
-        btn.addEventListener('click', () => {
-          jumpToMonthYear(idx, pickerYear);
-          closePicker();
-        });
-        grid.appendChild(btn);
-      });
+    function applyPicker() {
+      jumpToMonthYear(pickerMonth, pickerYearValue);
+      closePicker();
     }
 
     function jumpToMonthYear(monthIndex, year) {
@@ -676,7 +778,8 @@
 
     // --- Отрисовка ---
     function render() {
-      document.getElementById('month-label').textContent = formatMonthYear(selectedDate);
+      document.getElementById('month-label').innerHTML =
+        formatMonthYear(selectedDate) + ' <span class="chevron">▼</span>';
 
       const list = document.getElementById('task-list');
       const progress = document.getElementById('progress');
@@ -777,26 +880,14 @@
     });
 
     document.getElementById('month-label').addEventListener('click', openPicker);
-    document.getElementById('year-prev').addEventListener('click', () => {
-      pickerYear--;
-      renderPicker();
-    });
-    document.getElementById('year-next').addEventListener('click', () => {
-      pickerYear++;
-      renderPicker();
-    });
-    document.getElementById('today-btn').addEventListener('click', () => {
-      selectedDate = todayISO();
-      buildCalendar();
-      render();
-      closePicker();
-      try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
-    });
+    document.getElementById('picker-cancel').addEventListener('click', closePicker);
+    document.getElementById('picker-done').addEventListener('click', applyPicker);
     document.getElementById('picker-overlay').addEventListener('click', (e) => {
       if (e.target.id === 'picker-overlay') closePicker();
     });
 
     buildCalendar();
+    buildWheels();
     loadTasks();
   </script>
 </body>
