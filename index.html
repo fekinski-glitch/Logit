@@ -38,6 +38,7 @@
       transition: background-color 0.3s, color 0.3s;
     }
     body.picker-open { overflow: hidden; }
+    body.welcome-open { overflow: hidden; }
 
     ::placeholder {
       color: var(--hint-color);
@@ -90,7 +91,6 @@
       transform: translateY(1px);
     }
 
-    /* Кнопка «К сегодня» */
     .to-today-btn {
       position: absolute;
       right: 0;
@@ -138,7 +138,6 @@
       appearance: none;
     }
 
-    /* Календарь */
     .calendar-strip {
       display: flex;
       gap: 8px;
@@ -231,7 +230,6 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* Форма */
     .add-form { margin-bottom: 8px; }
     .add-form input {
       width: 100%;
@@ -311,7 +309,6 @@
       opacity: 0.8;
     }
 
-    /* ===== Список задач ===== */
     #task-list {
       list-style: none;
       display: flex;
@@ -435,7 +432,6 @@
       display: none;
     }
 
-    /* ===== Экран «Подробнее» ===== */
     #detail-date {
       text-align: center;
       font-size: 30px;
@@ -517,7 +513,6 @@
       margin-bottom: 12px;
     }
 
-    /* Кольцо */
     .ring-progress {
       position: relative;
       width: 180px;
@@ -560,7 +555,6 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* ===== Таб-бар ===== */
     .tab-bar {
       position: fixed;
       bottom: 0;
@@ -608,7 +602,6 @@
     .tab-item:active { opacity: 0.6; }
     .tab-item svg { width: 26px; height: 26px; }
 
-    /* ===== Пикер ===== */
     .picker-overlay {
       position: fixed;
       inset: 0;
@@ -711,7 +704,6 @@
     }
     .wheel-item.active { color: var(--text-color); font-weight: 600; }
 
-    /* ===== Редактирование ===== */
     .edit-overlay {
       position: fixed;
       inset: 0;
@@ -786,9 +778,115 @@
       transition: box-shadow 0.2s;
     }
     .edit-input:focus { box-shadow: 0 0 0 2px var(--button-color); }
+
+    /* ===== ПРИВЕТСТВЕННЫЙ ЭКРАН ===== */
+    .welcome-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-color);
+      z-index: 3000;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: calc(24px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom));
+      text-align: center;
+    }
+    .welcome-screen.active { display: flex; }
+
+    .welcome-inner {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .ascii-art {
+      font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
+      font-size: clamp(11px, 3.4vw, 15px);
+      line-height: 1.15;
+      letter-spacing: 0;
+      white-space: pre;
+      color: var(--button-color);
+      text-align: center;
+      margin: 0 0 32px 0;
+      text-shadow: 0 0 16px rgba(36, 129, 204, 0.25);
+      min-height: calc(9 * 1.15em);
+      font-variant-ligatures: none;
+      font-feature-settings: "liga" 0, "calt" 0;
+    }
+
+    .welcome-greeting {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.6px;
+      line-height: 1.2;
+      margin-bottom: 10px;
+      text-align: center;
+      color: var(--text-color);
+      min-height: 1.2em;
+      word-break: break-word;
+      max-width: 100%;
+    }
+
+    .welcome-subtitle {
+      font-size: 16px;
+      font-weight: 400;
+      letter-spacing: -0.1px;
+      color: var(--hint-color);
+      text-align: center;
+      margin-bottom: 40px;
+      min-height: 1.4em;
+      line-height: 1.4;
+    }
+
+    .typing::after {
+      content: '▌';
+      color: var(--button-color);
+      margin-left: 1px;
+      font-weight: 400;
+      animation: cursor-blink 0.9s steps(1) infinite;
+      opacity: 0.9;
+    }
+    @keyframes cursor-blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    .welcome-start-btn {
+      padding: 15px 44px;
+      border-radius: 14px;
+      border: none;
+      background: var(--button-color);
+      color: var(--button-text-color);
+      font-family: inherit;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s;
+      -webkit-tap-highlight-color: transparent;
+      min-width: 160px;
+    }
+    .welcome-start-btn:active {
+      transform: scale(0.96);
+      opacity: 0.85;
+    }
   </style>
 </head>
 <body>
+
+  <!-- ============ ПРИВЕТСТВЕННЫЙ ЭКРАН ============ -->
+  <div class="welcome-screen" id="welcome-screen">
+    <div class="welcome-inner">
+      <pre class="ascii-art" id="welcome-art"></pre>
+      <h1 class="welcome-greeting" id="welcome-greeting"></h1>
+      <p class="welcome-subtitle" id="welcome-subtitle"></p>
+      <button class="welcome-start-btn" id="welcome-start">Начать</button>
+    </div>
+  </div>
+
   <!-- ============ ЭКРАН 1: ЗАДАЧИ ============ -->
   <div class="view active" id="view-tasks">
     <div class="header-wrap">
@@ -913,6 +1011,7 @@
     const STORAGE_KEY = 'my_tasks_v1';
     const FALLBACK_KEY = 'my_tasks_local_v1';
     const UI_STATE_KEY = 'logit_ui_state';
+    const ONBOARDED_KEY = 'logit_welcomed_v1';
 
     let selectedDate = todayISO();
     let detailDate = todayISO();
@@ -930,6 +1029,18 @@
     const WEEKDAYS_FULL = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
     const MONTHS_GEN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
     const CIRCUMFERENCE = 2 * Math.PI * 52;
+
+    // ASCII-арт приветствия
+    const ASCII_ART =
+      '╭────────────────────╮\n' +
+      '│                    │\n' +
+      '│                    │\n' +
+      '│         ✓          │\n' +
+      '│                    │\n' +
+      '│                    │\n' +
+      '│     L O G I T      │\n' +
+      '│                    │\n' +
+      '╰────────────────────╯';
 
     function todayISO() { return dateToISO(new Date()); }
     function dateToISO(d) {
@@ -967,6 +1078,66 @@
       d.setHours(h, m, 0, 0);
       return d < new Date();
     }
+
+    // ============ ПРИВЕТСТВЕННЫЙ ЭКРАН ============
+    function isWelcomed() {
+      try { return localStorage.getItem(ONBOARDED_KEY) === '1'; } catch (e) { return false; }
+    }
+    function setWelcomed() {
+      try { localStorage.setItem(ONBOARDED_KEY, '1'); } catch (e) {}
+    }
+
+    function sleep(ms) {
+      return new Promise(r => setTimeout(r, ms));
+    }
+
+    function typeText(el, text, delay) {
+      return new Promise(resolve => {
+        el.textContent = '';
+        el.classList.add('typing');
+        let i = 0;
+        function tick() {
+          if (i < text.length) {
+            const char = text[i];
+            el.textContent += char;
+            i++;
+            const pause = char === '\n' ? delay * 4 : delay;
+            setTimeout(tick, pause);
+          } else {
+            el.classList.remove('typing');
+            resolve();
+          }
+        }
+        tick();
+      });
+    }
+
+    async function playWelcome() {
+      const screen = document.getElementById('welcome-screen');
+      screen.classList.add('active');
+      document.body.classList.add('welcome-open');
+
+      const userName = (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name) || 'друг';
+
+      const art = document.getElementById('welcome-art');
+      const greeting = document.getElementById('welcome-greeting');
+      const subtitle = document.getElementById('welcome-subtitle');
+
+      await typeText(art, ASCII_ART, 6);
+      await sleep(250);
+      await typeText(greeting, 'Привет, ' + userName + '!', 40);
+      await sleep(150);
+      await typeText(subtitle, 'Твой день начинается здесь', 22);
+
+      // Устанавливаем флаг — больше не показываем
+      setWelcomed();
+    }
+
+    document.getElementById('welcome-start').addEventListener('click', () => {
+      document.getElementById('welcome-screen').classList.remove('active');
+      document.body.classList.remove('welcome-open');
+      try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
+    });
 
     // ============ СОХРАНЕНИЕ UI-СОСТОЯНИЯ ============
     function saveState() {
@@ -1560,6 +1731,11 @@
     }
     loadTasks();
     renderDetailView();
+
+    // Приветствие при первом запуске
+    if (!isWelcomed()) {
+      setTimeout(playWelcome, 150);
+    }
   </script>
 </body>
 </html>
