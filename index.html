@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Моя аппа</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: var(--tg-theme-bg-color, #ffffff);
+      color: var(--tg-theme-text-color, #000000);
+      margin: 0;
+      padding: 24px 16px;
+      text-align: center;
+    }
+    h1 { font-size: 24px; }
+    .card {
+      background: var(--tg-theme-secondary-bg-color, #f1f1f1);
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="hello">Привет!</h1>
+  <div class="card">
+    <p id="info">Загружаю данные...</p>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    const user = tg.initDataUnsafe?.user;
+    document.getElementById('hello').textContent =
+      user ? 'Привет, ' + user.first_name + '!' : 'Привет, гость!';
+
+    document.getElementById('info').textContent =
+      'Платформа: ' + (tg.platform || 'браузер');
+  </script>
+</body>
+</html>
