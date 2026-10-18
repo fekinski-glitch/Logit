@@ -45,7 +45,6 @@
       letter-spacing: -0.2px;
     }
 
-    /* Заголовок-пилюля — размер и вид не меняем */
     .header-wrap {
       display: flex;
       justify-content: center;
@@ -80,7 +79,6 @@
       transform: translateY(1px);
     }
 
-    /* Календарь */
     .calendar-strip {
       display: flex;
       gap: 8px;
@@ -181,7 +179,6 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* Форма добавления */
     .add-form { margin-bottom: 8px; }
     .add-form input {
       width: 100%;
@@ -271,7 +268,6 @@
       opacity: 0.8;
     }
 
-    /* Список задач */
     #task-list {
       list-style: none;
       display: flex;
@@ -382,7 +378,7 @@
       display: none;
     }
 
-    /* ===== Пикер в iOS-стиле ===== */
+    /* ===== Пикер ===== */
     .picker-overlay {
       position: fixed;
       inset: 0;
@@ -445,7 +441,7 @@
     .wheel-container {
       position: relative;
       height: 216px;
-      display: flex:;
+      display: flex;
       justify-content: center;
       padding: 0 8px;
     }
@@ -454,7 +450,7 @@
       left: 8px;
       right: 8px;
       top: 50%;
-      height 40px;
+      height: 40px;
       transform: translateY(-50%);
       background: var(--secondary-bg-color);
       border-radius: 10px;
@@ -468,6 +464,7 @@
       scroll-snap-type: y mandatory;
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
       position: relative;
       z-index: 1;
       mask-image: linear-gradient(to bottom, transparent 0%, #000 25%, #000 75%, transparent 100%);
@@ -599,7 +596,6 @@
       return d < new Date();
     }
 
-    // --- Календарь ---
     function buildCalendar() {
       const base = isoToDate(selectedDate);
       base.setHours(0,0,0,0);
@@ -699,7 +695,7 @@
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
 
-    // --- Барабаны (wheels) ---
+    // --- Барабаны ---
     function buildWheels() {
       const currentYear = new Date().getFullYear();
 
@@ -723,20 +719,25 @@
         yw.appendChild(el);
       }
 
-      attachWheelScroll('wheel-month', v => { pickerMonth = v; });
-      attachWheelScroll('wheel-year', v => { pickerYearValue = v; });
+      attachWheelScroll('wheel-month');
+      attachWheelScroll('wheel-year');
     }
 
-    function scrollWheelTo(wheelId, value) {
+    function getWheelValue(wheelId) {
       const wheel = document.getElementById(wheelId);
-      const item = wheel.querySelector(`.wheel-item[data-value="${value}"]`);
-      if (!item) return;
-      const target = item.offsetTop - wheel.clientHeight / 2 + item.offsetHeight / 2;
-      wheel.scrollTop = target;
-      updateActiveItem(wheel);
+      const center = wheel.scrollTop + wheel.clientHeight / 2;
+      let closest = null, minDist = Infinity;
+      wheel.querySelectorAll('.wheel-item').forEach(item => {
+        const ic = item.offsetTop + item.offsetHeight / 2;
+        const dist = Math.abs(ic - center);
+        if (dist < minDist) { minDist = dist; closest = item; }
+      });
+      if (!closest) return null;
+      return parseInt(closest.dataset.value, 10);
     }
 
-    function updateActiveItem(wheel) {
+    function updateWheelVisual(wheelId) {
+      const wheel = document.getElementById(wheelId);
       const center = wheel.scrollTop + wheel.clientHeight / 2;
       let closest = null, minDist = Infinity;
       wheel.querySelectorAll('.wheel-item').forEach(item => {
@@ -745,23 +746,31 @@
         if (dist < minDist) { minDist = dist; closest = item; }
       });
       wheel.querySelectorAll('.wheel-item').forEach(el => el.classList.remove('active'));
-      if (closest) {
-        closest.classList.add('active');
-        return parseInt(closest.dataset.value);
-      }
-      return null;
+      if (closest) closest.classList.add('active');
     }
 
-    function attachWheelScroll(wheelId, onUpdate) {
+    function scrollWheelTo(wheelId, value) {
       const wheel = document.getElementById(wheelId);
-      let lastValue = null;
+      const item = wheel.querySelector(`.wheel-item[data-value="${value}"]`);
+      if (!item) {
+        console.log('Wheel item not found:', wheelId, value);
+        return;
+      }
+      const target = item.offsetTop - wheel.clientHeight / 2 + item.offsetHeight / 2;
+      wheel.scrollTop = target;
+      updateWheelVisual(wheelId);
+    }
+
+    function attachWheelScroll(wheelId) {
+      const wheel = document.getElementById(wheelId);
       let hapticTimer;
+      let lastValue = getWheelValue(wheelId);
 
       const update = () => {
-        const v = updateActiveItem(wheel);
+        updateWheelVisual(wheelId);
+        const v = getWheelValue(wheelId);
         if (v !== null && v !== lastValue) {
           lastValue = v;
-          onUpdate(v);
           clearTimeout(hapticTimer);
           hapticTimer = setTimeout(() => {
             try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
@@ -770,7 +779,10 @@
       };
 
       wheel.addEventListener('scroll', update, { passive: true });
-      setTimeout(update, 50);
+      // iOS: подстраховка на touchend — если scroll не успел сработать
+      wheel.addEventListener('touchend', () => {
+        setTimeout(update, 50);
+      }, { passive: true });
     }
 
     function openPicker() {
@@ -793,6 +805,15 @@
     }
 
     function applyPicker() {
+      // Пересчитываем значение напрямую из визуального положения колёс —
+      // не полагаемся на события scroll, чтобы год никогда не терялся
+      const m = getWheelValue('wheel-month');
+      const y = getWheelValue('wheel-year');
+      console.log('applyPicker → month:', m, 'year:', y);
+
+      if (m !== null && m !== undefined) pickerMonth = m;
+      if (y !== null && y !== undefined) pickerYearValue = y;
+
       jumpToMonthYear(pickerMonth, pickerYearValue);
       closePicker();
     }
@@ -863,7 +884,6 @@
       }
     }
 
-    // --- Отрисовка ---
     function render() {
       document.getElementById('month-label').innerHTML =
         formatMonthYear(selectedDate) + ' <span class="chevron">▼</span>';
@@ -920,7 +940,6 @@
       updateCalendarDots();
     }
 
-    // --- Обновление кнопки времени ---
     function updateTimeBtn() {
       const timeInput = document.getElementById('task-time');
       const timeBtnText = document.getElementById('time-btn-text');
@@ -933,7 +952,6 @@
       }
     }
 
-    // --- Действия ---
     function addTask() {
       const input = document.getElementById('task-input');
       const timeInput = document.getElementById('task-time');
@@ -974,7 +992,6 @@
       return div.innerHTML;
     }
 
-    // --- События ---
     document.getElementById('add-btn').addEventListener('click', addTask);
     document.getElementById('task-input').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') addTask();
