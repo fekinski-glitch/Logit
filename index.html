@@ -21,9 +21,7 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    html, body {
-      height: 100%;
-    }
+    html, body { height: 100%; }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
@@ -47,15 +45,12 @@
       letter-spacing: -0.2px;
     }
 
-    /* Экраны (views) */
     .view {
       display: none;
       padding: 16px 16px 100px;
       min-height: 100vh;
     }
-    .view.active {
-      display: block;
-    }
+    .view.active { display: block; }
 
     /* Заголовок-пилюля */
     .header-wrap {
@@ -403,11 +398,69 @@
       margin-bottom: 28px;
     }
 
+    .day-section-title {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--hint-color);
+      margin-bottom: 10px;
+      padding-left: 4px;
+    }
+    .day-task-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+    .day-task-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 14px;
+      background: var(--secondary-bg-color);
+      border-radius: 12px;
+      font-size: 15px;
+    }
+    .day-task-item.done { opacity: 0.55; }
+    .day-task-item.done .day-task-text {
+      text-decoration: line-through;
+      color: var(--hint-color);
+    }
+    .day-task-time {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--button-color);
+      font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
+      min-width: 44px;
+      letter-spacing: 0.2px;
+    }
+    .day-task-item.done .day-task-time {
+      color: var(--hint-color);
+    }
+    .day-task-text {
+      flex: 1;
+      letter-spacing: -0.1px;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+    .day-empty {
+      text-align: center;
+      color: var(--hint-color);
+      padding: 20px 16px 24px;
+      font-size: 15px;
+      letter-spacing: -0.1px;
+      margin-bottom: 12px;
+    }
+
+    /* Кольцо прогресса */
     .ring-progress {
       position: relative;
       width: 180px;
       height: 180px;
-      margin: 0 auto 24px;
+      margin: 0 auto 8px;
     }
     .ring-progress svg {
       width: 100%;
@@ -447,93 +500,6 @@
       font-size: 14px;
       color: var(--hint-color);
       font-variant-numeric: tabular-nums;
-      letter-spacing: -0.1px;
-    }
-
-    .stats-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 28px;
-    }
-    .stat-card {
-      background: var(--secondary-bg-color);
-      border-radius: 14px;
-      padding: 14px 8px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-    }
-    .stat-value {
-      font-size: 24px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      line-height: 1;
-      font-variant-numeric: tabular-nums;
-    }
-    .stat-label {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-weight: 600;
-      color: var(--hint-color);
-    }
-
-    .day-section-title {
-      font-size: 13px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      color: var(--hint-color);
-      margin-bottom: 10px;
-      padding-left: 4px;
-    }
-    .day-task-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .day-task-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 13px 14px;
-      background: var(--secondary-bg-color);
-      border-radius: 12px;
-      font-size: 15px;
-    }
-    .day-task-item.done {
-      opacity: 0.55;
-    }
-    .day-task-item.done .day-task-text {
-      text-decoration: line-through;
-      color: var(--hint-color);
-    }
-    .day-task-time {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--button-color);
-      font-variant-numeric: tabular-nums;
-      flex-shrink: 0;
-      min-width: 44px;
-      letter-spacing: 0.2px;
-    }
-    .day-task-item.done .day-task-time {
-      color: var(--hint-color);
-    }
-    .day-task-text {
-      flex: 1;
-      letter-spacing: -0.1px;
-      line-height: 1.35;
-      word-break: break-word;
-    }
-    .day-empty {
-      text-align: center;
-      color: var(--hint-color);
-      padding: 24px 16px;
-      font-size: 15px;
       letter-spacing: -0.1px;
     }
 
@@ -581,16 +547,9 @@
       padding: 0;
       transition: color 0.15s, opacity 0.15s;
     }
-    .tab-item.active {
-      color: var(--button-color);
-    }
-    .tab-item:active {
-      opacity: 0.6;
-    }
-    .tab-item svg {
-      width: 26px;
-      height: 26px;
-    }
+    .tab-item.active { color: var(--button-color); }
+    .tab-item:active { opacity: 0.6; }
+    .tab-item svg { width: 26px; height: 26px; }
 
     /* ===== Пикер ===== */
     .picker-overlay {
@@ -738,6 +697,10 @@
     <h2 id="day-date">19 октября</h2>
     <p id="day-weekday">воскресенье</p>
 
+    <h3 class="day-section-title">Задачи на сегодня</h3>
+    <ul id="day-task-list" class="day-task-list"></ul>
+    <div id="day-empty" class="day-empty">На сегодня задач нет</div>
+
     <div class="ring-progress">
       <svg viewBox="0 0 120 120">
         <circle class="ring-bg" cx="60" cy="60" r="52"/>
@@ -748,25 +711,6 @@
         <span class="ring-label" id="ring-label">нет задач</span>
       </div>
     </div>
-
-    <div class="stats-row">
-      <div class="stat-card">
-        <span class="stat-value" id="stat-streak">0</span>
-        <span class="stat-label">Серия</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-value" id="stat-week">0</span>
-        <span class="stat-label">Неделя</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-value" id="stat-month">0</span>
-        <span class="stat-label">Месяц</span>
-      </div>
-    </div>
-
-    <h3 class="day-section-title">Задачи на сегодня</h3>
-    <ul id="day-task-list" class="day-task-list"></ul>
-    <div id="day-empty" class="day-empty">На сегодня задач нет</div>
   </div>
 
   <!-- ============ ТАБ-БАР ============ -->
@@ -814,7 +758,6 @@
     tg.ready();
     tg.expand();
 
-    // Тема — для blur таб-бара
     if (tg.colorScheme) document.body.setAttribute('data-theme', tg.colorScheme);
 
     let tasks = [];
@@ -860,11 +803,12 @@
       }
       return `${prefix}, ${d.getDate()} ${MONTHS_GEN[d.getMonth()]}`;
     }
-    function formatMonthYear(iso) {
-      const d = isoToDate(iso);
-      return MONTHS[d.getMonth()].toUpperCase() + ' ' + d.getFullYear();
-    }
-    function isOverdue(task) {
+    function formatMonthYear();
+iso) {
+      const d = iso       ToDate(iso);
+      return MON constTHS[d.getMonth()].to btnUpperCase() + ' ' + d.getFullYear();
+ =    }
+    function isOverdue(task) document {
       if (task.done || !task.time) return false;
       const d = isoToDate(task.date);
       const [h, m] = task.time.split(':').map(Number);
@@ -893,8 +837,7 @@
       const weekdays = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
 
       calendarDays.forEach(iso => {
-        const d = isoToDate(iso);
-        const btn = document.createElement('button');
+        const d = isoToDate(iso.createElement('button');
         btn.type = 'button';
         btn.className = 'day-cell';
         if (iso === selectedDate) btn.classList.add('selected');
@@ -1206,11 +1149,6 @@
         labelEl.textContent = doneCount + ' из ' + total;
       }
 
-      // Статистика
-      document.getElementById('stat-streak').textContent = getStreak();
-      document.getElementById('stat-week').textContent = getPeriodCount(7);
-      document.getElementById('stat-month').textContent = getPeriodCount(30);
-
       // Список на сегодня
       const list = document.getElementById('day-task-list');
       const emptyEl = document.getElementById('day-empty');
@@ -1236,38 +1174,6 @@
           list.appendChild(li);
         });
       }
-    }
-
-    function getStreak() {
-      const today = new Date();
-      today.setHours(0,0,0,0);
-      const todayStr = dateToISO(today);
-      const hasToday = tasks.some(t => t.date === todayStr && t.done);
-
-      let checkDate = new Date(today);
-      if (!hasToday) checkDate.setDate(checkDate.getDate() - 1);
-
-      let streak = 0;
-      for (let i = 0; i < 365; i++) {
-        const iso = dateToISO(checkDate);
-        const hasDone = tasks.some(t => t.date === iso && t.done);
-        if (!hasDone) break;
-        streak++;
-        checkDate.setDate(checkDate.getDate() - 1);
-      }
-      return streak;
-    }
-
-    function getPeriodCount(days) {
-      const today = new Date();
-      today.setHours(0,0,0,0);
-      const from = new Date(today);
-      from.setDate(from.getDate() - (days - 1));
-      return tasks.filter(t => {
-        if (!t.done) return false;
-        const d = isoToDate(t.date);
-        return d >= from && d <= today;
-      }).length;
     }
 
     // ============ ДЕЙСТВИЯ ============
@@ -1340,12 +1246,12 @@
 
     document.getElementById('month-label').addEventListener('click', openPicker);
     document.getElementById('picker-cancel').addEventListener('click', closePicker);
-    document.getElementById('picker-done').addEventListener('click', applyPicker);
-    document.getElementById('picker-overlay').addEventListener('click', (e) => {
-      if (e.target.id === 'picker-overlay') closePicker();
+    document.getElementByIdAll('picker-done').addEventListener('click', applyPicker);
+    document.getElementById('picker-overlay').addEventListener('.('click', (e) =>tab {
+      if (e.target.id-item === 'picker-overlay') closePicker();
     });
 
-    document.querySelectorAll('.tab-item').forEach(btn => {
+    document.querySelector').forEach(btn => {
       btn.addEventListener('click', () => switchView(btn.dataset.view));
     });
 
