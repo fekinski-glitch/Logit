@@ -311,7 +311,7 @@
       opacity: 0.8;
     }
 
-    /* ===== Список задач со свайпом ===== */
+    /* ===== Список задач ===== */
     #task-list {
       list-style: none;
       display: flex;
@@ -319,48 +319,19 @@
       gap: 12px;
     }
     .task-item-wrapper {
-      position: relative;
-      overflow: hidden;
-      border-radius: 16px;
       animation: slideIn 0.3s ease;
     }
     @keyframes slideIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .swipe-delete-action {
-      position: absolute;
-      inset: 0;
-      background: var(--danger-color);
-      border-radius: 16px;
-      display: flex;
-      justify-content: flex-end;
-      align-items: stretch;
-    }
-    .swipe-delete-btn {
-      width: 88px;
-      background: var(--danger-color);
-      color: #fff;
-      border: none;
-      font-family: inherit;
-      font-size: 15px;
-      font-weight: 600;
-      letter-spacing: 0.2px;
-      cursor: pointer;
-      border-radius: 16px;
-      -webkit-tap-highlight-color: transparent;
-    }
-
     .task-item {
-      position: relative;
       display: flex;
       align-items: flex-start;
       gap: 14px;
       padding: 18px 18px;
       background-color: var(--secondary-bg-color);
       border-radius: 16px;
-      touch-action: pan-y;
-      transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
       -webkit-user-select: none;
       user-select: none;
     }
@@ -427,6 +398,26 @@
     }
     .task-item.overdue .task-time:not(.empty) {
       color: var(--danger-color);
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: var(--hint-color);
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 1;
+      cursor: pointer;
+      padding: 6px;
+      margin: -4px -6px 0 0;
+      border-radius: 8px;
+      transition: color 0.2s, background-color 0.2s;
+      font-family: inherit;
+      flex-shrink: 0;
+    }
+    .delete-btn:active {
+      color: var(--danger-color);
+      background-color: rgba(255, 59, 48, 0.1);
     }
     #empty-state {
       text-align: center;
@@ -714,7 +705,7 @@
     }
     .wheel-item.active { color: var(--text-color); font-weight: 600; }
 
-    /* ===== Редактирование задачи ===== */
+    /* ===== Редактирование ===== */
     .edit-overlay {
       position: fixed;
       inset: 0;
@@ -926,8 +917,6 @@
     let pickerMonth = new Date().getMonth();
     let pickerYearValue = new Date().getFullYear();
 
-    let openSwipeWrapper = null;
-    let swallowClickUntil = 0;
     let editingIndex = -1;
 
     const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь',
@@ -977,9 +966,7 @@
     function saveState() {
       try {
         localStorage.setItem(UI_STATE_KEY, JSON.stringify({
-          selectedDate,
-          detailDate,
-          view: currentView
+          selectedDate, detailDate, view: currentView
         }));
       } catch (e) {}
     }
@@ -1247,99 +1234,40 @@
       } catch (e) {}
     }
 
-    // ============ СВАЙП ============
-    function closeAllSwipes(except = null) {
-      if (openSwipeWrapper && openSwipeWrapper !== except) {
-        if (openSwipeWrapper._closeSwipe) openSwipeWrapper._closeSwipe();
-      }
-    }
-
-    function attachCardGestures(wrapper, card, index) {
-      let startX = 0, startY = 0, currentX = 0;
-      let isDragging = false;
-      let isHorizontal = null;
+    // ============ ДОЛГОЕ НАЖАТИЕ ДЛЯ РЕДАКТИРОВАНИЯ ============
+    function attachLongPress(card, index) {
+      let startX = 0, startY = 0;
       let moved = false;
-      let longPressTimer = null;
-
-      const closeSwipe = () => {
-        card.style.transition = 'transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1)';
-        card.style.transform = '';
-        wrapper.classList.remove('swiped');
-        if (openSwipeWrapper === wrapper) openSwipeWrapper = null;
-      };
-      wrapper._closeSwipe = closeSwipe;
+      let timer = null;
 
       card.addEventListener('touchstart', (e) => {
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
-        currentX = 0;
-        isDragging = true;
-        isHorizontal = null;
         moved = false;
-
-        if (openSwipeWrapper && openSwipeWrapper !== wrapper) {
-          closeAllSwipes(wrapper);
-        }
-
-        longPressTimer = setTimeout(() => {
-          if (!moved && !isHorizontal) {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          if (!moved) {
             openEditModal(index);
-            swallowClickUntil = Date.now() + 400;
             try { tg.HapticFeedback.impactOccurred('medium'); } catch (err) {}
           }
         }, 500);
       }, { passive: true });
 
       card.addEventListener('touchmove', (e) => {
-        if (!isDragging) return;
-        const dx = e.touches[0].clientX - startX;
-        const dy = e.touches[0].clientY - startY;
-
-        if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
-          if (!moved) { moved = true; clearTimeout(longPressTimer); }
+        const dx = Math.abs(e.touches[0].clientX - startX);
+        const dy = Math.abs(e.touches[0].clientY - startY);
+        if (dx > 8 || dy > 8) {
+          moved = true;
+          clearTimeout(timer);
         }
-        if (isHorizontal === null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
-          isHorizontal = Math.abs(dx) > Math.abs(dy);
-        }
-        if (!isHorizontal) return;
-
-        let move = dx;
-        if (move > 0) move = 0;
-        if (move < -100) move = -100;
-        currentX = move;
-        card.style.transition = 'none';
-        card.style.transform = `translateX(${move}px)`;
       }, { passive: true });
 
-      card.addEventListener('touchend', () => {
-        clearTimeout(longPressTimer);
-        if (!isDragging) return;
-        isDragging = false;
-        if (!isHorizontal) return;
-
-        card.style.transition = 'transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1)';
-        if (currentX < -50) {
-          closeAllSwipes(wrapper);
-          card.style.transform = 'translateX(-88px)';
-          wrapper.classList.add('swiped');
-          openSwipeWrapper = wrapper;
-          swallowClickUntil = Date.now() + 400;
-        } else {
-          closeSwipe();
-        }
-      });
-
-      card.addEventListener('touchcancel', () => {
-        clearTimeout(longPressTimer);
-        isDragging = false;
-        closeSwipe();
-      });
+      card.addEventListener('touchend', () => clearTimeout(timer));
+      card.addEventListener('touchcancel', () => clearTimeout(timer));
     }
 
     // ============ РЕНДЕР ЭКРАНА 1 ============
     function render() {
-      openSwipeWrapper = null;
-
       document.getElementById('month-label').innerHTML =
         formatMonthYear(selectedDate) + ' <span class="chevron">▼</span>';
 
@@ -1375,9 +1303,6 @@
         const wrapper = document.createElement('li');
         wrapper.className = 'task-item-wrapper';
         wrapper.innerHTML = `
-          <div class="swipe-delete-action">
-            <button class="swipe-delete-btn">Удалить</button>
-          </div>
           <div class="task-item${task.done ? ' done' : ''}${overdue ? ' overdue' : ''}">
             <div class="task-checkbox${task.done ? ' checked' : ''}"></div>
             <div class="task-content">
@@ -1386,28 +1311,23 @@
                 ? `<span class="task-time">${escapeHtml(task.time)}</span>`
                 : `<span class="task-time empty">Без времени</span>`}
             </div>
+            <button class="delete-btn">✕</button>
           </div>
         `;
         const card = wrapper.querySelector('.task-item');
         const checkbox = wrapper.querySelector('.task-checkbox');
-        const deleteBtn = wrapper.querySelector('.swipe-delete-btn');
+        const crossBtn = wrapper.querySelector('.delete-btn');
 
         checkbox.addEventListener('click', (e) => {
           e.stopPropagation();
-          if (openSwipeWrapper) { closeAllSwipes(); return; }
-          if (Date.now() < swallowClickUntil) return;
           toggleTask(globalIndex);
         });
-        deleteBtn.addEventListener('click', (e) => {
+        crossBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          closeAllSwipes();
           deleteTask(globalIndex);
         });
-        card.addEventListener('click', () => {
-          if (openSwipeWrapper) closeAllSwipes();
-        });
 
-        attachCardGestures(wrapper, card, globalIndex);
+        attachLongPress(card, globalIndex);
         list.appendChild(wrapper);
       });
 
@@ -1483,7 +1403,6 @@
       editingIndex = index;
       const task = tasks[index];
       if (!task) return;
-      closeAllSwipes();
       document.getElementById('edit-text').value = task.text;
       document.getElementById('edit-time').value = task.time || '';
       updateEditTimeBtn();
@@ -1621,19 +1540,11 @@
     document.getElementById('edit-time').addEventListener('input', updateEditTimeBtn);
     document.getElementById('edit-time').addEventListener('change', updateEditTimeBtn);
 
-    // Клик вне свайпа — закрывает его
-    document.addEventListener('click', (e) => {
-      if (openSwipeWrapper && !openSwipeWrapper.contains(e.target)) {
-        closeAllSwipes();
-      }
-    });
-
     // ============ СТАРТ ============
     restoreState();
     buildCalendar();
     buildWheels();
     updateTimeBtn();
-    // Восстанавливаем вкладку до загрузки задач
     if (currentView === 'detail') {
       document.getElementById('view-tasks').classList.remove('active');
       document.getElementById('view-detail').classList.add('active');
