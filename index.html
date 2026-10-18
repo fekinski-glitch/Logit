@@ -17,6 +17,8 @@
       --secondary-bg-color: var(--tg-theme-secondary-bg-color, #f1f1f1);
       --danger-color: #ff3b30;
       --separator: rgba(128,128,128,0.2);
+      --cat-personal: #34c759;
+      --cat-work: #ff9f0a;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -58,7 +60,7 @@
       position: relative;
       display: flex;
       justify-content: center;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
     #month-label, .pill-static, #detail-date-pill {
       font-size: 15px;
@@ -115,6 +117,37 @@
       from { opacity: 0; transform: translateY(-50%) scale(0.8); }
       to { opacity: 1; transform: translateY(-50%) scale(1); }
     }
+
+    /* Сегмент-контрол фильтра */
+    .segmented-control {
+      display: flex;
+      background: var(--secondary-bg-color);
+      border-radius: 9px;
+      padding: 2px;
+      margin: 0 auto 12px;
+      max-width: 320px;
+    }
+    .seg-btn {
+      flex: 1;
+      padding: 7px 0;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: -0.1px;
+      color: var(--text-color);
+      border-radius: 7px;
+      cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .seg-btn.active {
+      background: var(--bg-color);
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08), 0 1px 1px rgba(0,0,0,0.04);
+    }
+    .seg-btn:active { opacity: 0.7; }
 
     .date-pill-wrapper {
       position: relative;
@@ -248,12 +281,47 @@
     }
     .add-form input:focus { box-shadow: 0 0 0 2px var(--button-color); }
     .add-form-2 { display: flex; gap: 8px; margin-bottom: 22px; }
+
+    .cat-toggle {
+      height: 52px;
+      padding: 0 12px;
+      border-radius: 12px;
+      border: none;
+      background: var(--secondary-bg-color);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: -0.2px;
+      color: var(--text-color);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-shrink: 0;
+      transition: opacity 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .cat-toggle:active {
+      opacity: 0.7;
+      transform: scale(0.97);
+    }
+    .cat-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .cat-toggle[data-cat="personal"] .cat-dot { background: var(--cat-personal); }
+    .cat-toggle[data-cat="work"] .cat-dot { background: var(--cat-work); }
+
     .time-btn-wrapper {
       flex: 1;
       height: 52px;
       position: relative;
       border-radius: 12px;
       overflow: hidden;
+      min-width: 0;
     }
     .time-btn-display {
       position: absolute;
@@ -326,20 +394,22 @@
       display: flex;
       align-items: stretch;
       gap: 14px;
-      padding: 18px 18px;
+      padding: 18px 18px 18px 15px;
       background-color: var(--secondary-bg-color);
       border-radius: 16px;
+      border-left: 3px solid transparent;
       -webkit-user-select: none;
       user-select: none;
+      transition: border-color 0.2s;
     }
+    .task-item[data-cat="personal"] { border-left-color: var(--cat-personal); }
+    .task-item[data-cat="work"] { border-left-color: var(--cat-work); }
+    .task-item.overdue { border-left-color: var(--danger-color); }
+
     .task-item.done { opacity: 0.55; }
     .task-item.done .task-text {
       text-decoration: line-through;
       color: var(--hint-color);
-    }
-    .task-item.overdue {
-      border-left: 3px solid var(--danger-color);
-      padding-left: 15px;
     }
     .task-checkbox {
       width: 26px;
@@ -398,7 +468,6 @@
     .task-item.overdue .task-time:not(.empty) {
       color: var(--danger-color);
     }
-
     .delete-btn {
       background: none;
       border: none;
@@ -468,10 +537,13 @@
       display: flex;
       align-items: flex-start;
       gap: 12px;
-      padding: 16px 16px;
+      padding: 16px 16px 16px 13px;
       background: var(--secondary-bg-color);
       border-radius: 14px;
+      border-left: 3px solid transparent;
     }
+    .day-task-item[data-cat="personal"] { border-left-color: var(--cat-personal); }
+    .day-task-item[data-cat="work"] { border-left-color: var(--cat-work); }
     .day-task-item.done { opacity: 0.55; }
     .day-task-item.done .day-task-text {
       text-decoration: line-through;
@@ -778,6 +850,10 @@
       transition: box-shadow 0.2s;
     }
     .edit-input:focus { box-shadow: 0 0 0 2px var(--button-color); }
+    .edit-row {
+      display: flex;
+      gap: 8px;
+    }
 
     /* ===== ПРИВЕТСТВЕННЫЙ ЭКРАН ===== */
     .welcome-screen {
@@ -793,7 +869,6 @@
       text-align: center;
     }
     .welcome-screen.active { display: flex; }
-
     .welcome-inner {
       width: 100%;
       max-width: 420px;
@@ -801,7 +876,6 @@
       flex-direction: column;
       align-items: center;
     }
-
     .ascii-art {
       font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
       font-size: clamp(11px, 3.4vw, 15px);
@@ -816,7 +890,6 @@
       font-variant-ligatures: none;
       font-feature-settings: "liga" 0, "calt" 0;
     }
-
     .welcome-greeting {
       font-size: 28px;
       font-weight: 700;
@@ -829,7 +902,6 @@
       word-break: break-word;
       max-width: 100%;
     }
-
     .welcome-subtitle {
       font-size: 16px;
       font-weight: 400;
@@ -840,7 +912,6 @@
       min-height: 1.4em;
       line-height: 1.4;
     }
-
     .typing::after {
       content: '▌';
       color: var(--button-color);
@@ -853,8 +924,6 @@
       0%, 50% { opacity: 1; }
       51%, 100% { opacity: 0; }
     }
-
-    /* Кнопка — скрыта до конца анимации */
     .welcome-start-btn {
       padding: 15px 44px;
       border-radius: 14px;
@@ -910,6 +979,13 @@
         </svg>
       </button>
     </div>
+
+    <div class="segmented-control" id="category-filter">
+      <button class="seg-btn active" data-cat="all">Все</button>
+      <button class="seg-btn" data-cat="personal">Личное</button>
+      <button class="seg-btn" data-cat="work">Работа</button>
+    </div>
+
     <div class="calendar-strip" id="calendar-strip"></div>
     <p id="date-label">Загрузка...</p>
     <p id="progress"></p>
@@ -918,6 +994,10 @@
       <input type="text" id="task-input" placeholder="Что нужно сделать?" maxlength="100">
     </div>
     <div class="add-form-2">
+      <button class="cat-toggle" id="cat-toggle" data-cat="personal">
+        <span class="cat-dot"></span>
+        <span id="cat-toggle-label">Личное</span>
+      </button>
       <div class="time-btn-wrapper">
         <div class="time-btn-display" id="time-btn-text">Без времени</div>
         <input type="time" id="task-time" class="time-input-overlay">
@@ -1002,9 +1082,15 @@
       </div>
       <div class="edit-body">
         <input type="text" id="edit-text" class="edit-input" maxlength="100" placeholder="Что нужно сделать?">
-        <div class="time-btn-wrapper">
-          <div class="time-btn-display" id="edit-time-btn-text">Без времени</div>
-          <input type="time" id="edit-time" class="time-input-overlay">
+        <div class="edit-row">
+          <button class="cat-toggle" id="edit-cat-toggle" data-cat="personal">
+            <span class="cat-dot"></span>
+            <span id="edit-cat-label">Личное</span>
+          </button>
+          <div class="time-btn-wrapper" style="flex:1;">
+            <div class="time-btn-display" id="edit-time-btn-text">Без времени</div>
+            <input type="time" id="edit-time" class="time-input-overlay">
+          </div>
         </div>
       </div>
     </div>
@@ -1026,11 +1112,14 @@
     let calendarDays = [];
     let suppressScrollSelect = false;
     let currentView = 'tasks';
+    let currentCategory = 'all';  // 'all' | 'personal' | 'work'
+    let addCategory = 'personal'; // категория для новых задач
 
     let pickerMonth = new Date().getMonth();
     let pickerYearValue = new Date().getFullYear();
 
     let editingIndex = -1;
+    let editCategory = 'personal';
 
     const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь',
                     'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
@@ -1085,12 +1174,17 @@
       d.setHours(h, m, 0, 0);
       return d < new Date();
     }
+    function matchesCategory(task) {
+      return currentCategory === 'all' || task.category === currentCategory;
+    }
+    function catLabel(cat) {
+      return cat === 'work' ? 'Работа' : 'Личное';
+    }
 
     // ============ ПРИВЕТСТВЕННЫЙ ЭКРАН ============
     function sleep(ms) {
       return new Promise(r => setTimeout(r, ms));
     }
-
     function typeText(el, text, delay) {
       return new Promise(resolve => {
         el.textContent = '';
@@ -1111,17 +1205,14 @@
         tick();
       });
     }
-
     async function playWelcome() {
       const screen = document.getElementById('welcome-screen');
       const startBtn = document.getElementById('welcome-start');
       startBtn.classList.remove('visible');
-
       screen.classList.add('active');
       document.body.classList.add('welcome-open');
 
       const userName = (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name) || 'друг';
-
       const art = document.getElementById('welcome-art');
       const greeting = document.getElementById('welcome-greeting');
       const subtitle = document.getElementById('welcome-subtitle');
@@ -1131,13 +1222,10 @@
       await typeText(greeting, 'Привет, ' + userName + '!', 40);
       await sleep(150);
       await typeText(subtitle, 'Твой день начинается здесь', 22);
-
-      // Показываем кнопку только после завершения всей анимации
       await sleep(200);
       startBtn.classList.add('visible');
       try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
     }
-
     document.getElementById('welcome-start').addEventListener('click', () => {
       document.getElementById('welcome-screen').classList.remove('active');
       document.body.classList.remove('welcome-open');
@@ -1148,7 +1236,7 @@
     function saveState() {
       try {
         localStorage.setItem(UI_STATE_KEY, JSON.stringify({
-          selectedDate, detailDate, view: currentView
+          selectedDate, detailDate, view: currentView, currentCategory
         }));
       } catch (e) {}
     }
@@ -1166,8 +1254,56 @@
           if (!isNaN(d.getTime())) detailDate = s.detailDate;
         }
         if (s.view === 'tasks' || s.view === 'detail') currentView = s.view;
+        if (s.currentCategory === 'all' || s.currentCategory === 'personal' || s.currentCategory === 'work') {
+          currentCategory = s.currentCategory;
+        }
       } catch (e) {}
     }
+
+    // ============ ФИЛЬТР КАТЕГОРИЙ ============
+    function updateCategoryUI() {
+      document.querySelectorAll('#category-filter .seg-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.cat === currentCategory);
+      });
+      // Категория для новых задач следует за фильтром (если выбран не «Все»)
+      if (currentCategory !== 'all') {
+        addCategory = currentCategory;
+        updateCatToggleUI();
+      }
+    }
+    function updateCatToggleUI() {
+      const toggle = document.getElementById('cat-toggle');
+      toggle.dataset.cat = addCategory;
+      document.getElementById('cat-toggle-label').textContent = catLabel(addCategory);
+    }
+    function updateEditCatToggleUI() {
+      const toggle = document.getElementById('edit-cat-toggle');
+      toggle.dataset.cat = editCategory;
+      document.getElementById('edit-cat-label').textContent = catLabel(editCategory);
+    }
+    function setFilter(cat) {
+      if (currentCategory === cat) return;
+      currentCategory = cat;
+      saveState();
+      updateCategoryUI();
+      updateCalendarDots();
+      render();
+      if (currentView === 'detail') renderDetailView();
+      try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
+    }
+    document.querySelectorAll('#category-filter .seg-btn').forEach(btn => {
+      btn.addEventListener('click', () => setFilter(btn.dataset.cat));
+    });
+    document.getElementById('cat-toggle').addEventListener('click', () => {
+      addCategory = addCategory === 'personal' ? 'work' : 'personal';
+      updateCatToggleUI();
+      try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
+    });
+    document.getElementById('edit-cat-toggle').addEventListener('click', () => {
+      editCategory = editCategory === 'personal' ? 'work' : 'personal';
+      updateEditCatToggleUI();
+      try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
+    });
 
     // ============ КАЛЕНДАРЬ ============
     function buildCalendar() {
@@ -1212,7 +1348,9 @@
     function updateCalendarDots() {
       document.querySelectorAll('.day-cell').forEach(cell => {
         const iso = cell.dataset.date;
-        const hasPending = tasks.some(t => t.date === iso && !t.done);
+        const hasPending = tasks.some(t =>
+          t.date === iso && !t.done && matchesCategory(t)
+        );
         cell.classList.toggle('has-tasks', hasPending);
       });
     }
@@ -1403,6 +1541,10 @@
           updated.time = '';
           changed = true;
         }
+        if (updated.category !== 'personal' && updated.category !== 'work') {
+          updated.category = 'personal';
+          changed = true;
+        }
         return updated;
       });
       if (changed) saveTasks();
@@ -1421,7 +1563,6 @@
       let startX = 0, startY = 0;
       let moved = false;
       let timer = null;
-
       card.addEventListener('touchstart', (e) => {
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
@@ -1434,7 +1575,6 @@
           }
         }, 500);
       }, { passive: true });
-
       card.addEventListener('touchmove', (e) => {
         const dx = Math.abs(e.touches[0].clientX - startX);
         const dy = Math.abs(e.touches[0].clientY - startY);
@@ -1443,7 +1583,6 @@
           clearTimeout(timer);
         }
       }, { passive: true });
-
       card.addEventListener('touchend', () => clearTimeout(timer));
       card.addEventListener('touchcancel', () => clearTimeout(timer));
     }
@@ -1462,7 +1601,8 @@
 
       dateLabel.textContent = formatDateLabel(selectedDate);
 
-      const dayTasks = tasks.filter(t => t.date === selectedDate);
+      // Фильтр по дате + категории
+      const dayTasks = tasks.filter(t => t.date === selectedDate && matchesCategory(t));
       const doneCount = dayTasks.filter(t => t.done).length;
 
       if (dayTasks.length === 0) progress.textContent = '';
@@ -1477,7 +1617,14 @@
       });
 
       list.innerHTML = '';
-      emptyState.style.display = dayTasks.length === 0 ? 'block' : 'none';
+      if (dayTasks.length === 0) {
+        emptyState.style.display = 'block';
+        if (currentCategory === 'personal') emptyState.textContent = 'Нет личных задач на этот день';
+        else if (currentCategory === 'work') emptyState.textContent = 'Нет рабочих задач на этот день';
+        else emptyState.textContent = 'На этот день задач нет';
+      } else {
+        emptyState.style.display = 'none';
+      }
 
       sorted.forEach(task => {
         const globalIndex = tasks.indexOf(task);
@@ -1485,7 +1632,8 @@
         const wrapper = document.createElement('li');
         wrapper.className = 'task-item-wrapper';
         wrapper.innerHTML = `
-          <div class="task-item${task.done ? ' done' : ''}${overdue ? ' overdue' : ''}">
+          <div class="task-item${task.done ? ' done' : ''}${overdue ? ' overdue' : ''}"
+               data-cat="${task.category}">
             <div class="task-checkbox${task.done ? ' checked' : ''}"></div>
             <div class="task-content">
               <span class="task-text">${escapeHtml(task.text)}</span>
@@ -1508,7 +1656,6 @@
           e.stopPropagation();
           deleteTask(globalIndex);
         });
-
         attachLongPress(card, globalIndex);
         list.appendChild(wrapper);
       });
@@ -1531,7 +1678,7 @@
         ' <span class="chevron">▼</span>';
       document.getElementById('detail-date-input').value = detailDate;
 
-      const dayTasks = tasks.filter(t => t.date === detailDate);
+      const dayTasks = tasks.filter(t => t.date === detailDate && matchesCategory(t));
       const doneCount = dayTasks.filter(t => t.done).length;
       const total = dayTasks.length;
 
@@ -1556,6 +1703,9 @@
 
       if (dayTasks.length === 0) {
         emptyEl.style.display = 'block';
+        if (currentCategory === 'personal') emptyEl.textContent = 'Нет личных задач на этот день';
+        else if (currentCategory === 'work') emptyEl.textContent = 'Нет рабочих задач на этот день';
+        else emptyEl.textContent = 'На этот день задач нет';
       } else {
         emptyEl.style.display = 'none';
         const sorted = [...dayTasks].sort((a, b) => {
@@ -1567,6 +1717,7 @@
         sorted.forEach(task => {
           const li = document.createElement('li');
           li.className = 'day-task-item' + (task.done ? ' done' : '');
+          li.dataset.cat = task.category;
           li.innerHTML = `
             <div class="day-task-content">
               <span class="day-task-text">${escapeHtml(task.text)}</span>
@@ -1587,6 +1738,8 @@
       if (!task) return;
       document.getElementById('edit-text').value = task.text;
       document.getElementById('edit-time').value = task.time || '';
+      editCategory = task.category || 'personal';
+      updateEditCatToggleUI();
       updateEditTimeBtn();
       document.getElementById('edit-overlay').classList.add('active');
       document.body.classList.add('picker-open');
@@ -1602,6 +1755,7 @@
       if (!text) return;
       tasks[editingIndex].text = text;
       tasks[editingIndex].time = document.getElementById('edit-time').value || '';
+      tasks[editingIndex].category = editCategory;
       const wasDetail = currentView === 'detail';
       closeEditModal();
       render();
@@ -1638,10 +1792,22 @@
       const timeInput = document.getElementById('task-time');
       const text = input.value.trim();
       if (!text) return;
-      tasks.push({ text, done: false, date: selectedDate, time: timeInput.value || '' });
+      tasks.push({
+        text,
+        done: false,
+        date: selectedDate,
+        time: timeInput.value || '',
+        category: addCategory
+      });
       input.value = '';
       timeInput.value = '';
       updateTimeBtn();
+      // Если задача не попадает в текущий фильтр — переключаем фильтр на её категорию
+      if (currentCategory !== 'all' && currentCategory !== addCategory) {
+        currentCategory = addCategory;
+        saveState();
+        updateCategoryUI();
+      }
       render();
       saveTasks();
       try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
@@ -1727,6 +1893,9 @@
     buildCalendar();
     buildWheels();
     updateTimeBtn();
+    updateCategoryUI();
+    updateCatToggleUI();
+    updateEditCatToggleUI();
     if (currentView === 'detail') {
       document.getElementById('view-tasks').classList.remove('active');
       document.getElementById('view-detail').classList.add('active');
@@ -1737,7 +1906,6 @@
     loadTasks();
     renderDetailView();
 
-    // Приветствие при каждом открытии/перезапуске
     setTimeout(playWelcome, 150);
   </script>
 </body>
