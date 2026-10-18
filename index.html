@@ -53,7 +53,7 @@
     .day-cell {
       flex-shrink: 0;
       width: 52px;
-      padding: 6px 0;
+      padding: 6px 0 4px;
       border-radius: 14px;
       display: flex;
       flex-direction: column;
@@ -90,6 +90,17 @@
       transition: all 0.2s;
     }
 
+    .day-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--button-color);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .day-cell.has-tasks .day-dot { opacity: 1; }
+    .day-cell.selected .day-dot { opacity: 0; }
+
     .day-cell.selected .date-num {
       background: var(--button-color);
       color: var(--button-text-color);
@@ -116,13 +127,12 @@
       min-height: 16px;
     }
 
+    /* Форма добавления */
     .add-form {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 20px;
+      margin-bottom: 8px;
     }
     .add-form input {
-      flex: 1;
+      width: 100%;
       padding: 14px 16px;
       border-radius: 12px;
       border: none;
@@ -135,7 +145,24 @@
     .add-form input:focus {
       box-shadow: 0 0 0 2px var(--button-color);
     }
-    .add-form button {
+
+    .add-form-2 {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .add-form-2 input[type="time"] {
+      flex: 1;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: none;
+      background-color: var(--secondary-bg-color);
+      color: var(--text-color);
+      font-size: 16px;
+      font-family: inherit;
+      outline: none;
+    }
+    .add-form-2 button {
       width: 52px;
       height: 52px;
       border-radius: 12px;
@@ -146,12 +173,14 @@
       font-weight: 600;
       cursor: pointer;
       transition: transform 0.1s, opacity 0.2s;
+      flex-shrink: 0;
     }
-    .add-form button:active {
+    .add-form-2 button:active {
       transform: scale(0.95);
       opacity: 0.8;
     }
 
+    /* Список задач */
     #task-list {
       list-style: none;
       display: flex;
@@ -177,6 +206,11 @@
       text-decoration: line-through;
       color: var(--hint-color);
     }
+    .task-item.overdue {
+      border-left: 3px solid var(--danger-color);
+      padding-left: 13px;
+    }
+
     .task-checkbox {
       width: 24px;
       height: 24px;
@@ -200,12 +234,29 @@
       font-size: 14px;
       font-weight: bold;
     }
-    .task-text {
+
+    .task-content {
       flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .task-time {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--button-color);
+      letter-spacing: 0.3px;
+    }
+    .task-item.overdue .task-time {
+      color: var(--danger-color);
+    }
+    .task-text {
       font-size: 16px;
       line-height: 1.4;
       word-break: break-word;
     }
+
     .delete-btn {
       background: none;
       border: none;
@@ -220,6 +271,7 @@
       color: var(--danger-color);
       background-color: rgba(255, 59, 48, 0.1);
     }
+
     #empty-state {
       text-align: center;
       color: var(--hint-color);
@@ -230,13 +282,16 @@
   </style>
 </head>
 <body>
-  <h1>Logit</h1>
+  <h1 id="month-label">Загрузка...</h1>
   <div class="calendar-strip" id="calendar-strip"></div>
   <p id="date-label">Загрузка...</p>
   <p id="progress"></p>
 
   <div class="add-form">
     <input type="text" id="task-input" placeholder="Что нужно сделать?" maxlength="100">
+  </div>
+  <div class="add-form-2">
+    <input type="time" id="task-time">
     <button id="add-btn">+</button>
   </div>
 
@@ -252,6 +307,10 @@
     const STORAGE_KEY = 'my_tasks_v1';
     const FALLBACK_KEY = 'my_tasks_local_v1';
 
+    let selectedDate = todayISO();
+    let calendarDays = [];
+    let suppressScrollSelect = false;
+
     function todayISO() { return dateToISO(new Date()); }
     function dateToISO(d) {
       const y = d.getFullYear();
@@ -263,11 +322,6 @@
       const [y, m, d] = iso.split('-').map(Number);
       return new Date(y, m - 1, d);
     }
-
-    let selectedDate = todayISO();
-    let calendarDays = [];
-    let suppressScrollSelect = false;
-
     function formatDateLabel(iso) {
       const d = isoToDate(iso);
       const today = new Date(); today.setHours(0,0,0,0);
@@ -283,6 +337,21 @@
         prefix = prefix.charAt(0).toUpperCase() + prefix.slice(1);
       }
       return `${prefix}, ${d.getDate()} ${months[d.getMonth()]}`;
+    }
+
+    function formatMonthYear(iso) {
+      const d = isoToDate(iso);
+      const months = ['Январь','Февраль','Март','Апрель','Май','Июнь',
+                      'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+      return months[d.getMonth()] + ' ' + d.getFullYear();
+    }
+
+    function isOverdue(task) {
+      if (task.done || !task.time) return false;
+      const d = isoToDate(task.date);
+      const [h, m] = task.time.split(':').map(Number);
+      d.setHours(h, m, 0, 0);
+      return d < new Date();
     }
 
     // --- Календарь ---
@@ -315,6 +384,7 @@
         btn.innerHTML = `
           <span class="weekday">${weekdays[d.getDay()]}</span>
           <span class="date-num">${d.getDate()}</span>
+          <span class="day-dot"></span>
         `;
         btn.addEventListener('click', () => selectDate(iso, true));
         strip.appendChild(btn);
@@ -322,6 +392,15 @@
 
       requestAnimationFrame(() => scrollToSelected(false));
       attachScrollHandler();
+      updateCalendarDots();
+    }
+
+    function updateCalendarDots() {
+      document.querySelectorAll('.day-cell').forEach(cell => {
+        const iso = cell.dataset.date;
+        const hasPending = tasks.some(t => t.date === iso && !t.done);
+        cell.classList.toggle('has-tasks', hasPending);
+      });
     }
 
     function attachScrollHandler() {
@@ -402,8 +481,13 @@
     function migrateTasks() {
       let changed = false;
       tasks = tasks.map(t => {
-        if (!t.date) { changed = true; return { ...t, date: todayISO() }; }
-        return t;
+        let updated = { ...t };
+        if (!updated.date) { updated.date = todayISO(); changed = true; }
+        if (updated.time === undefined || updated.time === null) {
+          updated.time = '';
+          changed = true;
+        }
+        return updated;
       });
       if (changed) saveTasks();
     }
@@ -423,8 +507,10 @@
       }
     }
 
-    // --- Отрисовка задач ---
+    // --- Отрисовка ---
     function render() {
+      document.getElementById('month-label').textContent = formatMonthYear(selectedDate);
+
       const list = document.getElementById('task-list');
       const progress = document.getElementById('progress');
       const emptyState = document.getElementById('empty-state');
@@ -443,16 +529,27 @@
         progress.textContent = `Выполнено ${doneCount} из ${dayTasks.length}`;
       }
 
+      const sorted = [...dayTasks].sort((a, b) => {
+        if (a.time && b.time) return a.time.localeCompare(b.time);
+        if (a.time) return -1;
+        if (b.time) return 1;
+        return 0;
+      });
+
       list.innerHTML = '';
       emptyState.style.display = dayTasks.length === 0 ? 'block' : 'none';
 
-      dayTasks.forEach((task) => {
+      sorted.forEach(task => {
         const globalIndex = tasks.indexOf(task);
+        const overdue = isOverdue(task);
         const li = document.createElement('li');
-        li.className = 'task-item' + (task.done ? ' done' : '');
+        li.className = 'task-item' + (task.done ? ' done' : '') + (overdue ? ' overdue' : '');
         li.innerHTML = `
           <div class="task-checkbox ${task.done ? 'checked' : ''}"></div>
-          <span class="task-text">${escapeHtml(task.text)}</span>
+          <div class="task-content">
+            ${task.time ? `<span class="task-time">${escapeHtml(task.time)}</span>` : ''}
+            <span class="task-text">${escapeHtml(task.text)}</span>
+          </div>
           <button class="delete-btn">✕</button>
         `;
         li.querySelector('.task-checkbox').addEventListener('click', () => toggleTask(globalIndex));
@@ -462,15 +559,25 @@
         });
         list.appendChild(li);
       });
+
+      updateCalendarDots();
     }
 
     // --- Действия ---
     function addTask() {
       const input = document.getElementById('task-input');
+      const timeInput = document.getElementById('task-time');
       const text = input.value.trim();
       if (!text) return;
-      tasks.push({ text, done: false, date: selectedDate });
+
+      tasks.push({
+        text,
+        done: false,
+        date: selectedDate,
+        time: timeInput.value || ''
+      });
       input.value = '';
+      timeInput.value = '';
       render();
       saveTasks();
       try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
