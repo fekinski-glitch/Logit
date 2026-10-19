@@ -22,6 +22,15 @@
       --glass-shadow: 0 4px 16px rgba(0,0,0,0.06);
       --glass-bg-dark: rgba(30,30,30,0.65);
       --glass-border-dark: rgba(255,255,255,0.08);
+      --tab-bar-bg: rgba(255,255,255,0.78);
+      --tab-bar-border: rgba(255,255,255,0.5);
+      --tab-bar-shadow: 0 8px 30px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.06);
+      --tab-item-active-bg: var(--button-color);
+    }
+    body[data-theme="dark"] {
+      --tab-bar-bg: rgba(30,30,30,0.78);
+      --tab-bar-border: rgba(255,255,255,0.08);
+      --tab-bar-shadow: 0 8px 30px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -49,7 +58,7 @@
 
     .view {
       display: none;
-      padding: 16px 16px 100px;
+      padding: 16px 16px 120px;
       min-height: 100vh;
       position: relative;
     }
@@ -358,7 +367,7 @@
     }
     .project-new-btn:active { opacity: 0.6; }
 
-    /* === iOS bubble popover для создания проекта === */
+    /* iOS bubble popover */
     .project-popover-overlay {
       position: fixed;
       inset: 0;
@@ -1126,61 +1135,80 @@
       font-variant-numeric: tabular-nums;
     }
 
+    /* === FLOATING BUBBLE TAB BAR === */
     .tab-bar {
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: calc(50px + env(safe-area-inset-bottom));
-      padding-bottom: env(safe-area-inset-bottom);
-      background: var(--bg-color);
-      border-top: 0.5px solid var(--separator);
+      bottom: calc(14px + env(safe-area-inset-bottom));
+      left: 16px;
+      right: 16px;
+      margin: 0 auto;
+      max-width: 420px;
+      height: 62px;
+      padding: 6px;
+      background: var(--tab-bar-bg);
+      -webkit-backdrop-filter: blur(28px) saturate(200%);
+      backdrop-filter: blur(28px) saturate(200%);
+      border: 0.5px solid var(--tab-bar-border);
+      border-radius: 999px;
       display: flex;
+      gap: 4px;
       z-index: 100;
-      transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1), visibility 0.25s;
+      box-shadow: var(--tab-bar-shadow);
+      transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1), opacity 0.25s ease, visibility 0.25s;
       will-change: transform;
     }
-    .tab-bar.kb-hidden { transform: translateY(100%); visibility: hidden; }
-    @supports ((-webkit-backdrop-filter: blur(20px)) or (backdrop-filter: blur(20px))) {
-      body[data-theme="light"] .tab-bar {
-        background: rgba(255, 255, 255, 0.72);
-        -webkit-backdrop-filter: saturate(180%) blur(24px);
-        backdrop-filter: saturate(180%) blur(24px);
-      }
-      body[data-theme="dark"] .tab-bar {
-        background: rgba(28, 28, 30, 0.72);
-        -webkit-backdrop-filter: saturate(180%) blur(24px);
-        backdrop-filter: saturate(180%) blur(24px);
-      }
+    .tab-bar.kb-hidden {
+      transform: translateY(calc(100% + 20px));
+      opacity: 0;
+      visibility: hidden;
     }
     .tab-item {
       flex: 1;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
       justify-content: center;
-      gap: 3px;
+      gap: 7px;
       background: none;
       border: none;
       color: var(--hint-color);
       font-family: inherit;
-      font-size: 10px;
-      font-weight: 500;
-      letter-spacing: -0.1px;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
-      padding: 0;
-      transition: color 0.15s, opacity 0.15s;
+      padding: 0 10px;
+      border-radius: 999px;
+      transition: background-color 0.25s ease, color 0.2s ease, transform 0.1s;
+      height: 100%;
+      position: relative;
     }
-    .tab-item.active { color: var(--button-color); }
+    .tab-item.active {
+      background: var(--tab-item-active-bg);
+      color: var(--button-text-color);
+    }
+    .tab-item:not(.active):active {
+      background: var(--secondary-bg-color);
+    }
+    .tab-item svg {
+      width: 22px;
+      height: 22px;
+      stroke-width: 2;
+      flex-shrink: 0;
+      transition: stroke-width 0.2s;
+    }
     .tab-item.active svg { stroke-width: 2.2; }
-    .tab-item:active { opacity: 0.6; }
-    .tab-item svg { width: 26px; height: 26px; }
     .tab-item.tab-bounce svg { animation: tabBounce 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
     @keyframes tabBounce {
       0% { transform: translateY(0) scale(1); }
       40% { transform: translateY(-4px) scale(1.1); }
       100% { transform: translateY(0) scale(1); }
+    }
+    .tab-item span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .wheel-container {
@@ -1261,7 +1289,7 @@
       position: fixed;
       left: 16px;
       right: 16px;
-      bottom: calc(50px + env(safe-area-inset-bottom) + 16px);
+      bottom: calc(94px + env(safe-area-inset-bottom));
       max-width: 468px;
       margin: 0 auto;
       background: rgba(28, 28, 30, 0.92);
@@ -1550,7 +1578,7 @@
 
   <nav class="tab-bar" id="tab-bar">
     <button class="tab-item active" data-view="tasks">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="3 6 5 8 9 4"/>
         <line x1="13" y1="6" x2="21" y2="6"/>
         <polyline points="3 13 5 15 9 11"/>
@@ -1561,11 +1589,11 @@
       <span>Задачи</span>
     </button>
     <button class="tab-item" data-view="detail">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="9"/>
         <path d="M12 3 v9 h9"/>
       </svg>
-      <span>Подробнее</span>
+      <span>Детали</span>
     </button>
   </nav>
 
@@ -2494,7 +2522,6 @@
           updateEditProjectToggleUI();
           closeProjectSheet();
         } else if (projectSheetMode === 'filter') {
-          // Перерисовать шит фильтра, чтобы новый проект появился в списке
           renderProjectSheet();
         }
         try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
@@ -3353,7 +3380,6 @@
       if (e.target.id === 'cat-filter-overlay') closeProjectSheet();
     });
 
-    // Popover
     const projectPopoverOverlay = document.getElementById('project-popover-overlay');
     if (projectPopoverOverlay) {
       projectPopoverOverlay.addEventListener('click', (e) => {
