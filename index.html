@@ -1555,6 +1555,7 @@
     const TL_RANGE_MIN = (TL_END_H - TL_START_H) * 60;
     const UNDO_DURATION = 4000;
     const UI_STATE_KEY = 'logit_ui_state';
+    const CLOUD_TIMEOUT_MS = 3000;
 
     function dateToISO(d) {
       const y = d.getFullYear();
@@ -1566,6 +1567,19 @@
     function isoToDate(iso) {
       const [y, m, d] = iso.split('-').map(Number);
       return new Date(y, m - 1, d);
+    }
+
+    function withTimeout(promise, ms) {
+      return new Promise((resolve, reject) => {
+        let done = false;
+        const timer = setTimeout(() => {
+          if (!done) { done = true; reject(new Error('timeout')); }
+        }, ms);
+        promise.then(
+          (v) => { if (!done) { done = true; clearTimeout(timer); resolve(v); } },
+          (e) => { if (!done) { done = true; clearTimeout(timer); reject(e); } }
+        );
+      });
     }
 
     class TaskStore {
@@ -1600,28 +1614,28 @@
       async _cloudGet(key) {
         if (!this._hasCloud()) return null;
         try {
-          const v = await tg.CloudStorage.getItem(key);
+          const v = await withTimeout(tg.CloudStorage.getItem(key), CLOUD_TIMEOUT_MS);
           return v || null;
         } catch (e) {
-          console.error('cloudGet failed:', e);
+          console.warn('cloudGet failed:', key, e && e.message);
           return null;
         }
       }
 
-      async _cloudSet(key, value) {
-        if (!this._hasCloud()) return false;
-        try {
-          await tg.CloudStorage.setItem(key, value);
-          return true;
-        } catch (e) {
-          console.error('cloudSet failed:', e);
-          return false;
-        }
+      _cloudSet(key, value) {
+        if (!this._hasCloud()) return;
+        withTimeout(tg.CloudStorage.setItem(key, value), CLOUD_TIMEOUT_MS)
+          .catch((e) => console.warn('cloudSet failed:', key, e && e.message));
       }
 
       init() {
         if (!this._initPromise) {
-          this._initPromise = this._load();
+          this._initPromise = this._load().catch((e) => {
+            console.error('init failed:', e);
+            this.tasks = [];
+            this.projects = this._defaults();
+            this.ready = true;
+          });
         }
         return this._initPromise;
       }
@@ -1629,7 +1643,6 @@
       async _load() {
         let loaded = false;
 
-        // 1. localStorage (sync, fast)
         try {
           const saved = localStorage.getItem(this.FALLBACK_KEY);
           if (saved) {
@@ -1641,10 +1654,9 @@
             }
           }
         } catch (e) {
-          console.error('local v3 load failed:', e);
+          console.warn('local v3 load failed:', e && e.message);
         }
 
-        // 2. CloudStorage (async, if local empty)
         if (!loaded) {
           try {
             const saved = await this._cloudGet(this.STORAGE_KEY);
@@ -1657,11 +1669,10 @@
               }
             }
           } catch (e) {
-            console.error('cloud v3 load failed:', e);
+            console.warn('cloud v3 load failed:', e && e.message);
           }
         }
 
-        // 3. Migration from v2 (local)
         if (!loaded) {
           try {
             const saved = localStorage.getItem(this.OLD_FALLBACK_KEY);
@@ -1676,7 +1687,6 @@
           } catch (e) {}
         }
 
-        // 4. Migration from v2 (cloud)
         if (!loaded) {
           try {
             const saved = await this._cloudGet(this.OLD_STORAGE_KEY);
@@ -1691,7 +1701,6 @@
           } catch (e) {}
         }
 
-        // 5. Migration from v1 (old format - array of tasks)
         if (!loaded) {
           let oldTasks = null;
           try {
@@ -1715,51 +1724,49 @@
           loaded = true;
         }
 
-        // 6. Migrate fields
         this._migrate();
-
-        // 7. Always save to ensure consistency
-        await this.save();
-
+        this.save();
         this.ready = true;
       }
 
       _migrate() {
-        if (!this.projects || this.projects.length === 0) {
-          this.projects = this._defaults();
+        try {
+          if (!this.projects || this.projects.length === 0) {
+            this.projects = this._defaults();
+          }
+          this.tasks = this.tasks.map(t => {
+            const updated = { ...t };
+            if (!updated.id) updated.id = this._id();
+            if (!updated.date) updated.date = todayISO();
+            if (updated.time === undefined || updated.time === null) updated.time = '';
+            if (!updated.projectId) {
+              if (updated.category === 'work') updated.projectId = 'work';
+              else updated.projectId = 'personal';
+              if (updated.category !== undefined) delete updated.category;
+            }
+            if (!this.projects.find(p => p.id === updated.projectId)) {
+              updated.projectId = this.projects[0].id;
+            }
+            return updated;
+          });
+        } catch (e) {
+          console.error('migrate failed:', e);
         }
-        this.tasks = this.tasks.map(t => {
-          const updated = { ...t };
-          if (!updated.id) updated.id = this._id();
-          if (!updated.date) updated.date = todayISO();
-          if (updated.time === undefined || updated.time === null) updated.time = '';
-          if (!updated.projectId) {
-            if (updated.category === 'work') updated.projectId = 'work';
-            else updated.projectId = 'personal';
-            if (updated.category !== undefined) delete updated.category;
-          }
-          if (!this.projects.find(p => p.id === updated.projectId)) {
-            updated.projectId = this.projects[0].id;
-          }
-          return updated;
-        });
       }
 
-      async save() {
-        const data = { tasks: this.tasks, projects: this.projects };
-        let json;
+      save() {
         try {
-          json = JSON.stringify(data);
+          const data = { tasks: this.tasks, projects: this.projects };
+          const json = JSON.stringify(data);
+          try {
+            localStorage.setItem(this.FALLBACK_KEY, json);
+          } catch (e) {
+            console.error('localStorage save failed:', e);
+          }
+          this._cloudSet(this.STORAGE_KEY, json);
         } catch (e) {
-          console.error('stringify failed:', e);
-          return;
+          console.error('save failed:', e);
         }
-        try {
-          localStorage.setItem(this.FALLBACK_KEY, json);
-        } catch (e) {
-          console.error('localStorage save failed:', e);
-        }
-        await this._cloudSet(this.STORAGE_KEY, json);
       }
 
       getProject(id) {
@@ -1948,120 +1955,130 @@
 
     function runParticleAnimation(canvas) {
       return new Promise((resolve) => {
-        const ctx = canvas.getContext('2d');
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        const w = window.innerWidth;
-        const h = window.innerHeight;
-        canvas.width = w * dpr;
-        canvas.height = h * dpr;
-        canvas.style.width = w + 'px';
-        canvas.style.height = h + 'px';
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        try {
+          const ctx = canvas.getContext('2d');
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          const w = window.innerWidth;
+          const h = window.innerHeight;
+          canvas.width = w * dpr;
+          canvas.height = h * dpr;
+          canvas.style.width = w + 'px';
+          canvas.style.height = h + 'px';
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        const accent = getComputedStyle(document.documentElement).getPropertyValue('--button-color').trim() || '#2481cc';
+          const accent = getComputedStyle(document.documentElement).getPropertyValue('--button-color').trim() || '#2481cc';
 
-        const off = document.createElement('canvas');
-        off.width = w;
-        off.height = h;
-        const octx = off.getContext('2d');
-        const fontSize = Math.min(w * 0.16, 64);
-        octx.fillStyle = '#fff';
-        octx.textAlign = 'center';
-        octx.textBaseline = 'middle';
-        octx.font = `700 ${fontSize}px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif`;
+          const off = document.createElement('canvas');
+          off.width = w;
+          off.height = h;
+          const octx = off.getContext('2d');
+          const fontSize = Math.min(w * 0.16, 64);
+          octx.fillStyle = '#fff';
+          octx.textAlign = 'center';
+          octx.textBaseline = 'middle';
+          octx.font = `700 ${fontSize}px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif`;
 
-        const word = 'LOGIT';
-        const letterSpacing = fontSize * 0.15;
-        const letterWidths = [];
-        let totalW = 0;
-        for (let i = 0; i < word.length; i++) {
-          const lw = octx.measureText(word[i]).width;
-          letterWidths.push(lw);
-          totalW += lw + (i < word.length - 1 ? letterSpacing : 0);
-        }
-        let cx = w / 2 - totalW / 2;
-        const cy = h * 0.28;
-        for (let i = 0; i < word.length; i++) {
-          octx.fillText(word[i], cx + letterWidths[i] / 2, cy);
-          cx += letterWidths[i] + letterSpacing;
-        }
-
-        const data = octx.getImageData(0, 0, w, h).data;
-        const step = 3;
-        const targets = [];
-        for (let y = 0; y < h; y += step) {
-          for (let x = 0; x < w; x += step) {
-            if (data[(y * w + x) * 4 + 3] > 128) targets.push({ x, y });
+          const word = 'LOGIT';
+          const letterSpacing = fontSize * 0.15;
+          const letterWidths = [];
+          let totalW = 0;
+          for (let i = 0; i < word.length; i++) {
+            const lw = octx.measureText(word[i]).width;
+            letterWidths.push(lw);
+            totalW += lw + (i < word.length - 1 ? letterSpacing : 0);
           }
-        }
-
-        let sampled = targets;
-        const maxParticles = 2200;
-        if (targets.length > maxParticles) {
-          sampled = [];
-          const stride = targets.length / maxParticles;
-          for (let i = 0; i < maxParticles; i++) sampled.push(targets[Math.floor(i * stride)]);
-        }
-
-        const assembleDuration = 1400;
-        const maxDelay = 250;
-        const moveWindow = assembleDuration - maxDelay;
-
-        const particles = sampled.map(t => {
-          const angle = Math.random() * Math.PI * 2;
-          const radius = Math.max(w, h) * (0.5 + Math.random() * 0.6);
-          return {
-            startX: w / 2 + Math.cos(angle) * radius,
-            startY: h / 2 + Math.sin(angle) * radius,
-            tx: t.x,
-            ty: t.y,
-            x: 0,
-            y: 0,
-            size: 1.2 + Math.random() * 1.3,
-            delay: Math.random() * maxDelay
-          };
-        });
-
-        const phaseStart = performance.now();
-        try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
-
-        function loop(now) {
-          const elapsed = now - phaseStart;
-          ctx.clearRect(0, 0, w, h);
-          ctx.fillStyle = accent;
-          let allSettled = true;
-          for (let i = 0; i < particles.length; i++) {
-            const p = particles[i];
-            const localT = Math.min(Math.max((elapsed - p.delay) / moveWindow, 0), 1);
-            const ease = 1 - Math.pow(1 - localT, 3);
-            p.x = p.startX + (p.tx - p.startX) * ease;
-            p.y = p.startY + (p.ty - p.startY) * ease;
-            if (localT < 1) allSettled = false;
-            ctx.globalAlpha = 0.85;
-            ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+          let cx = w / 2 - totalW / 2;
+          const cy = h * 0.28;
+          for (let i = 0; i < word.length; i++) {
+            octx.fillText(word[i], cx + letterWidths[i] / 2, cy);
+            cx += letterWidths[i] + letterSpacing;
           }
-          ctx.globalAlpha = 1;
-          if (allSettled) {
-            resolve({ w, h, fontSize, cy });
-            return;
+
+          const data = octx.getImageData(0, 0, w, h).data;
+          const step = 3;
+          const targets = [];
+          for (let y = 0; y < h; y += step) {
+            for (let x = 0; x < w; x += step) {
+              if (data[(y * w + x) * 4 + 3] > 128) targets.push({ x, y });
+            }
+          }
+
+          let sampled = targets;
+          const maxParticles = 2200;
+          if (targets.length > maxParticles) {
+            sampled = [];
+            const stride = targets.length / maxParticles;
+            for (let i = 0; i < maxParticles; i++) sampled.push(targets[Math.floor(i * stride)]);
+          }
+
+          const assembleDuration = 1400;
+          const maxDelay = 250;
+          const moveWindow = assembleDuration - maxDelay;
+
+          const particles = sampled.map(t => {
+            const angle = Math.random() * Math.PI * 2;
+            const radius = Math.max(w, h) * (0.5 + Math.random() * 0.6);
+            return {
+              startX: w / 2 + Math.cos(angle) * radius,
+              startY: h / 2 + Math.sin(angle) * radius,
+              tx: t.x,
+              ty: t.y,
+              x: 0,
+              y: 0,
+              size: 1.2 + Math.random() * 1.3,
+              delay: Math.random() * maxDelay
+            };
+          });
+
+          const phaseStart = performance.now();
+          try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
+
+          function loop(now) {
+            const elapsed = now - phaseStart;
+            ctx.clearRect(0, 0, w, h);
+            ctx.fillStyle = accent;
+            let allSettled = true;
+            for (let i = 0; i < particles.length; i++) {
+              const p = particles[i];
+              const localT = Math.min(Math.max((elapsed - p.delay) / moveWindow, 0), 1);
+              const ease = 1 - Math.pow(1 - localT, 3);
+              p.x = p.startX + (p.tx - p.startX) * ease;
+              p.y = p.startY + (p.ty - p.startY) * ease;
+              if (localT < 1) allSettled = false;
+              ctx.globalAlpha = 0.85;
+              ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+            }
+            ctx.globalAlpha = 1;
+            if (allSettled) {
+              resolve({ w, h, fontSize, cy });
+              return;
+            }
+            requestAnimationFrame(loop);
           }
           requestAnimationFrame(loop);
+        } catch (e) {
+          console.error('particle anim failed:', e);
+          resolve({ w: window.innerWidth, h: window.innerHeight, fontSize: 48, cy: window.innerHeight * 0.28 });
         }
-        requestAnimationFrame(loop);
       });
     }
 
     function showCheckmark(layout) {
-      const check = document.getElementById('welcome-check');
-      const { w, fontSize, cy } = layout;
-      const x = w / 2;
-      const y = cy + fontSize * 0.85;
-      check.style.left = x + 'px';
-      check.style.top = y + 'px';
-      check.classList.remove('pop');
-      void check.offsetWidth;
-      check.classList.add('pop');
-      try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
+      try {
+        const check = document.getElementById('welcome-check');
+        if (!check) return;
+        const { w, fontSize, cy } = layout;
+        const x = w / 2;
+        const y = cy + fontSize * 0.85;
+        check.style.left = x + 'px';
+        check.style.top = y + 'px';
+        check.classList.remove('pop');
+        void check.offsetWidth;
+        check.classList.add('pop');
+        try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
+      } catch (e) {
+        console.error('checkmark failed:', e);
+      }
     }
 
     async function playWelcome() {
@@ -2072,41 +2089,49 @@
       const greeting = document.getElementById('welcome-greeting');
       const subtitle = document.getElementById('welcome-subtitle');
 
-      startBtn.classList.remove('visible');
-      greeting.textContent = '';
-      subtitle.textContent = '';
-      greeting.classList.remove('shown');
-      subtitle.classList.remove('shown');
-      check.classList.remove('pop');
-      check.style.left = '';
-      check.style.top = '';
-      screen.classList.remove('closing');
-      screen.style.display = 'block';
+      try {
+        startBtn.classList.remove('visible');
+        greeting.textContent = '';
+        subtitle.textContent = '';
+        greeting.classList.remove('shown');
+        subtitle.classList.remove('shown');
+        check.classList.remove('pop');
+        check.style.left = '';
+        check.style.top = '';
+        screen.classList.remove('closing');
+        screen.style.display = 'block';
 
-      document.body.classList.add('welcome-open');
-      document.body.classList.remove('booting');
+        document.body.classList.add('welcome-open');
+        document.body.classList.remove('booting');
 
-      const userName = (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name) || 'друг';
+        const userName = (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name) || 'друг';
 
-      await sleep(80);
-      const layout = await runParticleAnimation(canvas);
-      await sleep(60);
+        await sleep(80);
+        const layout = await runParticleAnimation(canvas);
+        await sleep(60);
 
-      showCheckmark(layout);
+        showCheckmark(layout);
 
-      await sleep(280);
+        await sleep(280);
 
-      greeting.textContent = getTimeGreeting() + ', ' + userName + '!';
-      greeting.classList.add('shown');
-      try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
-      await sleep(400);
+        greeting.textContent = getTimeGreeting() + ', ' + userName + '!';
+        greeting.classList.add('shown');
+        try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
+        await sleep(400);
 
-      subtitle.textContent = 'Твой день начинается здесь';
-      subtitle.classList.add('shown');
-      await sleep(350);
+        subtitle.textContent = 'Твой день начинается здесь';
+        subtitle.classList.add('shown');
+        await sleep(350);
 
-      startBtn.classList.add('visible');
-      try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
+        startBtn.classList.add('visible');
+        try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
+      } catch (e) {
+        console.error('playWelcome failed:', e);
+        document.body.classList.remove('booting');
+        document.body.classList.remove('welcome-open');
+        if (screen) screen.style.display = 'none';
+        try { startBtn.classList.add('visible'); } catch (e2) {}
+      }
     }
 
     document.getElementById('welcome-start').addEventListener('click', () => {
@@ -2167,93 +2192,105 @@
       label.textContent = p.name;
     }
     function updateProjectUI() {
-      updateProjectPillUI();
-      if (currentFilter !== 'all') addProjectId = currentFilter;
-      updateProjectToggleUI();
+      try {
+        updateProjectPillUI();
+        if (currentFilter !== 'all') addProjectId = currentFilter;
+        updateProjectToggleUI();
+      } catch (e) {
+        console.error('updateProjectUI failed:', e);
+      }
     }
 
     function renderProjectSheet() {
-      const list = document.getElementById('cat-filter-list');
-      const title = document.getElementById('cat-filter-title');
-      if (!list) return;
-      list.innerHTML = '';
+      try {
+        const list = document.getElementById('cat-filter-list');
+        const title = document.getElementById('cat-filter-title');
+        if (!list) return;
+        list.innerHTML = '';
 
-      if (projectSheetMode === 'filter') {
-        title.textContent = 'Фильтр';
-        const allBtn = document.createElement('button');
-        allBtn.className = 'cat-filter-item' + (currentFilter === 'all' ? ' active' : '');
-        allBtn.innerHTML = `
-          <span class="cat-filter-dot" style="background: var(--hint-color);"></span>
-          <span class="cat-filter-label">Все задачи</span>
-          <svg class="cat-filter-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 10 18 20 6"/></svg>
-        `;
-        allBtn.addEventListener('click', () => selectProjectFromSheet('all'));
-        list.appendChild(allBtn);
-      } else {
-        title.textContent = 'Проект';
-      }
-
-      const canDelete = store.projects.length > 1;
-
-      store.projects.forEach(p => {
-        const isActive =
-          (projectSheetMode === 'filter' && currentFilter === p.id) ||
-          (projectSheetMode === 'add' && addProjectId === p.id) ||
-          (projectSheetMode === 'edit' && editProjectId === p.id);
-
-        const row = document.createElement('div');
-        row.className = 'cat-filter-row' + (isActive ? ' active' : '');
-
-        const mainBtn = document.createElement('button');
-        mainBtn.className = 'cat-filter-main';
-        mainBtn.innerHTML = `
-          <span class="cat-filter-dot" style="background: ${p.color};"></span>
-          <span class="cat-filter-label">${escapeHtml(p.name)}</span>
-          <svg class="cat-filter-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 10 18 20 6"/></svg>
-        `;
-        mainBtn.addEventListener('click', () => selectProjectFromSheet(p.id));
-        row.appendChild(mainBtn);
-
-        if (canDelete) {
-          const deleteBtn = document.createElement('button');
-          deleteBtn.className = 'cat-filter-delete';
-          deleteBtn.setAttribute('aria-label', 'Удалить проект');
-          deleteBtn.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="3 6 5 6 21 6"/>
-              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-              <path d="M10 11v6"/>
-              <path d="M14 11v6"/>
-              <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
-            </svg>
+        if (projectSheetMode === 'filter') {
+          title.textContent = 'Фильтр';
+          const allBtn = document.createElement('button');
+          allBtn.className = 'cat-filter-item' + (currentFilter === 'all' ? ' active' : '');
+          allBtn.innerHTML = `
+            <span class="cat-filter-dot" style="background: var(--hint-color);"></span>
+            <span class="cat-filter-label">Все задачи</span>
+            <svg class="cat-filter-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 10 18 20 6"/></svg>
           `;
-          deleteBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            handleDeleteProject(p.id);
-          });
-          row.appendChild(deleteBtn);
+          allBtn.addEventListener('click', () => selectProjectFromSheet('all'));
+          list.appendChild(allBtn);
+        } else {
+          title.textContent = 'Проект';
         }
 
-        list.appendChild(row);
-      });
+        const canDelete = store.projects.length > 1;
+
+        store.projects.forEach(p => {
+          const isActive =
+            (projectSheetMode === 'filter' && currentFilter === p.id) ||
+            (projectSheetMode === 'add' && addProjectId === p.id) ||
+            (projectSheetMode === 'edit' && editProjectId === p.id);
+
+          const row = document.createElement('div');
+          row.className = 'cat-filter-row' + (isActive ? ' active' : '');
+
+          const mainBtn = document.createElement('button');
+          mainBtn.className = 'cat-filter-main';
+          mainBtn.innerHTML = `
+            <span class="cat-filter-dot" style="background: ${p.color};"></span>
+            <span class="cat-filter-label">${escapeHtml(p.name)}</span>
+            <svg class="cat-filter-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 10 18 20 6"/></svg>
+          `;
+          mainBtn.addEventListener('click', () => selectProjectFromSheet(p.id));
+          row.appendChild(mainBtn);
+
+          if (canDelete) {
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'cat-filter-delete';
+            deleteBtn.setAttribute('aria-label', 'Удалить проект');
+            deleteBtn.innerHTML = `
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                <path d="M10 11v6"/>
+                <path d="M14 11v6"/>
+                <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+              </svg>
+            `;
+            deleteBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              handleDeleteProject(p.id);
+            });
+            row.appendChild(deleteBtn);
+          }
+
+          list.appendChild(row);
+        });
+      } catch (e) {
+        console.error('renderProjectSheet failed:', e);
+      }
     }
 
     function renderPalette() {
-      const palette = document.getElementById('project-palette');
-      if (!palette) return;
-      palette.innerHTML = '';
-      PALETTE.forEach(color => {
-        const dot = document.createElement('button');
-        dot.type = 'button';
-        dot.className = 'project-color-dot' + (pendingProjectColor === color ? ' selected' : '');
-        dot.style.background = color;
-        dot.addEventListener('click', () => {
-          pendingProjectColor = color;
-          renderPalette();
-          try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
+      try {
+        const palette = document.getElementById('project-palette');
+        if (!palette) return;
+        palette.innerHTML = '';
+        PALETTE.forEach(color => {
+          const dot = document.createElement('button');
+          dot.type = 'button';
+          dot.className = 'project-color-dot' + (pendingProjectColor === color ? ' selected' : '');
+          dot.style.background = color;
+          dot.addEventListener('click', () => {
+            pendingProjectColor = color;
+            renderPalette();
+            try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
+          });
+          palette.appendChild(dot);
         });
-        palette.appendChild(dot);
-      });
+      } catch (e) {
+        console.error('renderPalette failed:', e);
+      }
     }
 
     function openProjectSheet(mode) {
@@ -2295,170 +2332,201 @@
       closeProjectSheet();
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
-    async function createNewProject() {
-      const input = document.getElementById('project-new-input');
-      if (!input) return;
-      const name = input.value.trim();
-      if (!name) { try { input.focus(); } catch (e) {} return; }
-      const newProject = store.addProject(name, pendingProjectColor);
-      await store.save();
+    function createNewProject() {
+      try {
+        const input = document.getElementById('project-new-input');
+        if (!input) return;
+        const name = input.value.trim();
+        if (!name) { try { input.focus(); } catch (e) {} return; }
+        const newProject = store.addProject(name, pendingProjectColor);
+        store.save();
 
-      input.value = '';
-      pendingProjectColor = PALETTE[0];
-      const form = document.getElementById('project-new-form');
-      const btn = document.getElementById('project-new-btn');
-      if (form) form.classList.remove('open');
-      if (btn) btn.style.display = '';
-      renderProjectSheet();
+        input.value = '';
+        pendingProjectColor = PALETTE[0];
+        const form = document.getElementById('project-new-form');
+        const btn = document.getElementById('project-new-btn');
+        if (form) form.classList.remove('open');
+        if (btn) btn.style.display = '';
+        renderProjectSheet();
 
-      if (projectSheetMode === 'add') {
-        addProjectId = newProject.id;
-        updateProjectToggleUI();
-        closeProjectSheet();
-      } else if (projectSheetMode === 'edit') {
-        editProjectId = newProject.id;
-        updateEditProjectToggleUI();
-        closeProjectSheet();
+        if (projectSheetMode === 'add') {
+          addProjectId = newProject.id;
+          updateProjectToggleUI();
+          closeProjectSheet();
+        } else if (projectSheetMode === 'edit') {
+          editProjectId = newProject.id;
+          updateEditProjectToggleUI();
+          closeProjectSheet();
+        }
+        try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
+      } catch (e) {
+        console.error('createNewProject failed:', e);
       }
-      try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
     }
 
-    async function handleDeleteProject(id) {
-      if (store.projects.length <= 1) return;
-      const project = store.projects.find(p => p.id === id);
-      if (!project) return;
+    function handleDeleteProject(id) {
+      try {
+        if (store.projects.length <= 1) return;
+        const project = store.projects.find(p => p.id === id);
+        if (!project) return;
 
-      const performDelete = async () => {
-        const removed = store.deleteProject(id);
-        if (!removed) return;
-        if (currentFilter === id) currentFilter = 'all';
-        if (addProjectId === id) addProjectId = store.projects[0].id;
-        if (editProjectId === id) editProjectId = store.projects[0].id;
-        await store.save();
-        saveState();
-        updateProjectPillUI();
-        updateProjectToggleUI();
-        updateEditProjectToggleUI();
-        renderProjectSheet();
-        updateCalendarDots();
-        render();
-        if (currentView === 'detail') renderDetailView();
-        try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
-      };
+        const performDelete = () => {
+          try {
+            const removed = store.deleteProject(id);
+            if (!removed) return;
+            if (currentFilter === id) currentFilter = 'all';
+            if (addProjectId === id) addProjectId = store.projects[0].id;
+            if (editProjectId === id) editProjectId = store.projects[0].id;
+            store.save();
+            saveState();
+            updateProjectPillUI();
+            updateProjectToggleUI();
+            updateEditProjectToggleUI();
+            renderProjectSheet();
+            updateCalendarDots();
+            render();
+            if (currentView === 'detail') renderDetailView();
+            try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
+          } catch (e) {
+            console.error('performDelete failed:', e);
+          }
+        };
 
-      const message = 'Удалить проект «' + project.name + '»? Задачи перейдут в другой проект.';
+        const message = 'Удалить проект «' + project.name + '»? Задачи перейдут в другой проект.';
 
-      if (tg.showConfirm && typeof tg.showConfirm === 'function') {
-        try {
-          tg.showConfirm(message, (ok) => { if (ok) performDelete(); });
-          return;
-        } catch (e) {}
+        if (tg.showConfirm && typeof tg.showConfirm === 'function') {
+          try {
+            tg.showConfirm(message, (ok) => { if (ok) performDelete(); });
+            return;
+          } catch (e) {}
+        }
+        if (window.confirm && window.confirm(message)) performDelete();
+      } catch (e) {
+        console.error('handleDeleteProject failed:', e);
       }
-      if (window.confirm && window.confirm(message)) performDelete();
     }
 
     function buildCalendar() {
-      const base = isoToDate(selectedDate);
-      base.setHours(0,0,0,0);
-      const days = [];
-      for (let i = -180; i <= 180; i++) {
-        const d = new Date(base);
-        d.setDate(d.getDate() + i);
-        days.push(dateToISO(d));
+      try {
+        const base = isoToDate(selectedDate);
+        base.setHours(0,0,0,0);
+        const days = [];
+        for (let i = -180; i <= 180; i++) {
+          const d = new Date(base);
+          d.setDate(d.getDate() + i);
+          days.push(dateToISO(d));
+        }
+        calendarDays = days;
+        renderCalendar();
+      } catch (e) {
+        console.error('buildCalendar failed:', e);
       }
-      calendarDays = days;
-      renderCalendar();
     }
     function renderCalendar() {
-      const strip = document.getElementById('calendar-strip');
-      strip.innerHTML = '';
-      const todayStr = todayISO();
-      const weekdays = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
-      calendarDays.forEach(iso => {
-        const d = isoToDate(iso);
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'day-cell';
-        if (iso === selectedDate) btn.classList.add('selected');
-        if (iso === todayStr) btn.classList.add('today');
-        const dow = d.getDay();
-        if (dow === 0 || dow === 6) btn.classList.add('weekend');
-        btn.dataset.date = iso;
-        btn.innerHTML = `
-          <span class="weekday">${weekdays[dow]}</span>
-          <span class="date-num">${d.getDate()}</span>
-          <span class="day-dot"></span>
-        `;
-        btn.addEventListener('click', () => selectDate(iso, true));
-        strip.appendChild(btn);
-      });
-      requestAnimationFrame(() => scrollToSelected(false));
-      attachScrollHandler();
-      updateCalendarDots();
-      setTimeout(updateCalendarFade, 150);
+      try {
+        const strip = document.getElementById('calendar-strip');
+        strip.innerHTML = '';
+        const todayStr = todayISO();
+        const weekdays = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+        calendarDays.forEach(iso => {
+          const d = isoToDate(iso);
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'day-cell';
+          if (iso === selectedDate) btn.classList.add('selected');
+          if (iso === todayStr) btn.classList.add('today');
+          const dow = d.getDay();
+          if (dow === 0 || dow === 6) btn.classList.add('weekend');
+          btn.dataset.date = iso;
+          btn.innerHTML = `
+            <span class="weekday">${weekdays[dow]}</span>
+            <span class="date-num">${d.getDate()}</span>
+            <span class="day-dot"></span>
+          `;
+          btn.addEventListener('click', () => selectDate(iso, true));
+          strip.appendChild(btn);
+        });
+        requestAnimationFrame(() => scrollToSelected(false));
+        attachScrollHandler();
+        updateCalendarDots();
+        setTimeout(updateCalendarFade, 150);
+      } catch (e) {
+        console.error('renderCalendar failed:', e);
+      }
     }
     function updateCalendarDots() {
-      document.querySelectorAll('.day-cell').forEach(cell => {
-        const iso = cell.dataset.date;
-        const hasPending = store.tasks.some(t => t.date === iso && !t.done && matchesCategory(t));
-        cell.classList.toggle('has-tasks', hasPending);
-      });
+      try {
+        document.querySelectorAll('.day-cell').forEach(cell => {
+          const iso = cell.dataset.date;
+          const hasPending = store.tasks.some(t => t.date === iso && !t.done && matchesCategory(t));
+          cell.classList.toggle('has-tasks', hasPending);
+        });
+      } catch (e) {}
     }
     function attachScrollHandler() {
-      const strip = document.getElementById('calendar-strip');
-      if (strip.dataset.hasScrollHandler) return;
-      strip.dataset.hasScrollHandler = '1';
-      let timer;
-      strip.addEventListener('scroll', () => {
-        updateCalendarFade();
-        if (suppressScrollSelect) return;
-        clearTimeout(timer);
-        timer = setTimeout(() => {
-          const center = strip.scrollLeft + strip.clientWidth / 2;
-          let closest = null, minDist = Infinity;
-          strip.querySelectorAll('.day-cell').forEach(cell => {
-            const cc = cell.offsetLeft + cell.offsetWidth / 2;
-            const dist = Math.abs(cc - center);
-            if (dist < minDist) { minDist = dist; closest = cell; }
-          });
-          if (closest && closest.dataset.date !== selectedDate) {
-            selectDate(closest.dataset.date, false);
-          }
-        }, 120);
-      }, { passive: true });
+      try {
+        const strip = document.getElementById('calendar-strip');
+        if (!strip) return;
+        if (strip.dataset.hasScrollHandler) return;
+        strip.dataset.hasScrollHandler = '1';
+        let timer;
+        strip.addEventListener('scroll', () => {
+          updateCalendarFade();
+          if (suppressScrollSelect) return;
+          clearTimeout(timer);
+          timer = setTimeout(() => {
+            const center = strip.scrollLeft + strip.clientWidth / 2;
+            let closest = null, minDist = Infinity;
+            strip.querySelectorAll('.day-cell').forEach(cell => {
+              const cc = cell.offsetLeft + cell.offsetWidth / 2;
+              const dist = Math.abs(cc - center);
+              if (dist < minDist) { minDist = dist; closest = cell; }
+            });
+            if (closest && closest.dataset.date !== selectedDate) {
+              selectDate(closest.dataset.date, false);
+            }
+          }, 120);
+        }, { passive: true });
+      } catch (e) {}
     }
     function updateCalendarFade() {
-      const wrap = document.getElementById('calendar-strip-wrap');
-      const strip = document.getElementById('calendar-strip');
-      if (!wrap || !strip) return;
-      const cells = strip.querySelectorAll('.day-cell');
-      if (cells.length === 0) return;
-      const stripRect = strip.getBoundingClientRect();
-      const firstRect = cells[0].getBoundingClientRect();
-      const lastRect = cells[cells.length - 1].getBoundingClientRect();
-      const hasLeft = firstRect.left < stripRect.left - 8;
-      const hasRight = lastRect.right > stripRect.right + 8;
-      wrap.classList.toggle('has-more-left', hasLeft);
-      wrap.classList.toggle('has-more-right', hasRight);
+      try {
+        const wrap = document.getElementById('calendar-strip-wrap');
+        const strip = document.getElementById('calendar-strip');
+        if (!wrap || !strip) return;
+        const cells = strip.querySelectorAll('.day-cell');
+        if (cells.length === 0) return;
+        const stripRect = strip.getBoundingClientRect();
+        const firstRect = cells[0].getBoundingClientRect();
+        const lastRect = cells[cells.length - 1].getBoundingClientRect();
+        const hasLeft = firstRect.left < stripRect.left - 8;
+        const hasRight = lastRect.right > stripRect.right + 8;
+        wrap.classList.toggle('has-more-left', hasLeft);
+        wrap.classList.toggle('has-more-right', hasRight);
+      } catch (e) {}
     }
     function scrollCalendarBy(dir) {
-      const strip = document.getElementById('calendar-strip');
-      if (!strip) return;
-      const amount = strip.clientWidth * 0.7;
-      strip.scrollBy({ left: dir * amount, behavior: 'smooth' });
-      try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
+      try {
+        const strip = document.getElementById('calendar-strip');
+        if (!strip) return;
+        const amount = strip.clientWidth * 0.7;
+        strip.scrollBy({ left: dir * amount, behavior: 'smooth' });
+        try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
+      } catch (e) {}
     }
     function scrollToSelected(smooth) {
-      const strip = document.getElementById('calendar-strip');
-      const sel = strip.querySelector('.selected');
-      if (!sel) return;
-      suppressScrollSelect = true;
-      const target = sel.offsetLeft - strip.clientWidth / 2 + sel.clientWidth / 2;
-      strip.scrollTo({ left: target, behavior: smooth ? 'smooth' : 'auto' });
-      setTimeout(() => {
-        suppressScrollSelect = false;
-        updateCalendarFade();
-      }, smooth ? 500 : 100);
+      try {
+        const strip = document.getElementById('calendar-strip');
+        const sel = strip.querySelector('.selected');
+        if (!sel) return;
+        suppressScrollSelect = true;
+        const target = sel.offsetLeft - strip.clientWidth / 2 + sel.clientWidth / 2;
+        strip.scrollTo({ left: target, behavior: smooth ? 'smooth' : 'auto' });
+        setTimeout(() => {
+          suppressScrollSelect = false;
+          updateCalendarFade();
+        }, smooth ? 500 : 100);
+      } catch (e) {}
     }
     function selectDate(iso, scroll) {
       if (iso === selectedDate) {
@@ -2477,29 +2545,31 @@
     }
 
     function buildWheels() {
-      const currentYear = new Date().getFullYear();
-      const mw = document.querySelector('#wheel-month .wheel-inner');
-      mw.innerHTML = '';
-      MONTHS.forEach((name, i) => {
-        const el = document.createElement('div');
-        el.className = 'wheel-item';
-        el.dataset');
-.value = i;
-        el.textContent =    name;
-        mw.appendChild(el);
+      try {
+        const currentYear = new Date().getFullYear();
+        const mw = document.querySelector('#wheel-month .wheel-inner');
+        mw.innerHTML = '';
+        MONTHS.forEach((name, i) => {
+          const el = document.createElement('div');
+          el.className = 'wheel-item';
+          el.dataset.value = i;
+          el.textContent = name;
+          mw.appendChild(el);
+        });
+        const yw = document.querySelector('#wheel-year .wheel-inner');
+        yw.innerHTML = '';
+        for (let y = currentYear - 10; y <= currentYear + 10; y++) {
+          const el = document.createElement('div');
+          el.className = 'wheel-item';
+          el.dataset.value = y;
+          el.textContent = y;
+          yw.appendChild(el);
+        }
+        attachWheelScroll('wheel-month');
+        attachWheelScroll('wheel-year');
+      } catch (e) {
+        console.error('buildWheels failed:', e);
       }
- });
-      const yw = document.querySelector   ('#wheel-year .wheel-inner');
-      yw.innerHTML = '';
-      for (let function y = currentYear - 10; y <= currentYear + 10; y++) {
-        const el = document.createElement('div');
-        el.className = 'wheel-item';
-        el.dataset.value = y;
-        el.textContent = y;
-        yw.appendChild(el);
-      }
-      attachWheelScroll('wheel-month');
-      attachWheelScroll('wheel-year');
     }
     function getWheelValue(wheelId) {
       const wheel = document.getElementById(wheelId);
@@ -2564,7 +2634,9 @@
     }
     function closePicker() {
       document.getElementById('picker-overlay').classList.remove('active');
-      document.body.classList.remove('picker-open applyPicker() {
+      document.body.classList.remove('picker-open');
+    }
+    function applyPicker() {
       const m = getWheelValue('wheel-month');
       const y = getWheelValue('wheel-year');
       if (m !== null) pickerMonth = m;
@@ -2613,48 +2685,52 @@
     }
 
     function renderTimeline(dayTasks) {
-      const timeline = document.getElementById('mini-timeline');
-      const dotsEl = document.getElementById('mini-timeline-dots');
-      const labelsEl = document.getElementById('mini-timeline-labels');
-      const nowEl = document.getElementById('mini-timeline-now');
-      const timedTasks = dayTasks.filter(t => t.time);
-      if (timedTasks.length === 0) {
-        timeline.classList.remove('visible');
-        nowEl.style.display = 'none';
-        return;
-      }
-      timeline.classList.add('visible');
-      dotsEl.innerHTML = '';
-      labelsEl.innerHTML = '';
-      [6, 9, 12, 15, 18, 21].forEach(h => {
-        const pct = ((h - TL_START_H) * 60) / TL_RANGE_MIN * 100;
-        if (pct < 0 || pct > 100) return;
-        const span = document.createElement('span');
-        span.textContent = h;
-        span.style.left = pct + '%';
-        labelsEl.appendChild(span);
-      });
-      const nextTask = getNextUpcoming(timedTasks);
-      timedTasks.forEach(task => {
-        const min = timeToMinutes(task.time);
-        const pct = minutesToPct(min);
-        const dot = document.createElement('button');
-        dot.type = 'button';
-        dot.className = 'mini-timeline-dot';
-        dot.style.left = pct + '%';
-        dot.dataset.taskId = store.tasks.indexOf(task);
-        if (isOverdue(task)) {
-          dot.style.background = 'var(--danger-color)';
-        } else {
-          dot.style.background = store.getProjectColor(task.projectId);
+      try {
+        const timeline = document.getElementById('mini-timeline');
+        const dotsEl = document.getElementById('mini-timeline-dots');
+        const labelsEl = document.getElementById('mini-timeline-labels');
+        const nowEl = document.getElementById('mini-timeline-now');
+        const timedTasks = dayTasks.filter(t => t.time);
+        if (timedTasks.length === 0) {
+          timeline.classList.remove('visible');
+          nowEl.style.display = 'none';
+          return;
         }
-        if (task.done) dot.classList.add('done');
-        if (nextTask && store.tasks.indexOf(task) === store.tasks.indexOf(nextTask)) dot.classList.add('next');
-        dot.title = task.time + ' — ' + task.text;
-        dot.addEventListener('click', () => scrollToTask(dot.dataset.taskId));
-        dotsEl.appendChild(dot);
-      });
-      updateNowMarker();
+        timeline.classList.add('visible');
+        dotsEl.innerHTML = '';
+        labelsEl.innerHTML = '';
+        [6, 9, 12, 15, 18, 21].forEach(h => {
+          const pct = ((h - TL_START_H) * 60) / TL_RANGE_MIN * 100;
+          if (pct < 0 || pct > 100) return;
+          const span = document.createElement('span');
+          span.textContent = h;
+          span.style.left = pct + '%';
+          labelsEl.appendChild(span);
+        });
+        const nextTask = getNextUpcoming(timedTasks);
+        timedTasks.forEach(task => {
+          const min = timeToMinutes(task.time);
+          const pct = minutesToPct(min);
+          const dot = document.createElement('button');
+          dot.type = 'button';
+          dot.className = 'mini-timeline-dot';
+          dot.style.left = pct + '%';
+          dot.dataset.taskId = store.tasks.indexOf(task);
+          if (isOverdue(task)) {
+            dot.style.background = 'var(--danger-color)';
+          } else {
+            dot.style.background = store.getProjectColor(task.projectId);
+          }
+          if (task.done) dot.classList.add('done');
+          if (nextTask && store.tasks.indexOf(task) === store.tasks.indexOf(nextTask)) dot.classList.add('next');
+          dot.title = task.time + ' — ' + task.text;
+          dot.addEventListener('click', () => scrollToTask(dot.dataset.taskId));
+          dotsEl.appendChild(dot);
+        });
+        updateNowMarker();
+      } catch (e) {
+        console.error('renderTimeline failed:', e);
+      }
     }
 
     function getNextUpcoming(dayTasks) {
@@ -2669,43 +2745,49 @@
     }
 
     function updateNowMarker() {
-      const nowEl = document.getElementById('mini-timeline-now');
-      const timeline = document.getElementById('mini-timeline');
-      if (!nowEl || !timeline.classList.contains('visible')) return;
-      if (selectedDate !== todayISO()) { nowEl.style.display = 'none'; return; }
-      const now = new Date();
-      const min = now.getHours() * 60 + now.getMinutes();
-      if (min < TL_START_H * 60 || min > TL_END_H * 60) { nowEl.style.display = 'none'; return; }
-      const pct = minutesToPct(min);
-      nowEl.style.display = 'block';
-      nowEl.style.left = pct + '%';
+      try {
+        const nowEl = document.getElementById('mini-timeline-now');
+        const timeline = document.getElementById('mini-timeline');
+        if (!nowEl || !timeline.classList.contains('visible')) return;
+        if (selectedDate !== todayISO()) { nowEl.style.display = 'none'; return; }
+        const now = new Date();
+        const min = now.getHours() * 60 + now.getMinutes();
+        if (min < TL_START_H * 60 || min > TL_END_H * 60) { nowEl.style.display = 'none'; return; }
+        const pct = minutesToPct(min);
+        nowEl.style.display = 'block';
+        nowEl.style.left = pct + '%';
+      } catch (e) {}
     }
 
     function scrollToTask(id) {
-      const el = document.getElementById('task-card-' + id);
-      if (!el) return;
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      el.classList.remove('flash');
-      void el.offsetWidth;
-      el.classList.add('flash');
-      setTimeout(() => el.classList.remove('flash'), 1000);
+      try {
+        const el = document.getElementById('task-card-' + id);
+        if (!el) return;
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.remove('flash');
+        void el.offsetWidth;
+        el.classList.add('flash');
+        setTimeout(() => el.classList.remove('flash'), 1000);
+      } catch (e) {}
     }
 
     function updateDayFocus(dayTasks) {
-      const progressEl = document.getElementById('progress');
-      if (dayTasks.length === 0) { progressEl.textContent = ''; return; }
-      const doneCount = dayTasks.filter(t => t.done).length;
-      if (doneCount === dayTasks.length) {
-        progressEl.textContent = 'Все выполнены 🎉';
-        return;
-      }
-      const next = getNextUpcoming(dayTasks.filter(t => t.time));
-      if (next) {
-        const text = next.text.length > 24 ? next.text.slice(0, 24) + '…' : next.text;
-        progressEl.textContent = `Выполнено ${doneCount} из ${dayTasks.length} · Дальше: ${text} в ${next.time}`;
-      } else {
-        progressEl.textContent = `Выполнено ${doneCount} из ${dayTasks.length}`;
-      }
+      try {
+        const progressEl = document.getElementById('progress');
+        if (dayTasks.length === 0) { progressEl.textContent = ''; return; }
+        const doneCount = dayTasks.filter(t => t.done).length;
+        if (doneCount === dayTasks.length) {
+          progressEl.textContent = 'Все выполнены 🎉';
+          return;
+        }
+        const next = getNextUpcoming(dayTasks.filter(t => t.time));
+        if (next) {
+          const text = next.text.length > 24 ? next.text.slice(0, 24) + '…' : next.text;
+          progressEl.textContent = `Выполнено ${doneCount} из ${dayTasks.length} · Дальше: ${text} в ${next.time}`;
+        } else {
+          progressEl.textContent = `Выполнено ${doneCount} из ${dayTasks.length}`;
+        }
+      } catch (e) {}
     }
 
     function buildTaskCard(task, isNext, position, doStagger) {
@@ -2748,72 +2830,76 @@
     }
 
     function render() {
-      document.getElementById('month-label').innerHTML =
-        formatMonthYear(selectedDate) + ' <span class="chevron">▼</span>';
-      updateToTodayBtn();
+      try {
+        document.getElementById('month-label').innerHTML =
+          formatMonthYear(selectedDate) + ' <span class="chevron">▼</span>';
+        updateToTodayBtn();
 
-      const sectionsEl = document.getElementById('task-sections');
-      const emptyState = document.getElementById('empty-state');
-      document.getElementById('date-label').textContent = formatDateLabel(selectedDate);
+        const sectionsEl = document.getElementById('task-sections');
+        const emptyState = document.getElementById('empty-state');
+        document.getElementById('date-label').textContent = formatDateLabel(selectedDate);
 
-      const dayTasks = store.filterTasks(selectedDate, currentFilter);
-      const sections = { morning: [], day: [], evening: [], notime: [] };
-      dayTasks.forEach(t => {
-        if (!t.time) { sections.notime.push(t); return; }
-        const h = parseInt(t.time.split(':')[0], 10);
-        if (h >= 5 && h < 12) sections.morning.push(t);
-        else if (h >= 12 && h < 17) sections.day.push(t);
-        else sections.evening.push(t);
-      });
-      ['morning','day','evening','notime'].forEach(k => {
-        sections[k].sort((a, b) => {
-          if (!a.time && !b.time) return 0;
-          if (!a.time) return 1;
-          if (!b.time) return -1;
-          return a.time.localeCompare(b.time);
+        const dayTasks = store.filterTasks(selectedDate, currentFilter);
+        const sections = { morning: [], day: [], evening: [], notime: [] };
+        dayTasks.forEach(t => {
+          if (!t.time) { sections.notime.push(t); return; }
+          const h = parseInt(t.time.split(':')[0], 10);
+          if (h >= 5 && h < 12) sections.morning.push(t);
+          else if (h >= 12 && h < 17) sections.day.push(t);
+          else sections.evening.push(t);
         });
-      });
-      const nextTask = getNextUpcoming(dayTasks.filter(t => t.time));
-      const doStagger = staggerNextRender;
-      staggerNextRender = false;
-
-      sectionsEl.innerHTML = '';
-      if (dayTasks.length === 0) {
-        emptyState.style.display = 'block';
-        if (currentFilter === 'all') emptyState.textContent = 'На этот день задач нет';
-        else emptyState.textContent = 'В этом проекте на день задач нет';
-      } else {
-        emptyState.style.display = 'none';
-        const cfg = [
-          { key: 'morning', title: 'Утро' },
-          { key: 'day', title: 'День' },
-          { key: 'evening', title: 'Вечер' },
-          { key: 'notime', title: 'Без времени' }
-        ];
-        let cardPosition = 0;
-        cfg.forEach(c => {
-          const items = sections[c.key];
-          if (items.length === 0) return;
-          const sectionEl = document.createElement('div');
-          sectionEl.className = 'time-section';
-          const titleEl = document.createElement('div');
-          titleEl.className = 'time-section-title';
-          titleEl.innerHTML = `${c.title} <span class="time-section-count">${items.length}</span>`;
-          const listEl = document.createElement('ul');
-          listEl.className = 'section-task-list';
-          items.forEach(t => {
-            const isNext = nextTask && t === nextTask;
-            listEl.appendChild(buildTaskCard(t, isNext, cardPosition, doStagger));
-            cardPosition++;
+        ['morning','day','evening','notime'].forEach(k => {
+          sections[k].sort((a, b) => {
+            if (!a.time && !b.time) return 0;
+            if (!a.time) return 1;
+            if (!b.time) return -1;
+            return a.time.localeCompare(b.time);
           });
-          sectionEl.appendChild(titleEl);
-          sectionEl.appendChild(listEl);
-          sectionsEl.appendChild(sectionEl);
         });
+        const nextTask = getNextUpcoming(dayTasks.filter(t => t.time));
+        const doStagger = staggerNextRender;
+        staggerNextRender = false;
+
+        sectionsEl.innerHTML = '';
+        if (dayTasks.length === 0) {
+          emptyState.style.display = 'block';
+          if (currentFilter === 'all') emptyState.textContent = 'На этот день задач нет';
+          else emptyState.textContent = 'В этом проекте на день задач нет';
+        } else {
+          emptyState.style.display = 'none';
+          const cfg = [
+            { key: 'morning', title: 'Утро' },
+            { key: 'day', title: 'День' },
+            { key: 'evening', title: 'Вечер' },
+            { key: 'notime', title: 'Без времени' }
+          ];
+          let cardPosition = 0;
+          cfg.forEach(c => {
+            const items = sections[c.key];
+            if (items.length === 0) return;
+            const sectionEl = document.createElement('div');
+            sectionEl.className = 'time-section';
+            const titleEl = document.createElement('div');
+            titleEl.className = 'time-section-title';
+            titleEl.innerHTML = `${c.title} <span class="time-section-count">${items.length}</span>`;
+            const listEl = document.createElement('ul');
+            listEl.className = 'section-task-list';
+            items.forEach(t => {
+              const isNext = nextTask && t === nextTask;
+              listEl.appendChild(buildTaskCard(t, isNext, cardPosition, doStagger));
+              cardPosition++;
+            });
+            sectionEl.appendChild(titleEl);
+            sectionEl.appendChild(listEl);
+            sectionsEl.appendChild(sectionEl);
+          });
+        }
+        renderTimeline(dayTasks);
+        updateDayFocus(dayTasks);
+        updateCalendarDots();
+      } catch (e) {
+        console.error('render failed:', e);
       }
-      renderTimeline(dayTasks);
-      updateDayFocus(dayTasks);
-      updateCalendarDots();
     }
 
     function updateToTodayBtn() {
@@ -2822,60 +2908,64 @@
     }
 
     function renderDetailView() {
-      const d = isoToDate(detailDate);
-      document.getElementById('detail-weekday').textContent = WEEKDAYS_FULL[d.getDay()];
-      document.getElementById('detail-date-pill').innerHTML =
-        d.getDate() + ' ' + MONTHS_GEN[d.getMonth()] + ' ' + d.getFullYear() +
-        ' <span class="chevron">▼</span>';
-      document.getElementById('detail-date-input').value = detailDate;
+      try {
+        const d = isoToDate(detailDate);
+        document.getElementById('detail-weekday').textContent = WEEKDAYS_FULL[d.getDay()];
+        document.getElementById('detail-date-pill').innerHTML =
+          d.getDate() + ' ' + MONTHS_GEN[d.getMonth()] + ' ' + d.getFullYear() +
+          ' <span class="chevron">▼</span>';
+        document.getElementById('detail-date-input').value = detailDate;
 
-      const dayTasks = store.filterTasks(detailDate, currentFilter);
-      const doneCount = dayTasks.filter(t => t.done).length;
-      const total = dayTasks.length;
-      const ring = document.getElementById('ring-fill');
-      const percentEl = document.getElementById('ring-percent');
-      const labelEl = document.getElementById('ring-label');
+        const dayTasks = store.filterTasks(detailDate, currentFilter);
+        const doneCount = dayTasks.filter(t => t.done).length;
+        const total = dayTasks.length;
+        const ring = document.getElementById('ring-fill');
+        const percentEl = document.getElementById('ring-percent');
+        const labelEl = document.getElementById('ring-label');
 
-      if (total === 0) {
-        ring.style.strokeDashoffset = CIRCUMFERENCE;
-        percentEl.textContent = '—';
-        labelEl.textContent = 'нет задач';
-      } else {
-        const percent = Math.round((doneCount / total) * 100);
-        ring.style.strokeDashoffset = CIRCUMFERENCE - (percent / 100) * CIRCUMFERENCE;
-        percentEl.textContent = percent + '%';
-        labelEl.textContent = doneCount + ' из ' + total;
-      }
+        if (total === 0) {
+          ring.style.strokeDashoffset = CIRCUMFERENCE;
+          percentEl.textContent = '—';
+          labelEl.textContent = 'нет задач';
+        } else {
+          const percent = Math.round((doneCount / total) * 100);
+          ring.style.strokeDashoffset = CIRCUMFERENCE - (percent / 100) * CIRCUMFERENCE;
+          percentEl.textContent = percent + '%';
+          labelEl.textContent = doneCount + ' из ' + total;
+        }
 
-      const list = document.getElementById('detail-task-list');
-      const emptyEl = document.getElementById('detail-empty');
-      list.innerHTML = '';
-      if (dayTasks.length === 0) {
-        emptyEl.style.display = 'block';
-        if (currentFilter === 'all') emptyEl.textContent = 'На этот день задач нет';
-        else emptyEl.textContent = 'В этом проекте на день задач нет';
-      } else {
-        emptyEl.style.display = 'none';
-        const sorted = [...dayTasks].sort((a, b) => {
-          if (a.time && b.time) return a.time.localeCompare(b.time);
-          if (a.time) return -1;
-          if (b.time) return 1;
-          return 0;
-        });
-        sorted.forEach(task => {
-          const li = document.createElement('li');
-          li.className = 'day-task-item' + (task.done ? ' done' : '');
-          li.style.borderLeftColor = store.getProjectColor(task.projectId);
-          li.innerHTML = `
-            <div class="day-task-content">
-              <span class="day-task-text">${escapeHtml(task.text)}</span>
-              ${task.time
-                ? `<span class="day-task-time">${escapeHtml(task.time)}</span>`
-                : `<span class="day-task-time empty">Без времени</span>`}
-            </div>
-          `;
-          list.appendChild(li);
-        });
+        const list = document.getElementById('detail-task-list');
+        const emptyEl = document.getElementById('detail-empty');
+        list.innerHTML = '';
+        if (dayTasks.length === 0) {
+          emptyEl.style.display = 'block';
+          if (currentFilter === 'all') emptyEl.textContent = 'На этот день задач нет';
+          else emptyEl.textContent = 'В этом проекте на день задач нет';
+        } else {
+          emptyEl.style.display = 'none';
+          const sorted = [...dayTasks].sort((a, b) => {
+            if (a.time && b.time) return a.time.localeCompare(b.time);
+            if (a.time) return -1;
+            if (b.time) return 1;
+            return 0;
+          });
+          sorted.forEach(task => {
+            const li = document.createElement('li');
+            li.className = 'day-task-item' + (task.done ? ' done' : '');
+            li.style.borderLeftColor = store.getProjectColor(task.projectId);
+            li.innerHTML = `
+              <div class="day-task-content">
+                <span class="day-task-text">${escapeHtml(task.text)}</span>
+                ${task.time
+                  ? `<span class="day-task-time">${escapeHtml(task.time)}</span>`
+                  : `<span class="day-task-time empty">Без времени</span>`}
+              </div>
+            `;
+            list.appendChild(li);
+          });
+        }
+      } catch (e) {
+        console.error('renderDetailView failed:', e);
       }
     }
 
@@ -2896,21 +2986,25 @@
       document.body.classList.remove('picker-open');
       editingIndex = -1;
     }
-    async function saveEdit() {
-      if (editingIndex < 0) return;
-      const text = document.getElementById('edit-text').value.trim();
-      if (!text) return;
-      store.updateTask(editingIndex, {
-        text,
-        time: document.getElementById('edit-time').value || '',
-        projectId: editProjectId
-      });
-      await store.save();
-      const wasDetail = currentView === 'detail';
-      closeEditModal();
-      render();
-      if (wasDetail) renderDetailView();
-      try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
+    function saveEdit() {
+      try {
+        if (editingIndex < 0) return;
+        const text = document.getElementById('edit-text').value.trim();
+        if (!text) return;
+        store.updateTask(editingIndex, {
+          text,
+          time: document.getElementById('edit-time').value || '',
+          projectId: editProjectId
+        });
+        store.save();
+        const wasDetail = currentView === 'detail';
+        closeEditModal();
+        render();
+        if (wasDetail) renderDetailView();
+        try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
+      } catch (e) {
+        console.error('saveEdit failed:', e);
+      }
     }
     function updateEditTimeBtn() {
       const inp = document.getElementById('edit-time');
@@ -2935,94 +3029,110 @@
         timeBtnText.classList.remove('has-value');
       }
     }
-    async function addTask() {
-      const input = document.getElementById('task-input');
-      const timeInput = document.getElementById('task-time');
-      const text = input.value.trim();
-      if (!text) return;
-      store.addTask({
-        text,
-        date: selectedDate,
-        time: timeInput.value || '',
-        projectId: addProjectId
-      });
-      await store.save();
-      input.value = '';
-      timeInput.value = '';
-      updateTimeBtn();
-      if (currentFilter !== 'all' && currentFilter !== addProjectId) {
-        currentFilter = addProjectId;
-        saveState();
-        updateProjectPillUI();
+    function addTask() {
+      try {
+        const input = document.getElementById('task-input');
+        const timeInput = document.getElementById('task-time');
+        const text = input.value.trim();
+        if (!text) return;
+        store.addTask({
+          text,
+          date: selectedDate,
+          time: timeInput.value || '',
+          projectId: addProjectId
+        });
+        store.save();
+        input.value = '';
+        timeInput.value = '';
+        updateTimeBtn();
+        if (currentFilter !== 'all' && currentFilter !== addProjectId) {
+          currentFilter = addProjectId;
+          saveState();
+          updateProjectPillUI();
+        }
+        render();
+        try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
+        input.blur();
+      } catch (e) {
+        console.error('addTask failed:', e);
       }
-      render();
-      try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
-      input.blur();
     }
-    async function toggleTask(index) {
-      store.toggleTask(index);
-      justCheckedIndex = store.tasks[index] && store.tasks[index].done ? index : -1;
-      render();
-      justCheckedIndex = -1;
-      await store.save();
-      try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
+    function toggleTask(index) {
+      try {
+        store.toggleTask(index);
+        justCheckedIndex = store.tasks[index] && store.tasks[index].done ? index : -1;
+        render();
+        justCheckedIndex = -1;
+        store.save();
+        try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
+      } catch (e) {
+        console.error('toggleTask failed:', e);
+      }
     }
 
     function deleteTask(index) {
-      const taskToDelete = store.tasks[index];
-      if (!taskToDelete) return;
+      try {
+        const taskToDelete = store.tasks[index];
+        if (!taskToDelete) return;
 
-      if (pendingUndo) {
-        clearTimeout(pendingUndo.timeoutId);
-        pendingUndo = null;
-        hideUndoToast();
-      }
-
-      const el = document.getElementById('task-card-' + index);
-      if (el) {
-        el.classList.add('removing');
-        el.style.pointerEvents = 'none';
-      }
-
-      store.deleteTask(index);
-      store.save();
-      try { tg.HapticFeedback.impactOccurred('rigid'); } catch (e) {}
-
-      pendingUndo = { task: taskToDelete, originalIndex: index, timeoutId: null };
-      showUndoToast();
-
-      pendingUndo.timeoutId = setTimeout(() => {
         if (pendingUndo) {
+          clearTimeout(pendingUndo.timeoutId);
           pendingUndo = null;
           hideUndoToast();
         }
-      }, UNDO_DURATION);
 
-      skipSlideIn = true;
-      setTimeout(() => {
+        const el = document.getElementById('task-card-' + index);
+        if (el) {
+          el.classList.add('removing');
+          el.style.pointerEvents = 'none';
+        }
+
+        store.deleteTask(index);
+        store.save();
+        try { tg.HapticFeedback.impactOccurred('rigid'); } catch (e) {}
+
+        pendingUndo = { task: taskToDelete, originalIndex: index, timeoutId: null };
+        showUndoToast();
+
+        pendingUndo.timeoutId = setTimeout(() => {
+          if (pendingUndo) {
+            pendingUndo = null;
+            hideUndoToast();
+          }
+        }, UNDO_DURATION);
+
+        skipSlideIn = true;
+        setTimeout(() => {
+          render();
+          skipSlideIn = false;
+          if (currentView === 'detail') renderDetailView();
+        }, 250);
+      } catch (e) {
+        console.error('deleteTask failed:', e);
+      }
+    }
+
+    function undoDelete() {
+      try {
+        if (!pendingUndo) return;
+        clearTimeout(pendingUndo.timeoutId);
+        const { task, originalIndex } = pendingUndo;
+        pendingUndo = null;
+
+        store.restoreTask(task, originalIndex);
+        store.save();
+
+        hideUndoToast();
+
+        skipSlideIn = true;
         render();
         skipSlideIn = false;
         if (currentView === 'detail') renderDetailView();
-      }, 250);
-    }
 
-    async function undoDelete() {
-      if (!pendingUndo) return;
-      clearTimeout(pendingUndo.timeoutId);
-      const { task, originalIndex } = pendingUndo;
-      pendingUndo = null;
-
-      store.restoreTask(task, originalIndex);
-      await store.save();
-
-      hideUndoToast();
-
-      skipSlideIn = true;
-      render();
-      skipSlideIn = false;
-      if (currentView === 'detail') renderDetailView();
-
-      try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
+        try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
+      } catch (e) {
+        console.error('undoDelete failed:', e);
+      }
     }
 
     function showUndoToast() {
@@ -3185,52 +3295,68 @@
 
     setInterval(() => {
       if (currentView === 'tasks') {
-        updateNowMarker();
-        const dayTasks = store.filterTasks(selectedDate, currentFilter);
-        updateDayFocus(dayTasks);
+        try {
+          updateNowMarker();
+          const dayTasks = store.filterTasks(selectedDate, currentFilter);
+          updateDayFocus(dayTasks);
+        } catch (e) {}
       }
     }, 60000);
 
-    async function bootstrap() {
-      restoreState();
+    // Защита: если через 4 сек всё ещё booting — принудительно снимаем
+    setTimeout(() => {
+      if (document.body.classList.contains('booting')) {
+        console.warn('booting still present after 4s — force removal');
+        document.body.classList.remove('booting');
+        document.body.classList.remove('welcome-open');
+        const screen = document.getElementById('welcome-screen');
+        if (screen) screen.style.display = 'none';
+      }
+    }, 4000);
+
+    // ---- BOOTSTRAP ----
+    function bootstrap() {
+      // 1. Сначала — UI (синхронно, мгновенно)
+      try { restoreState(); } catch (e) { console.error('restoreState:', e); }
       detailDate = selectedDate;
-      buildWheels();
-      buildCalendar();
-      updateTimeBtn();
-      updateProjectUI();
-      updateEditProjectToggleUI();
+
+      try { buildWheels(); } catch (e) { console.error('buildWheels:', e); }
+      try { buildCalendar(); } catch (e) { console.error('buildCalendar:', e); }
+      try { updateTimeBtn(); } catch (e) { console.error('updateTimeBtn:', e); }
+      try { updateProjectUI(); } catch (e) { console.error('updateProjectUI:', e); }
+      try { updateEditProjectToggleUI(); } catch (e) { console.error('updateEditProjectToggleUI:', e); }
 
       if (currentView === 'detail') {
-        document.getElementById('view-tasks').classList.remove('active');
-        document.getElementById('view-detail').classList.add('active');
-        document.querySelectorAll('.tab-item').forEach(btn => {
-          btn.classList.toggle('active', btn.dataset.view === 'detail');
-        });
+        try {
+          document.getElementById('view-tasks').classList.remove('active');
+          document.getElementById('view-detail').classList.add('active');
+          document.querySelectorAll('.tab-item').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.view === 'detail');
+          });
+        } catch (e) { console.error('view switch:', e); }
       }
 
-      try {
-        await store.init();
-      } catch (e) {
-        console.error('store.init failed:', e);
-      }
-
-      updateProjectUI();
-      updateEditProjectToggleUI();
-      updateCalendarDots();
-      render();
-      renderDetailView();
-
+      // 2. Welcome запускается СРАЗУ, независимо от данных
       setTimeout(playWelcome, 40);
+
+      // 3. Данные грузятся параллельно — при готовности перерисовываем
+      store.init()
+        .then(() => {
+          try { updateProjectUI(); } catch (e) { console.error(e); }
+          try { updateEditProjectToggleUI(); } catch (e) { console.error(e); }
+          try { updateCalendarDots(); } catch (e) { console.error(e); }
+          try { render(); } catch (e) { console.error(e); }
+          try { renderDetailView(); } catch (e) { console.error(e); }
+        })
+        .catch((e) => {
+          console.error('store.init failed:', e);
+          // Всё равно показываем UI с дефолтами
+          try { render(); } catch (e2) { console.error(e2); }
+          try { renderDetailView(); } catch (e2) { console.error(e2); }
+        });
     }
 
     bootstrap();
-
-    setTimeout(() => {
-      if (document.body.classList.contains('booting')) {
-        document.body.classList.remove('booting');
-        console.warn('booting not cleared by playWelcome — forced removal');
-      }
-    }, 5000);
   </script>
 </body>
 </html>
