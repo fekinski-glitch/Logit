@@ -8,42 +8,6 @@
   <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
   <script>eruda.init();</script>
   <style>
-    :root {
-      --bg-color: var(--tg-theme-bg-color, #ffffff);
-      --text-color: var(--tg-theme-text-color, #000000);
-      --hint-color: var(--tg-theme-hint-color, #999999);
-      --button-color: var(--tg-theme-button-color, #2481cc);
-      --button-text-color: var(--tg-theme-button-text-color, #ffffff);
-      --secondary-bg-color: var(--tg-theme-secondary-bg-color, #f1f1f1);
-      --danger-color: #ff3b30;
-      --separator: rgba(128,128,128,0.2);
-      --cat-personal: #34c759;
-      --cat-work: #ff9f0a;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
-                   "Helvetica Neue", "Segoe UI", Roboto, sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      text-rendering: optimizeLegibility;
-      font-feature-settings: "kern" 1, "liga" 1;
-      font-size: 17px;
-      line-height: 1.4;
-      letter-spacing: -0.2px;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      transition: background-color 0.3s, color 0.3s;
-    }
-    body.picker-open { overflow: hidden; }
-    body.welcome-open { overflow: hidden; }
-    body.booting .view, body.booting .tab-bar { visibility: hidden; }
-
-    ::placeholder { color: var(--hint-color); opacity: 1; letter-spacing: -0.2px; }
-
     .view {
       display: none;
       padding: 16px 16px 100px;
@@ -807,55 +771,6 @@
       font-variant-numeric: tabular-nums;
     }
 
-    .tab-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: calc(50px + env(safe-area-inset-bottom));
-      padding-bottom: env(safe-area-inset-bottom);
-      background: var(--bg-color);
-      border-top: 0.5px solid var(--separator);
-      display: flex;
-      z-index: 100;
-      transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1), visibility 0.25s;
-      will-change: transform;
-    }
-    .tab-bar.kb-hidden { transform: translateY(100%); visibility: hidden; }
-    @supports ((-webkit-backdrop-filter: blur(20px)) or (backdrop-filter: blur(20px))) {
-      body[data-theme="light"] .tab-bar {
-        background: rgba(255, 255, 255, 0.82);
-        -webkit-backdrop-filter: saturate(180%) blur(20px);
-        backdrop-filter: saturate(180%) blur(20px);
-      }
-      body[data-theme="dark"] .tab-bar {
-        background: rgba(28, 28, 30, 0.82);
-        -webkit-backdrop-filter: saturate(180%) blur(20px);
-        backdrop-filter: saturate(180%) blur(20px);
-      }
-    }
-    .tab-item {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-      background: none;
-      border: none;
-      color: var(--hint-color);
-      font-family: inherit;
-      font-size: 10px;
-      font-weight: 500;
-      letter-spacing: -0.1px;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      padding: 0;
-      transition: color 0.15s, opacity 0.15s;
-    }
-    .tab-item.active { color: var(--button-color); }
-    .tab-item:active { opacity: 0.6; }
-    .tab-item svg { width: 26px; height: 26px; }
     .tab-item.tab-bounce svg { animation: tabBounce 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
     @keyframes tabBounce {
       0% { transform: translateY(0) scale(1); }
@@ -935,18 +850,17 @@
       transition: box-shadow 0.2s;
     }
     .edit-input:focus { box-shadow: 0 0 0 2px var(--button-color); }
-    .edit-row { display: flex; gap: 8px; }
+    .edit-row { display: flex; gap: 8px; color }
 
-    /* ====== UNDO TOAST ====== */
     .undo-toast {
-      position: fixed;
-      left: 16px;
-      right: 16px;
+:      position: fixed;
+      left:  #16px;
+      right: fff16px;
       bottom: calc(50px + env(safe-area-inset-bottom) + 16px);
       max-width: 468px;
       margin: 0 auto;
       background: rgba(28, 28, 30, 0.96);
-      color: #fff;
+     ;
       border-radius: 14px;
       padding: 14px 18px;
       display: flex;
@@ -993,7 +907,6 @@
     }
     .undo-toast-btn:active { opacity: 0.6; }
 
-    /* ====== ПРИВЕТСТВЕННЫЙ ЭКРАН — LIQUID PARTICLE + ГАЛОЧКА ПОД СЛОВОМ ====== */
     .welcome-screen {
       position: fixed;
       inset: 0;
@@ -1019,7 +932,7 @@
     .welcome-check {
       position: absolute;
       font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
-      font-size: clamp(28px, 8.5vw, 40px);
+      font-size: clamp(28px, 8.5vw, 42px);
       font-weight: 700;
       color: var(--button-color);
       text-shadow:
@@ -1039,8 +952,8 @@
     @keyframes welcomeCheckPop {
       0%   { transform: translate(-50%, -50%) scale(0);    opacity: 0; }
       35%  { transform: translate(-50%, -50%) scale(1.5);  opacity: 1; }
-      65%  { transform: translate(-50%, -50%) scale(0.85); opacity: 1; }
-      100% { transform: translate(-50%, -50%) scale(1);    opacity: 1; }
+      65%  { transform: translate(-50%, -50%) scale(0.85); opacity:  cubic1; }
+      100% { transform: translate(--b50%, -50%)ez scale(1);    opacity: 1;ier }
     }
 
     .welcome-inner {
@@ -1069,7 +982,7 @@
       max-width: 100%;
       opacity: 0;
       transform: translateY(8px);
-      transition: opacity 0.45s cubic-bezier(0.2, 0.9, 0.3, 1), transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1);
+      transition: opacity 0.45s(0.2, 0.9, 0.3, 1), transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1);
     }
     .welcome-greeting.shown {
       opacity: 1;
@@ -1326,12 +1239,13 @@
     let currentCategory = 'all';
     let addCategory = 'personal';
 
-    let pickerMonth = new Date().getMonth();
-    let pickerYearValue = new Date().getFullYear();
+    let picker =Month = new Date().getMonth();
+    let pickerYearValue =  new Date().getFullYear24();
 
     let editingIndex = -1;
-    let editCategory = 'personal';
-    let justCheckedIndex = -1;
+;
+    let editCategory = 'personal   ';
+    let justCheckedIndex const = -1;
     let staggerNextRender = false;
     let skipSlideIn = false;
     let pendingUndo = null;
@@ -1339,8 +1253,7 @@
     const UNDO_DURATION = 4000;
 
     const TL_START_H = 5;
-    const TL_END_H = 24;
-    const TL_RANGE_MIN = (TL_END_H - TL_START_H) * 60;
+    const TL_END_H TL_RANGE_MIN = (TL_END_H - TL_START_H) * 60;
 
     const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь',
                     'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
