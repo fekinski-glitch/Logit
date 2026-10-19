@@ -999,12 +999,6 @@
       inset: 0;
       background: var(--bg-color);
       z-index: 3000;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: calc(24px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom));
-      text-align: center;
       overflow: hidden;
       transition: opacity 0.3s ease;
     }
@@ -1050,14 +1044,16 @@
     }
 
     .welcome-inner {
-      position: relative;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 42vh;
+      bottom: 0;
       z-index: 2;
-      width: 100%;
-      max-width: 420px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin-top: 44vh;
+      padding: 0 24px calc(32px + env(safe-area-inset-bottom));
     }
 
     .welcome-greeting {
@@ -1065,7 +1061,7 @@
       font-weight: 700;
       letter-spacing: -0.6px;
       line-height: 1.2;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       text-align: center;
       color: var(--text-color);
       min-height: 1.2em;
@@ -1086,7 +1082,7 @@
       letter-spacing: -0.1px;
       color: var(--hint-color);
       text-align: center;
-      margin-bottom: 40px;
+      margin-bottom: 0;
       min-height: 1.4em;
       line-height: 1.4;
       opacity: 0;
@@ -1099,7 +1095,8 @@
     }
 
     .welcome-start-btn {
-      padding: 15px 44px;
+      margin-top: auto;
+      padding: 16px 48px;
       border-radius: 14px;
       border: none;
       background: var(--button-color);
@@ -1109,7 +1106,7 @@
       font-weight: 600;
       letter-spacing: -0.2px;
       cursor: pointer;
-      min-width: 160px;
+      min-width: 180px;
       opacity: 0;
       transform: translateY(8px);
       pointer-events: none;
@@ -1495,7 +1492,7 @@
           totalW += lw + (i < word.length - 1 ? letterSpacing : 0);
         }
         let cx = w / 2 - totalW / 2;
-        const cy = h * 0.30;
+        const cy = h * 0.28;
         for (let i = 0; i < word.length; i++) {
           octx.fillText(word[i], cx + letterWidths[i] / 2, cy);
           cx += letterWidths[i] + letterSpacing;
@@ -1596,7 +1593,7 @@
       check.style.left = '';
       check.style.top = '';
       screen.classList.remove('closing');
-      screen.style.display = 'flex';
+      screen.style.display = 'block';
 
       document.body.classList.add('welcome-open');
       document.body.classList.remove('booting');
