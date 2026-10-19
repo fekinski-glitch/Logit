@@ -501,50 +501,6 @@
     .add-form input:focus { box-shadow: 0 0 0 2px var(--button-color); }
     .add-form-2 { display: flex; gap: 8px; margin-bottom: 22px; }
 
-    .note-toggle-btn {
-      display: block;
-      margin: 6px auto 0;
-      padding: 4px 10px;
-      background: none;
-      border: none;
-      color: var(--hint-color);
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 500;
-      letter-spacing: -0.1px;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      transition: opacity 0.15s;
-    }
-    .note-toggle-btn:active { opacity: 0.6; }
-
-    .note-field-wrap {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease, margin-bottom 0.3s ease;
-      margin-bottom: 0;
-    }
-    .note-field-wrap.open {
-      max-height: 200px;
-      margin-bottom: 8px;
-    }
-    .add-note-textarea {
-      width: 100%;
-      padding: 12px 16px;
-      border-radius: 12px;
-      border: none;
-      background-color: var(--secondary-bg-color);
-      color: var(--text-color);
-      font-size: 15px;
-      font-family: inherit;
-      outline: none;
-      resize: none;
-      letter-spacing: -0.2px;
-      line-height: 1.4;
-      transition: box-shadow 0.2s;
-    }
-    .add-note-textarea:focus { box-shadow: 0 0 0 2px var(--button-color); }
-
     .cat-toggle {
       height: 52px;
       padding: 0 12px;
@@ -656,7 +612,7 @@
     @keyframes collapseOut {
       0% {
         opacity: 1;
-        max-height: 400px;
+        max-height: 200px;
         margin-bottom: 10px;
       }
       100% {
@@ -731,6 +687,7 @@
       min-width: 0;
       display: flex;
       flex-direction: column;
+      gap: 5px;
       justify-content: center;
     }
     .task-text {
@@ -741,7 +698,6 @@
       word-break: break-word;
     }
     .task-time {
-      margin-top: 5px;
       font-size: 13px;
       font-weight: 600;
       letter-spacing: 0.1px;
@@ -770,35 +726,6 @@
       letter-spacing: 0.4px;
       text-transform: uppercase;
       line-height: 1.4;
-    }
-    .task-expand-indicator {
-      font-size: 10px;
-      color: var(--hint-color);
-      opacity: 0.7;
-      transition: transform 0.25s ease;
-      line-height: 1;
-      display: inline-block;
-    }
-    .task-item.expanded .task-expand-indicator {
-      transform: rotate(180deg);
-    }
-    .task-note-wrap {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease;
-    }
-    .task-item.expanded .task-note-wrap {
-      max-height: 400px;
-    }
-    .task-note-inner {
-      padding-top: 8px;
-      font-size: 14px;
-      color: var(--hint-color);
-      letter-spacing: -0.1px;
-      line-height: 1.4;
-      word-break: break-word;
-      white-space: pre-wrap;
-      font-weight: 400;
     }
     .delete-btn {
       background: none;
@@ -833,7 +760,7 @@
       display: none;
     }
 
-    /* Экран "Подробнее" */
+    /* Экран "Подробнее" — день недели под пилюлей */
     #detail-weekday {
       text-align: center;
       font-size: 15px;
@@ -897,16 +824,6 @@
     }
     .day-task-time.empty { color: var(--hint-color); font-weight: 500; }
     .day-task-item.done .day-task-time { color: var(--hint-color); }
-    .day-task-note {
-      font-size: 13px;
-      color: var(--hint-color);
-      font-weight: 400;
-      letter-spacing: -0.1px;
-      line-height: 1.4;
-      word-break: break-word;
-      white-space: pre-wrap;
-      margin-top: 4px;
-    }
     .day-empty {
       text-align: center;
       color: var(--hint-color);
@@ -1195,22 +1112,6 @@
       transition: box-shadow 0.2s;
     }
     .edit-input:focus { box-shadow: 0 0 0 2px var(--button-color); }
-    .edit-note-textarea {
-      width: 100%;
-      padding: 12px 16px;
-      border-radius: 12px;
-      border: none;
-      background-color: var(--secondary-bg-color);
-      color: var(--text-color);
-      font-size: 15px;
-      font-family: inherit;
-      outline: none;
-      resize: none;
-      letter-spacing: -0.2px;
-      line-height: 1.4;
-      transition: box-shadow 0.2s;
-    }
-    .edit-note-textarea:focus { box-shadow: 0 0 0 2px var(--button-color); }
     .edit-row { display: flex; gap: 8px; }
 
     /* ====== ПРИВЕТСТВЕННЫЙ ЭКРАН ====== */
@@ -1294,9 +1195,26 @@
     .logit-word.show span:nth-child(5) { animation: letterGlow 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both 0.32s; }
 
     @keyframes letterGlow {
-      0% { opacity: 0; transform: scale(0.3); text-shadow: 0 0 0 transparent; }
-      50% { opacity: 1; transform: scale(1.4); text-shadow: 0 0 20px var(--button-color), 0 0 8px var(--button-color), 0 0 2px rgba(255,255,255,0.9); }
-      100% { opacity: 1; transform: scale(1); text-shadow: 0 0 14px var(--button-color), 0 0 5px var(--button-color); }
+      0% {
+        opacity: 0;
+        transform: scale(0.3);
+        text-shadow: 0 0 0 transparent;
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.4);
+        text-shadow:
+          0 0 20px var(--button-color),
+          0 0 8px var(--button-color),
+          0 0 2px rgba(255,255,255,0.9);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+        text-shadow:
+          0 0 14px var(--button-color),
+          0 0 5px var(--button-color);
+      }
     }
 
     .ascii-scan-line {
@@ -1306,7 +1224,10 @@
       top: 0;
       height: 2px;
       background: var(--button-color);
-      box-shadow: 0 0 14px var(--button-color), 0 0 5px var(--button-color), 0 0 1px rgba(255,255,255,0.9);
+      box-shadow:
+        0 0 14px var(--button-color),
+        0 0 5px var(--button-color),
+        0 0 1px rgba(255,255,255,0.9);
       border-radius: 2px;
       opacity: 0;
       pointer-events: none;
@@ -1331,7 +1252,10 @@
       font-size: clamp(22px, 7vw, 32px);
       font-weight: 700;
       color: var(--button-color);
-      text-shadow: 0 0 18px var(--button-color), 0 0 8px var(--button-color), 0 0 2px rgba(255,255,255,0.7);
+      text-shadow:
+        0 0 18px var(--button-color),
+        0 0 8px var(--button-color),
+        0 0 2px rgba(255,255,255,0.7);
       opacity: 0;
       pointer-events: none;
       line-height: 1;
@@ -1462,10 +1386,6 @@
 
     <div class="add-form">
       <input type="text" id="task-input" placeholder="Что нужно сделать?" maxlength="100">
-      <button type="button" class="note-toggle-btn" id="note-toggle-btn">+ Заметка</button>
-    </div>
-    <div class="note-field-wrap" id="note-field-wrap">
-      <textarea id="task-note" class="add-note-textarea" placeholder="Заметка (опционально)" rows="2" maxlength="500"></textarea>
     </div>
     <div class="add-form-2">
       <button class="cat-toggle" id="cat-toggle" data-cat="personal">
@@ -1483,6 +1403,7 @@
     <div id="empty-state">На этот день задач нет</div>
   </div>
 
+  <!-- Экран Подробнее — БЕЗ дубля даты -->
   <div class="view" id="view-detail">
     <div class="header-wrap">
       <div class="date-pill-wrapper">
@@ -1584,7 +1505,6 @@
       </div>
       <div class="edit-body">
         <input type="text" id="edit-text" class="edit-input" maxlength="100" placeholder="Что нужно сделать?">
-        <textarea id="edit-note" class="edit-note-textarea" placeholder="Заметка (опционально)" rows="2" maxlength="500"></textarea>
         <div class="edit-row">
           <button class="cat-toggle" id="edit-cat-toggle" data-cat="personal">
             <span class="cat-dot"></span>
@@ -1627,7 +1547,6 @@
     let staggerNextRender = false;
     let pendingDelete = false;
     let skipSlideIn = false;
-    let expandedTasks = new Set();
 
     const TL_START_H = 5;
     const TL_END_H = 24;
@@ -1650,9 +1569,6 @@
       '│                    │\n' +
       '╰────────────────────╯';
 
-    function makeTaskId() {
-      return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-    }
     function todayISO() { return dateToISO(new Date()); }
     function dateToISO(d) {
       const y = d.getFullYear();
@@ -1706,9 +1622,6 @@
     function minutesToPct(min) {
       return Math.max(0, Math.min(100, (min - TL_START_H * 60) / TL_RANGE_MIN * 100));
     }
-    function hasNote(task) {
-      return !!(task && task.note && task.note.trim().length > 0);
-    }
 
     function getTimeGreeting() {
       const h = new Date().getHours();
@@ -1758,11 +1671,11 @@
           }
         });
         const onVpChange = () => {
-          const isKb = (stableHeight - vv.height) tg > 150;
-          if (isKb.H && isInputFocused()) setKeyboardOpen(true);
-          else ifaptic (!isKb && !isInputFocused()) setKeyboardOpen(false);
+          const isKb = (stableHeight - vv.height) > 150;
+          if (isKb && isInputFocused()) setKeyboardOpen(true);
+          else if (!isKb && !isInputFocused()) setKeyboardOpen(false);
         };
-        vv.addEventListenerFeedback('resize', onV.sepChange);
+        vv.addEventListener('resize', onVpChange);
         vv.addEventListener('scroll', onVpChange);
       }
     })();
@@ -1902,7 +1815,7 @@
       updateCategoryFilterUI();
       document.getElementById('cat-filter-overlay').classList.add('active');
       document.body.classList.add('picker-open');
-      try {lectionChanged(); } catch (e) {}
+      try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
     function closeCategoryFilter() {
       document.getElementById('cat-filter-overlay').classList.remove('active');
@@ -2159,11 +2072,6 @@
       let changed = false;
       tasks = tasks.map(t => {
         let updated = { ...t };
-        if (!updated.id) { updated.id = makeTaskId(); changed = true; }
-        if (updated.note === undefined || updated.note === null) {
-          updated.note = '';
-          changed = true;
-        }
         if (!updated.date) { updated.date = todayISO(); changed = true; }
         if (updated.time === undefined || updated.time === null) {
           updated.time = '';
@@ -2186,22 +2094,18 @@
       } catch (e) {}
     }
 
-    function attachTaskHandlers(card, task) {
+    function attachLongPress(card, index) {
       let startX = 0, startY = 0;
       let moved = false;
-      let longPressFired = false;
       let timer = null;
-
       card.addEventListener('touchstart', (e) => {
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
         moved = false;
-        longPressFired = false;
         clearTimeout(timer);
         timer = setTimeout(() => {
           if (!moved) {
-            longPressFired = true;
-            openEditModal(tasks.indexOf(task));
+            openEditModal(index);
             try { tg.HapticFeedback.impactOccurred('medium'); } catch (err) {}
           }
         }, 500);
@@ -2216,30 +2120,6 @@
       }, { passive: true });
       card.addEventListener('touchend', () => clearTimeout(timer));
       card.addEventListener('touchcancel', () => clearTimeout(timer));
-
-      card.addEventListener('click', (e) => {
-        if (longPressFired) {
-          e.preventDefault();
-          e.stopPropagation();
-          return;
-        }
-        if (e.target.closest('.delete-btn') || e.target.closest('.task-checkbox')) return;
-        if (!hasNote(task)) return;
-        toggleTaskExpand(task.id);
-      });
-    }
-
-    function toggleTaskExpand(taskId) {
-      const el = document.querySelector('.task-item[data-task-id="' + taskId + '"]');
-      if (!el) return;
-      if (expandedTasks.has(taskId)) {
-        expandedTasks.delete(taskId);
-        el.classList.remove('expanded');
-      } else {
-        expandedTasks.add(taskId);
-        el.classList.add('expanded');
-      }
-      try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
 
     function renderTimeline(dayTasks) {
@@ -2294,7 +2174,7 @@
     }
 
     function getNextUpcoming(dayTasks) {
-      if (selectedDate !== todayISO())In return null;
+      if (selectedDate !== todayISO()) return null;
       const now = new Date();
       const nowMin = now.getHours() * 60 + now.getMinutes();
       const upcoming = dayTasks
@@ -2358,32 +2238,24 @@
       const globalIndex = tasks.indexOf(task);
       const overdue = isOverdue(task);
       const isJustChecked = justCheckedIndex === globalIndex;
-      const showNote = hasNote(task);
-      const isExpanded = showNote && expandedTasks.has(task.id);
       const wrapper = document.createElement('li');
       wrapper.className = 'task-item-wrapper';
       wrapper.id = 'task-card-' + globalIndex;
-      if (skipSlide) {
+      if (skipSlideIn) {
         wrapper.classList.add('no-slide');
       } else if (doStagger) {
         wrapper.style.animationDelay = (Math.min(position, 8) * 35) + 'ms';
       }
       const badge = isNext ? '<span class="next-badge">дальше</span>' : '';
-      const indicator = showNote ? '<span class="task-expand-indicator">▾</span>' : '';
-      const noteHtml = showNote
-        ? `<div class="task-note-wrap"><div class="task-note-inner">${escapeHtml(task.note)}</div></div>`
-        : '';
       wrapper.innerHTML = `
-        <div class="task-item${task.done ? ' done' : ''}${overdue ? ' overdue' : ''}${isNext ? ' next-task' : ''}${isExpanded ? ' expanded' : ''}"
-             data-cat="${task.category}"
-             data-task-id="${task.id}">
+        <div class="task-item${task.done ? ' done' : ''}${overdue ? ' overdue' : ''}${isNext ? ' next-task' : ''}"
+             data-cat="${task.category}">
           <div class="task-checkbox${task.done ? ' checked' : ''}${isJustChecked ? ' just-checked' : ''}"></div>
           <div class="task-content">
             <span class="task-text">${escapeHtml(task.text)}</span>
             ${task.time
-              ? `<span class="task-time">${escapeHtml(task.time)}${badge}${indicator}</span>`
-              : `<span class="task-time empty">Без времени${indicator}</span>`}
-            ${noteHtml}
+              ? `<span class="task-time">${escapeHtml(task.time)}${badge}</span>`
+              : `<span class="task-time empty">Без времени</span>`}
           </div>
           <button class="delete-btn">✕</button>
         </div>
@@ -2399,7 +2271,7 @@
         e.stopPropagation();
         deleteTask(globalIndex);
       });
-      attachTaskHandlers(card, task);
+      attachLongPress(card, globalIndex);
       return wrapper;
     }
 
@@ -2483,6 +2355,7 @@
       btn.style.display = selectedDate === todayISO() ? 'none' : 'flex';
     }
 
+    // Подробнее — без крупной даты, только пилюля + день недели
     function renderDetailView() {
       const d = isoToDate(detailDate);
       document.getElementById('detail-weekday').textContent = WEEKDAYS_FULL[d.getDay()];
@@ -2537,7 +2410,6 @@
               ${task.time
                 ? `<span class="day-task-time">${escapeHtml(task.time)}</span>`
                 : `<span class="day-task-time empty">Без времени</span>`}
-              ${hasNote(task) ? `<span class="day-task-note">${escapeHtml(task.note)}</span>` : ''}
             </div>
           `;
           list.appendChild(li);
@@ -2550,7 +2422,6 @@
       const task = tasks[index];
       if (!task) return;
       document.getElementById('edit-text').value = task.text;
-      document.getElementById('edit-note').value = task.note || '';
       document.getElementById('edit-time').value = task.time || '';
       editCategory = task.category || 'personal';
       updateEditCatToggleUI();
@@ -2568,7 +2439,6 @@
       const text = document.getElementById('edit-text').value.trim();
       if (!text) return;
       tasks[editingIndex].text = text;
-      tasks[editingIndex].note = document.getElementById('edit-note').value.trim();
       tasks[editingIndex].time = document.getElementById('edit-time').value || '';
       tasks[editingIndex].category = editCategory;
       const wasDetail = currentView === 'detail';
@@ -2604,14 +2474,10 @@
     function addTask() {
       const input = document.getElementById('task-input');
       const timeInput = document.getElementById('task-time');
-      const noteInput = document.getElementById('task-note');
-      const noteWrap = document.getElementById('note-field-wrap');
       const text = input.value.trim();
       if (!text) return;
       tasks.push({
-        id: makeTaskId(),
         text,
-        note: noteInput.value.trim(),
         done: false,
         date: selectedDate,
         time: timeInput.value || '',
@@ -2619,8 +2485,6 @@
       });
       input.value = '';
       timeInput.value = '';
-      noteInput.value = '';
-      noteWrap.classList.remove('open');
       updateTimeBtn();
       if (currentCategory !== 'all' && currentCategory !== addCategory) {
         currentCategory = addCategory;
@@ -2643,14 +2507,14 @@
     function deleteTask(index) {
       if (pendingDelete) return;
       const el = document.getElementById('task-card-' + index);
-      const removed = tasks.splice(index, 1)[0];
-      if (removed && removed.id) expandedTasks.delete(removed.id);
       if (!el) {
+        tasks.splice(index, 1);
         render();
         saveTasks();
         try { tg.HapticFeedback.impactOccurred('rigid'); } catch (e) {}
         return;
       }
+      tasks.splice(index, 1);
       el.classList.add('removing');
       el.style.pointerEvents = 'none';
       try { tg.HapticFeedback.impactOccurred('rigid'); } catch (e) {}
@@ -2691,20 +2555,6 @@
       if (view === 'detail') renderDetailView();
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
-
-    document.getElementById('note-toggle-btn').addEventListener('click', () => {
-      const wrap = document.getElementById('note-field-wrap');
-      const noteInput = document.getElementById('task-note');
-      const isOpen = wrap.classList.contains('open');
-      if (isOpen) {
-        wrap.classList.remove('open');
-        noteInput.value = '';
-      } else {
-        wrap.classList.add('open');
-        setTimeout(() => { try { noteInput.focus(); } catch (e) {} }, 100);
-      }
-      try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
-    });
 
     document.getElementById('add-btn').addEventListener('click', addTask);
     document.getElementById('task-input').addEventListener('keypress', (e) => {
