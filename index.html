@@ -281,7 +281,7 @@
       bottom: 0;
       width: 32px;
       pointer-events: none;
-      z-index: 2;
+      z-index: 1;
       opacity: 0;
       transition: opacity 0.25s ease;
     }
@@ -295,6 +295,39 @@
     }
     .calendar-strip-wrap.has-more-left::before { opacity: 1; }
     .calendar-strip-wrap.has-more-right::after { opacity: 1; }
+
+    .calendar-arrow {
+      position: absolute;
+      top: 50%;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--bg-color);
+      border: 1px solid var(--separator);
+      color: var(--hint-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 3;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.15s ease;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      -webkit-tap-highlight-color: transparent;
+      padding: 0;
+      transform: translateY(-50%) scale(0.85);
+    }
+    .calendar-arrow-left { left: 6px; }
+    .calendar-arrow-right { right: 6px; }
+    .calendar-strip-wrap.has-more-left .calendar-arrow-left,
+    .calendar-strip-wrap.has-more-right .calendar-arrow-right {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(-50%) scale(1);
+    }
+    .calendar-arrow:active { opacity: 0.55; }
+    .calendar-arrow svg { width: 18px; height: 18px; stroke: currentColor; }
 
     .day-cell {
       flex-shrink: 0;
@@ -933,7 +966,7 @@
       color: var(--hint-color);
       font-variant-numeric: tabular-nums;
       transition: color 0.15s;
--to      -webkit-tap-highlight-color: transparent;
+      -webkit-tap-highlight-color: transparent;
       user-select: none;
     }
     .wheel-item.active { color: var(--text-color); font-weight: 600; }
@@ -985,7 +1018,7 @@
       pointer-events: none;
     }
     body.kb-open .undo-toast { bottom: 16px; }
-    .undoast.visible {
+    .undo-toast.visible {
       transform: translateY(0);
       opacity: 1;
       pointer-events: auto;
@@ -1179,7 +1212,13 @@
     </div>
 
     <div class="calendar-strip-wrap" id="calendar-strip-wrap">
+      <button class="calendar-arrow calendar-arrow-left" id="calendar-arrow-left" aria-label="Раньше">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
       <div class="calendar-strip" id="calendar-strip"></div>
+      <button class="calendar-arrow calendar-arrow-right" id="calendar-arrow-right" aria-label="Позже">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
     </div>
     <p id="date-label">Загрузка...</p>
 
@@ -1803,10 +1842,22 @@
       const wrap = document.getElementById('calendar-strip-wrap');
       const strip = document.getElementById('calendar-strip');
       if (!wrap || !strip) return;
-      const hasLeft = strip.scrollLeft > 4;
-      const hasRight = strip.scrollLeft + strip.clientWidth < strip.scrollWidth - 4;
+      const cells = strip.querySelectorAll('.day-cell');
+      if (cells.length === 0) return;
+      const stripRect = strip.getBoundingClientRect();
+      const firstRect = cells[0].getBoundingClientRect();
+      const lastRect = cells[cells.length - 1].getBoundingClientRect();
+      const hasLeft = firstRect.left < stripRect.left - 8;
+      const hasRight = lastRect.right > stripRect.right + 8;
       wrap.classList.toggle('has-more-left', hasLeft);
       wrap.classList.toggle('has-more-right', hasRight);
+    }
+    function scrollCalendarBy(dir) {
+      const strip = document.getElementById('calendar-strip');
+      if (!strip) return;
+      const amount = strip.clientWidth * 0.7;
+      strip.scrollBy({ left: dir * amount, behavior: 'smooth' });
+      try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
     function scrollToSelected(smooth) {
       const strip = document.getElementById('calendar-strip');
@@ -2129,10 +2180,10 @@
           <div class="task-content">
             <span class="task-text">${escapeHtml(task.text)}</span>
             ${task.time
-              ? `<span class="task-time">${escapeHtml(task.time)}${badronge}</span>">`
-              : `<span class="task▼-time empty">Без времени</span>`}
-</          </div>
-          <button class="deletespan-btn">✕</button>
+              ? `<span class="task-time">${escapeHtml(task.time)}${badge}</span>`
+              : `<span class="task-time empty">Без времени</span>`}
+          </div>
+          <button class="delete-btn">✕</button>
         </div>
       `;
       const card = wrapper.querySelector('.task-item');
@@ -2230,7 +2281,7 @@
       document.getElementById('detail-weekday').textContent = WEEKDAYS_FULL[d.getDay()];
       document.getElementById('detail-date-pill').innerHTML =
         d.getDate() + ' ' + MONTHS_GEN[d.getMonth()] + ' ' + d.getFullYear() +
-        ' <span class="chev>';
+        ' <span class="chevron">▼</span>';
       document.getElementById('detail-date-input').value = detailDate;
 
       const dayTasks = tasks.filter(t => t.date === detailDate && matchesCategory(t));
@@ -2438,7 +2489,8 @@
       document.getElementById('undo-toast').classList.remove('visible');
     }
 
-    document.getElementById('undo-toast-btn').addEventListener('click', undoDelete);
+    const undoToastBtn = document.getElementById('undo-toast-btn');
+    if (undoToastBtn) undoToastBtn.addEventListener('click', undoDelete);
 
     function escapeHtml(str) {
       const div = document.createElement('div');
@@ -2467,25 +2519,45 @@
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
 
-    document.getElementById('add-btn').addEventListener('click', addTask);
-    document.getElementById('task-input').addEventListener('keypress', (e) => {
+    const addBtnEl = document.getElementById('add-btn');
+    if (addBtnEl) addBtnEl.addEventListener('click', addTask);
+
+    const taskInputEl = document.getElementById('task-input');
+    if (taskInputEl) taskInputEl.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') addTask();
     });
-    document.getElementById('task-time').addEventListener('input', updateTimeBtn);
-    document.getElementById('task-time').addEventListener('change', updateTimeBtn);
 
-    document.getElementById('month-label').addEventListener('click', openPicker);
-    document.getElementById('picker-cancel').addEventListener('click', closePicker);
-    document.getElementById('picker-done').addEventListener('click', applyPicker);
-    document.getElementById('picker-overlay').addEventListener('click', (e) => {
+    const taskTimeEl = document.getElementById('task-time');
+    if (taskTimeEl) {
+      taskTimeEl.addEventListener('input', updateTimeBtn);
+      taskTimeEl.addEventListener('change', updateTimeBtn);
+    }
+
+    const monthLabelEl = document.getElementById('month-label');
+    if (monthLabelEl) monthLabelEl.addEventListener('click', openPicker);
+
+    const pickerCancelEl = document.getElementById('picker-cancel');
+    if (pickerCancelEl) pickerCancelEl.addEventListener('click', closePicker);
+
+    const pickerDoneEl = document.getElementById('picker-done');
+    if (pickerDoneEl) pickerDoneEl.addEventListener('click', applyPicker);
+
+    const pickerOverlayEl = document.getElementById('picker-overlay');
+    if (pickerOverlayEl) pickerOverlayEl.addEventListener('click', (e) => {
       if (e.target.id === 'picker-overlay') closePicker();
     });
 
-    document.getElementById('category-pill').addEventListener('click', openCategoryFilter);
-    document.getElementById('cat-filter-cancel').addEventListener('click', closeCategoryFilter);
-    document.getElementById('cat-filter-overlay').addEventListener('click', (e) => {
+    const categoryPillEl = document.getElementById('category-pill');
+    if (categoryPillEl) categoryPillEl.addEventListener('click', openCategoryFilter);
+
+    const catFilterCancelEl = document.getElementById('cat-filter-cancel');
+    if (catFilterCancelEl) catFilterCancelEl.addEventListener('click', closeCategoryFilter);
+
+    const catFilterOverlayEl = document.getElementById('cat-filter-overlay');
+    if (catFilterOverlayEl) catFilterOverlayEl.addEventListener('click', (e) => {
       if (e.target.id === 'cat-filter-overlay') closeCategoryFilter();
     });
+
     document.querySelectorAll('.cat-filter-item').forEach(btn => {
       btn.addEventListener('click', () => {
         setFilter(btn.dataset.cat);
@@ -2493,7 +2565,8 @@
       });
     });
 
-    document.getElementById('to-today-btn').addEventListener('click', () => {
+    const toTodayEl = document.getElementById('to-today-btn');
+    if (toTodayEl) toTodayEl.addEventListener('click', () => {
       selectedDate = todayISO();
       saveState();
       buildCalendar();
@@ -2502,7 +2575,20 @@
       try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
     });
 
-    document.getElementById('detail-date-input').addEventListener('change', (e) => {
+    const calArrowLeft = document.getElementById('calendar-arrow-left');
+    if (calArrowLeft) calArrowLeft.addEventListener('click', (e) => {
+      e.stopPropagation();
+      scrollCalendarBy(-1);
+    });
+
+    const calArrowRight = document.getElementById('calendar-arrow-right');
+    if (calArrowRight) calArrowRight.addEventListener('click', (e) => {
+      e.stopPropagation();
+      scrollCalendarBy(1);
+    });
+
+    const detailDateInputEl = document.getElementById('detail-date-input');
+    if (detailDateInputEl) detailDateInputEl.addEventListener('change', (e) => {
       if (e.target.value) {
         detailDate = e.target.value;
         selectedDate = e.target.value;
@@ -2519,13 +2605,22 @@
       btn.addEventListener('click', () => switchView(btn.dataset.view));
     });
 
-    document.getElementById('edit-cancel').addEventListener('click', closeEditModal);
-    document.getElementById('edit-save').addEventListener('click', saveEdit);
-    document.getElementById('edit-overlay').addEventListener('click', (e) => {
+    const editCancelEl = document.getElementById('edit-cancel');
+    if (editCancelEl) editCancelEl.addEventListener('click', closeEditModal);
+
+    const editSaveEl = document.getElementById('edit-save');
+    if (editSaveEl) editSaveEl.addEventListener('click', saveEdit);
+
+    const editOverlayEl = document.getElementById('edit-overlay');
+    if (editOverlayEl) editOverlayEl.addEventListener('click', (e) => {
       if (e.target.id === 'edit-overlay') closeEditModal();
     });
-    document.getElementById('edit-time').addEventListener('input', updateEditTimeBtn);
-    document.getElementById('edit-time').addEventListener('change', updateEditTimeBtn);
+
+    const editTimeEl = document.getElementById('edit-time');
+    if (editTimeEl) {
+      editTimeEl.addEventListener('input', updateEditTimeBtn);
+      editTimeEl.addEventListener('change', updateEditTimeBtn);
+    }
 
     setInterval(() => {
       if (currentView === 'tasks') {
