@@ -609,12 +609,8 @@
     .task-item[data-cat="personal"] { border-left-color: var(--cat-personal); }
     .task-item[data-cat="work"] { border-left-color: var(--cat-work); }
     .task-item.overdue { border-left-color: var(--danger-color); }
-    .task-item.next-task {
-      box-shadow: 0 0 0 2px var(--button-color);
-    }
-    .task-item.flash {
-      animation: flashHighlight 0.9s ease;
-    }
+    .task-item.next-task { box-shadow: 0 0 0 2px var(--button-color); }
+    .task-item.flash { animation: flashHighlight 0.9s ease; }
     @keyframes flashHighlight {
       0%, 100% { box-shadow: none; }
       30% { box-shadow: 0 0 0 3px var(--button-color); }
@@ -681,9 +677,7 @@
       font-weight: 500;
       font-size: 12px;
     }
-    .task-item.overdue .task-time:not(.empty) {
-      color: var(--danger-color);
-    }
+    .task-item.overdue .task-time:not(.empty) { color: var(--danger-color); }
     .next-badge {
       display: inline-flex;
       align-items: center;
@@ -1181,7 +1175,7 @@
 </head>
 <body>
 
-  <!-- Приветственный экран -->
+  <!-- Приветствие -->
   <div class="welcome-screen" id="welcome-screen">
     <div class="welcome-inner">
       <pre class="ascii-art" id="welcome-art"></pre>
@@ -1391,7 +1385,6 @@
     let editingIndex = -1;
     let editCategory = 'personal';
 
-    // Диапазон таймлайна
     const TL_START_H = 5;
     const TL_END_H = 24;
     const TL_RANGE_MIN = (TL_END_H - TL_START_H) * 60;
@@ -1736,7 +1729,7 @@
         if (scroll) scrollToSelected(true);
         return;
       }
-      selectedDate = iso;
+      selectedВсеDate = iso;
       saveState();
       document.querySelectorAll('.day-cell').forEach(cell => {
         cell.classList.toggle('selected', cell.dataset.date === iso);
@@ -1772,7 +1765,7 @@
     }
     function getWheelValue(wheelId) {
       const wheel = document.getElementById(wheelId);
-      const center = wheel.scrollTop + wheel.clientHeight / 2;
+      const center = wheel.sc выполнrollTop + wheelены.clientHeight / 2;
       let closest = null, minDist = Infinity;
       wheel.querySelectorAll('.wheel-item').forEach(item => {
         const ic = item.offsetTop + item.offsetHeight / 2;
@@ -1806,7 +1799,7 @@
       const wheel = document.getElementById(wheelId);
       let hapticTimer;
       let lastValue = getWheelValue(wheelId);
-      const update = () => {
+ 🎉      const update = () => {
         updateWheelVisual(wheelId);
         const v = getWheelValue(wheelId);
         if (v !== null && v !== lastValue) {
@@ -2035,7 +2028,7 @@
       }
       const doneCount = dayTasks.filter(t => t.done).length;
       if (doneCount === dayTasks.length) {
-        progressEl.textContent = 'Все выполнены 🎉';
+        progressEl.textContent = '';
         return;
       }
       const next = getNextUpcoming(dayTasks.filter(t => t.time));
@@ -2047,7 +2040,7 @@
       }
     }
 
-    // ====== Рендер карточки ======
+    // ====== Карточка задачи ======
     function buildTaskCard(task, isNext) {
       const globalIndex = tasks.indexOf(task);
       const overdue = isOverdue(task);
@@ -2105,7 +2098,6 @@
         else if (h >= 12 && h < 17) sections.day.push(t);
         else sections.evening.push(t);
       });
-      // Сортировка внутри секций по времени
       ['morning','day','evening','notime'].forEach(k => {
         sections[k].sort((a, b) => {
           if (!a.time && !b.time) return 0;
@@ -2161,7 +2153,7 @@
       btn.style.display = selectedDate === todayISO() ? 'none' : 'flex';
     }
 
-    // ====== Рендер "Подробнее" ======
+    // ====== Рендер "Подробнее" — по выбранному дню ======
     function renderDetailView() {
       const d = isoToDate(detailDate);
       document.getElementById('detail-date').textContent = d.getDate() + ' ' + MONTHS_GEN[d.getMonth()];
@@ -2323,10 +2315,14 @@
       return div.innerHTML;
     }
 
-    // ====== Переключение экранов ======
+    // ====== Переключение экранов — СИНХРОНИЗАЦИЯ detailDate ======
     function switchView(view) {
       if (view === currentView) return;
       currentView = view;
+      // При переходе на «Подробнее» — берём дату с главного экрана
+      if (view === 'detail') {
+        detailDate = selectedDate;
+      }
       saveState();
       document.getElementById('view-tasks').classList.toggle('active', view === 'tasks');
       document.getElementById('view-detail').classList.toggle('active', view === 'detail');
@@ -2372,10 +2368,14 @@
       try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
     });
 
+    // Правка 2: смена даты в «Подробнее» синхронизируется обратно на главный
     document.getElementById('detail-date-input').addEventListener('change', (e) => {
       if (e.target.value) {
         detailDate = e.target.value;
+        selectedDate = e.target.value;
         saveState();
+        buildCalendar();
+        render();
         renderDetailView();
         try { tg.HapticFeedback.impactOccurred('light'); } catch (err) {}
       }
@@ -2393,9 +2393,9 @@
     document.getElementById('edit-time').addEventListener('input', updateEditTimeBtn);
     document.getElementById('edit-time').addEventListener('change', updateEditTimeBtn);
 
-    // ====== Обновление "сейчас" каждую минуту ======
+    // Раз в минуту — обновляем «сейчас» и «Дальше» на главном
     setInterval(() => {
-      if (selectedDate === todayISO() && currentView === 'tasks') {
+      if (currentView === 'tasks') {
         updateNowMarker();
         const dayTasks = tasks.filter(t => t.date === selectedDate && matchesCategory(t));
         updateDayFocus(dayTasks);
@@ -2404,6 +2404,10 @@
 
     // ====== Старт ======
     restoreState();
+    // При старте синхронизируем detailDate с selectedDate
+    if (!localStorage.getItem(UI_STATE_KEY)) {
+      detailDate = selectedDate;
+    }
     buildCalendar();
     buildWheels();
     updateTimeBtn();
