@@ -91,8 +91,7 @@
       --glass-shadow: 0 4px 16px rgba(0,0,0,0.3);
     }
     #month-label { cursor: pointer; }
-    #month-label:active { transform: scale(0.96); background: var(--glass-bg); }
-    body[data-theme="dark"] #month-label:active { background: var(--glass-bg-dark); }
+    #month-label:active { transform: scale(0.96); }
     #month-label .chevron, #detail-date-pill .chevron {
       font-size: 9px;
       opacity: 0.5;
@@ -119,12 +118,11 @@
       box-shadow: var(--glass-shadow);
       -webkit-tap-highlight-color: transparent;
       animation: fadeInBtn 0.25s ease;
-      transition: transform 0.15s, background 0.2s;
+      transition: transform 0.15s;
     }
     body[data-theme="dark"] .to-today-btn {
       background: var(--glass-bg-dark);
       border-color: var(--glass-border-dark);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
     }
     .to-today-btn:active { transform: translateY(-50%) scale(0.9); }
     @keyframes fadeInBtn {
@@ -154,14 +152,13 @@
       font-family: inherit;
       border: none;
       -webkit-tap-highlight-color: transparent;
-      transition: transform 0.15s, background 0.2s;
+      transition: transform 0.15s;
       font-variant-numeric: tabular-nums;
       box-shadow: var(--glass-shadow);
     }
     body[data-theme="dark"] #category-pill {
       background: var(--glass-bg-dark);
       border-color: var(--glass-border-dark);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
     }
     #category-pill:active { transform: scale(0.97); }
     #category-pill .cat-pill-dot {
@@ -286,14 +283,64 @@
     }
     .cat-filter-item.active .cat-filter-check { opacity: 1; }
 
+    .cat-filter-row {
+      display: flex;
+      align-items: center;
+      transition: background-color 0.15s;
+    }
+    .cat-filter-main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 8px 14px 20px;
+      background: none;
+      border: none;
+      font-family: inherit;
+      cursor: pointer;
+      color: var(--text-color);
+      text-align: left;
+      min-width: 0;
+      -webkit-tap-highlight-color: transparent;
+      transition: background-color 0.15s;
+    }
+    .cat-filter-main:active { background: var(--secondary-bg-color); }
+    .cat-filter-row.active .cat-filter-main .cat-filter-label { font-weight: 600; }
+    .cat-filter-row.active .cat-filter-main .cat-filter-check { opacity: 1; }
+    .cat-filter-delete {
+      width: 44px;
+      height: 44px;
+      margin-right: 8px;
+      background: none;
+      border: none;
+      color: var(--hint-color);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0;
+      transition: color 0.15s, background-color 0.15s;
+    }
+    .cat-filter-delete:active {
+      color: var(--danger-color);
+      background: rgba(255, 59, 48, 0.1);
+    }
+    .cat-filter-delete svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+    }
+
     .project-new-wrap {
-      padding: 12px 16px;
+      padding: 12px 16px 16px;
       border-top: 0.5px solid var(--separator);
       flex-shrink: 0;
     }
     .project-new-btn {
       width: 100%;
-      height: 44px;
+      height: 52px;
       border-radius: 999px;
       background: none;
       border: 1.5px dashed var(--separator);
@@ -314,29 +361,35 @@
     .project-new-form.open { display: flex; }
     .project-new-input {
       width: 100%;
-      height: 44px;
-      padding: 0 16px;
+      height: 52px;
+      padding: 0 20px;
       border-radius: 999px;
       border: none;
       background: var(--secondary-bg-color);
       color: var(--text-color);
       font-family: inherit;
-      font-size: 16px;
+      font-size: 17px;
+      font-weight: 400;
       letter-spacing: -0.2px;
       outline: none;
-      transition: box-shadow 0.2s;
+      transition: box-shadow 0.2s, background-color 0.2s;
+      -webkit-appearance: none;
+      appearance: none;
     }
-    .project-new-input:focus { box-shadow: 0 0 0 2px var(--button-color); }
+    .project-new-input:focus {
+      box-shadow: 0 0 0 2px var(--button-color);
+      background: var(--bg-color);
+    }
     .project-palette {
       display: flex;
       gap: 10px;
       justify-content: center;
-      padding: 4px 0;
+      padding: 8px 0;
       flex-wrap: wrap;
     }
     .project-color-dot {
-      width: 32px;
-      height: 32px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       border: 3px solid transparent;
       cursor: pointer;
@@ -352,18 +405,19 @@
     .project-color-dot:active { transform: scale(1.15); }
     .project-new-save {
       width: 100%;
-      height: 44px;
+      height: 52px;
       border-radius: 999px;
       border: none;
       background: var(--button-color);
       color: var(--button-text-color);
       font-family: inherit;
-      font-size: 15px;
+      font-size: 17px;
       font-weight: 600;
       letter-spacing: -0.2px;
       cursor: pointer;
       transition: opacity 0.15s, transform 0.1s;
       -webkit-tap-highlight-color: transparent;
+      box-shadow: 0 4px 12px rgba(36,129,204,0.3);
     }
     .project-new-save:active { opacity: 0.85; transform: scale(0.97); }
 
@@ -641,7 +695,7 @@
     .add-form input {
       width: 100%;
       height: 52px;
-      padding: 0 16px;
+      padding: 0 20px;
       border-radius: 999px;
       border: none;
       background-color: var(--secondary-bg-color);
@@ -706,7 +760,7 @@
       letter-spacing: -0.2px;
       font-family: inherit;
       pointer-events: none;
-      transition: color 0.2s, background 0.2s;
+      transition: color 0.2s;
     }
     .time-btn-display.has-value {
       color: var(--text-color);
@@ -737,7 +791,7 @@
       font-weight: 400;
       line-height: 1;
       cursor: pointer;
-      transition: transform 0.1s, opacity 0.2s, box-shadow 0.2s;
+      transition: transform 0.1s, opacity 0.2s;
       flex-shrink: 0;
       font-family: inherit;
       padding-bottom: 2px;
@@ -1101,7 +1155,7 @@
     .edit-input {
       width: 100%;
       height: 52px;
-      padding: 0 16px;
+      padding: 0 20px;
       border-radius: 999px;
       border: none;
       background-color: var(--secondary-bg-color);
@@ -1486,19 +1540,299 @@
     tg.expand();
     if (tg.colorScheme) document.body.setAttribute('data-theme', tg.colorScheme);
 
-    const STORAGE_KEY = 'my_tasks_v2';
-    const FALLBACK_KEY = 'my_tasks_local_v2';
-    const OLD_STORAGE_KEY = 'my_tasks_v1';
-    const OLD_FALLBACK_KEY = 'my_tasks_local_v1';
-    const UI_STATE_KEY = 'logit_ui_state';
-
     const PALETTE = [
       '#34c759', '#ff9f0a', '#007aff', '#af52de',
       '#ff2d55', '#5ac8fa', '#ffcc00', '#ff3b30'
     ];
 
-    let tasks = [];
-    let projects = [];
+    const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь',
+                    'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+    const WEEKDAYS_FULL = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+    const MONTHS_GEN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+    const CIRCUMFERENCE = 2 * Math.PI * 52;
+    const TL_START_H = 5;
+    const TL_END_H = 24;
+    const TL_RANGE_MIN = (TL_END_H - TL_START_H) * 60;
+    const UNDO_DURATION = 4000;
+    const UI_STATE_KEY = 'logit_ui_state';
+
+    function dateToISO(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+    function todayISO() { return dateToISO(new Date()); }
+    function isoToDate(iso) {
+      const [y, m, d] = iso.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    class TaskStore {
+      constructor() {
+        this.tasks = [];
+        this.projects = [];
+        this.STORAGE_KEY = 'my_tasks_v3';
+        this.FALLBACK_KEY = 'my_tasks_local_v3';
+        this.OLD_STORAGE_KEY = 'my_tasks_v2';
+        this.OLD_FALLBACK_KEY = 'my_tasks_local_v2';
+        this.V1_STORAGE_KEY = 'my_tasks_v1';
+        this.V1_FALLBACK_KEY = 'my_tasks_local_v1';
+        this._initPromise = null;
+        this.ready = false;
+      }
+
+      _defaults() {
+        return [
+          { id: 'personal', name: 'Личное', color: '#34c759' },
+          { id: 'work', name: 'Работа', color: '#ff9f0a' }
+        ];
+      }
+
+      _id() {
+        return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+      }
+
+      _hasCloud() {
+        return tg.CloudStorage && typeof tg.CloudStorage.getItem === 'function';
+      }
+
+      async _cloudGet(key) {
+        if (!this._hasCloud()) return null;
+        try {
+          const v = await tg.CloudStorage.getItem(key);
+          return v || null;
+        } catch (e) {
+          console.error('cloudGet failed:', e);
+          return null;
+        }
+      }
+
+      async _cloudSet(key, value) {
+        if (!this._hasCloud()) return false;
+        try {
+          await tg.CloudStorage.setItem(key, value);
+          return true;
+        } catch (e) {
+          console.error('cloudSet failed:', e);
+          return false;
+        }
+      }
+
+      init() {
+        if (!this._initPromise) {
+          this._initPromise = this._load();
+        }
+        return this._initPromise;
+      }
+
+      async _load() {
+        let loaded = false;
+
+        // 1. localStorage (sync, fast)
+        try {
+          const saved = localStorage.getItem(this.FALLBACK_KEY);
+          if (saved) {
+            const data = JSON.parse(saved);
+            if (data && typeof data === 'object' && !Array.isArray(data)) {
+              this.tasks = Array.isArray(data.tasks) ? data.tasks : [];
+              this.projects = Array.isArray(data.projects) && data.projects.length ? data.projects : this._defaults();
+              loaded = true;
+            }
+          }
+        } catch (e) {
+          console.error('local v3 load failed:', e);
+        }
+
+        // 2. CloudStorage (async, if local empty)
+        if (!loaded) {
+          try {
+            const saved = await this._cloudGet(this.STORAGE_KEY);
+            if (saved) {
+              const data = JSON.parse(saved);
+              if (data && typeof data === 'object' && !Array.isArray(data)) {
+                this.tasks = Array.isArray(data.tasks) ? data.tasks : [];
+                this.projects = Array.isArray(data.projects) && data.projects.length ? data.projects : this._defaults();
+                loaded = true;
+              }
+            }
+          } catch (e) {
+            console.error('cloud v3 load failed:', e);
+          }
+        }
+
+        // 3. Migration from v2 (local)
+        if (!loaded) {
+          try {
+            const saved = localStorage.getItem(this.OLD_FALLBACK_KEY);
+            if (saved) {
+              const data = JSON.parse(saved);
+              if (data && typeof data === 'object' && !Array.isArray(data)) {
+                this.tasks = Array.isArray(data.tasks) ? data.tasks : [];
+                this.projects = Array.isArray(data.projects) && data.projects.length ? data.projects : this._defaults();
+                loaded = true;
+              }
+            }
+          } catch (e) {}
+        }
+
+        // 4. Migration from v2 (cloud)
+        if (!loaded) {
+          try {
+            const saved = await this._cloudGet(this.OLD_STORAGE_KEY);
+            if (saved) {
+              const data = JSON.parse(saved);
+              if (data && typeof data === 'object' && !Array.isArray(data)) {
+                this.tasks = Array.isArray(data.tasks) ? data.tasks : [];
+                this.projects = Array.isArray(data.projects) && data.projects.length ? data.projects : this._defaults();
+                loaded = true;
+              }
+            }
+          } catch (e) {}
+        }
+
+        // 5. Migration from v1 (old format - array of tasks)
+        if (!loaded) {
+          let oldTasks = null;
+          try {
+            const saved = localStorage.getItem(this.V1_FALLBACK_KEY);
+            if (saved) {
+              const parsed = JSON.parse(saved);
+              if (Array.isArray(parsed)) oldTasks = parsed;
+            }
+          } catch (e) {}
+          if (!oldTasks) {
+            try {
+              const saved = await this._cloudGet(this.V1_STORAGE_KEY);
+              if (saved) {
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed)) oldTasks = parsed;
+              }
+            } catch (e) {}
+          }
+          this.tasks = oldTasks || [];
+          this.projects = this._defaults();
+          loaded = true;
+        }
+
+        // 6. Migrate fields
+        this._migrate();
+
+        // 7. Always save to ensure consistency
+        await this.save();
+
+        this.ready = true;
+      }
+
+      _migrate() {
+        if (!this.projects || this.projects.length === 0) {
+          this.projects = this._defaults();
+        }
+        this.tasks = this.tasks.map(t => {
+          const updated = { ...t };
+          if (!updated.id) updated.id = this._id();
+          if (!updated.date) updated.date = todayISO();
+          if (updated.time === undefined || updated.time === null) updated.time = '';
+          if (!updated.projectId) {
+            if (updated.category === 'work') updated.projectId = 'work';
+            else updated.projectId = 'personal';
+            if (updated.category !== undefined) delete updated.category;
+          }
+          if (!this.projects.find(p => p.id === updated.projectId)) {
+            updated.projectId = this.projects[0].id;
+          }
+          return updated;
+        });
+      }
+
+      async save() {
+        const data = { tasks: this.tasks, projects: this.projects };
+        let json;
+        try {
+          json = JSON.stringify(data);
+        } catch (e) {
+          console.error('stringify failed:', e);
+          return;
+        }
+        try {
+          localStorage.setItem(this.FALLBACK_KEY, json);
+        } catch (e) {
+          console.error('localStorage save failed:', e);
+        }
+        await this._cloudSet(this.STORAGE_KEY, json);
+      }
+
+      getProject(id) {
+        return this.projects.find(p => p.id === id) || this.projects[0] || { id: 'personal', name: 'Личное', color: '#34c759' };
+      }
+      getProjectColor(id) { return this.getProject(id).color; }
+      getProjectName(id) { return this.getProject(id).name; }
+
+      addTask(data) {
+        const task = {
+          id: this._id(),
+          text: data.text,
+          done: false,
+          date: data.date,
+          time: data.time || '',
+          projectId: data.projectId
+        };
+        this.tasks.push(task);
+        return task;
+      }
+
+      deleteTask(index) {
+        if (index < 0 || index >= this.tasks.length) return null;
+        return this.tasks.splice(index, 1)[0];
+      }
+
+      restoreTask(task, index) {
+        if (!task) return;
+        const at = Math.max(0, Math.min(index, this.tasks.length));
+        this.tasks.splice(at, 0, task);
+      }
+
+      toggleTask(index) {
+        if (index < 0 || index >= this.tasks.length) return null;
+        this.tasks[index].done = !this.tasks[index].done;
+        return this.tasks[index];
+      }
+
+      updateTask(index, updates) {
+        if (index < 0 || index >= this.tasks.length) return null;
+        Object.assign(this.tasks[index], updates);
+        return this.tasks[index];
+      }
+
+      addProject(name, color) {
+        const project = {
+          id: 'p_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+          name,
+          color
+        };
+        this.projects.push(project);
+        return project;
+      }
+
+      deleteProject(id) {
+        if (this.projects.length <= 1) return null;
+        const project = this.projects.find(p => p.id === id);
+        if (!project) return null;
+        const fallback = this.projects.find(p => p.id !== id);
+        if (!fallback) return null;
+        this.tasks.forEach(t => {
+          if (t.projectId === id) t.projectId = fallback.id;
+        });
+        this.projects = this.projects.filter(p => p.id !== id);
+        return project;
+      }
+
+      filterTasks(date, filter) {
+        return this.tasks.filter(t => t.date === date && (filter === 'all' || t.projectId === filter));
+      }
+    }
+
+    const store = new TaskStore();
 
     let selectedDate = todayISO();
     let detailDate = todayISO();
@@ -1521,48 +1855,6 @@
     let skipSlideIn = false;
     let pendingUndo = null;
 
-    const UNDO_DURATION = 4000;
-
-    const TL_START_H = 5;
-    const TL_END_H = 24;
-    const TL_RANGE_MIN = (TL_END_H - TL_START_H) * 60;
-
-    const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь',
-                    'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
-    const WEEKDAYS_FULL = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
-    const MONTHS_GEN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
-    const CIRCUMFERENCE = 2 * Math.PI * 52;
-
-    function getDefaultProjects() {
-      return [
-        { id: 'personal', name: 'Личное', color: '#34c759' },
-        { id: 'work', name: 'Работа', color: '#ff9f0a' }
-      ];
-    }
-
-    function getProject(id) {
-      return projects.find(p => p.id === id) || projects[0] || { id: 'personal', name: 'Личное', color: '#34c759' };
-    }
-    function getProjectColor(id) { return getProject(id).color; }
-    function getProjectName(id) { return getProject(id).name; }
-
-    function makeTaskId() {
-      return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-    }
-    function makeProjectId() {
-      return 'p_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    }
-    function todayISO() { return dateToISO(new Date()); }
-    function dateToISO(d) {
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${y}-${m}-${day}`;
-    }
-    function isoToDate(iso) {
-      const [y, m, d] = iso.split('-').map(Number);
-      return new Date(y, m - 1, d);
-    }
     function formatDateLabel(iso) {
       const d = isoToDate(iso);
       const today = new Date(); today.setHours(0,0,0,0);
@@ -1853,7 +2145,7 @@
         dot.style.background = 'var(--hint-color)';
         label.textContent = 'Все задачи';
       } else {
-        const p = getProject(currentFilter);
+        const p = store.getProject(currentFilter);
         dot.style.background = p.color;
         label.textContent = p.name;
       }
@@ -1862,7 +2154,7 @@
       const dot = document.getElementById('cat-toggle-dot');
       const label = document.getElementById('cat-toggle-label');
       if (!dot || !label) return;
-      const p = getProject(addProjectId);
+      const p = store.getProject(addProjectId);
       dot.style.background = p.color;
       label.textContent = p.name;
     }
@@ -1870,7 +2162,7 @@
       const dot = document.getElementById('edit-cat-toggle-dot');
       const label = document.getElementById('edit-cat-label');
       if (!dot || !label) return;
-      const p = getProject(editProjectId);
+      const p = store.getProject(editProjectId);
       dot.style.background = p.color;
       label.textContent = p.name;
     }
@@ -1901,20 +2193,48 @@
         title.textContent = 'Проект';
       }
 
-      projects.forEach(p => {
+      const canDelete = store.projects.length > 1;
+
+      store.projects.forEach(p => {
         const isActive =
           (projectSheetMode === 'filter' && currentFilter === p.id) ||
           (projectSheetMode === 'add' && addProjectId === p.id) ||
           (projectSheetMode === 'edit' && editProjectId === p.id);
-        const btn = document.createElement('button');
-        btn.className = 'cat-filter-item' + (isActive ? ' active' : '');
-        btn.innerHTML = `
+
+        const row = document.createElement('div');
+        row.className = 'cat-filter-row' + (isActive ? ' active' : '');
+
+        const mainBtn = document.createElement('button');
+        mainBtn.className = 'cat-filter-main';
+        mainBtn.innerHTML = `
           <span class="cat-filter-dot" style="background: ${p.color};"></span>
           <span class="cat-filter-label">${escapeHtml(p.name)}</span>
           <svg class="cat-filter-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 10 18 20 6"/></svg>
         `;
-        btn.addEventListener('click', () => selectProjectFromSheet(p.id));
-        list.appendChild(btn);
+        mainBtn.addEventListener('click', () => selectProjectFromSheet(p.id));
+        row.appendChild(mainBtn);
+
+        if (canDelete) {
+          const deleteBtn = document.createElement('button');
+          deleteBtn.className = 'cat-filter-delete';
+          deleteBtn.setAttribute('aria-label', 'Удалить проект');
+          deleteBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              <path d="M10 11v6"/>
+              <path d="M14 11v6"/>
+              <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+            </svg>
+          `;
+          deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            handleDeleteProject(p.id);
+          });
+          row.appendChild(deleteBtn);
+        }
+
+        list.appendChild(row);
       });
     }
 
@@ -1975,24 +2295,20 @@
       closeProjectSheet();
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
-    function createNewProject() {
+    async function createNewProject() {
       const input = document.getElementById('project-new-input');
       if (!input) return;
       const name = input.value.trim();
       if (!name) { try { input.focus(); } catch (e) {} return; }
-      const newProject = {
-        id: makeProjectId(),
-        name: name,
-        color: pendingProjectColor
-      };
-      projects.push(newProject);
+      const newProject = store.addProject(name, pendingProjectColor);
+      await store.save();
+
       input.value = '';
       pendingProjectColor = PALETTE[0];
       const form = document.getElementById('project-new-form');
       const btn = document.getElementById('project-new-btn');
       if (form) form.classList.remove('open');
       if (btn) btn.style.display = '';
-      saveTasks();
       renderProjectSheet();
 
       if (projectSheetMode === 'add') {
@@ -2005,6 +2321,40 @@
         closeProjectSheet();
       }
       try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
+    }
+
+    async function handleDeleteProject(id) {
+      if (store.projects.length <= 1) return;
+      const project = store.projects.find(p => p.id === id);
+      if (!project) return;
+
+      const performDelete = async () => {
+        const removed = store.deleteProject(id);
+        if (!removed) return;
+        if (currentFilter === id) currentFilter = 'all';
+        if (addProjectId === id) addProjectId = store.projects[0].id;
+        if (editProjectId === id) editProjectId = store.projects[0].id;
+        await store.save();
+        saveState();
+        updateProjectPillUI();
+        updateProjectToggleUI();
+        updateEditProjectToggleUI();
+        renderProjectSheet();
+        updateCalendarDots();
+        render();
+        if (currentView === 'detail') renderDetailView();
+        try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
+      };
+
+      const message = 'Удалить проект «' + project.name + '»? Задачи перейдут в другой проект.';
+
+      if (tg.showConfirm && typeof tg.showConfirm === 'function') {
+        try {
+          tg.showConfirm(message, (ok) => { if (ok) performDelete(); });
+          return;
+        } catch (e) {}
+      }
+      if (window.confirm && window.confirm(message)) performDelete();
     }
 
     function buildCalendar() {
@@ -2050,7 +2400,7 @@
     function updateCalendarDots() {
       document.querySelectorAll('.day-cell').forEach(cell => {
         const iso = cell.dataset.date;
-        const hasPending = tasks.some(t => t.date === iso && !t.done && matchesCategory(t));
+        const hasPending = store.tasks.some(t => t.date === iso && !t.done && matchesCategory(t));
         cell.classList.toggle('has-tasks', hasPending);
       });
     }
@@ -2133,13 +2483,15 @@
       MONTHS.forEach((name, i) => {
         const el = document.createElement('div');
         el.className = 'wheel-item';
-        el.dataset.value = i;
-        el.textContent = name;
+        el.dataset');
+.value = i;
+        el.textContent =    name;
         mw.appendChild(el);
-      });
-      const yw = document.querySelector('#wheel-year .wheel-inner');
+      }
+ });
+      const yw = document.querySelector   ('#wheel-year .wheel-inner');
       yw.innerHTML = '';
-      for (let y = currentYear - 10; y <= currentYear + 10; y++) {
+      for (let function y = currentYear - 10; y <= currentYear + 10; y++) {
         const el = document.createElement('div');
         el.className = 'wheel-item';
         el.dataset.value = y;
@@ -2212,9 +2564,7 @@
     }
     function closePicker() {
       document.getElementById('picker-overlay').classList.remove('active');
-      document.body.classList.remove('picker-open');
-    }
-    function applyPicker() {
+      document.body.classList.remove('picker-open applyPicker() {
       const m = getWheelValue('wheel-month');
       const y = getWheelValue('wheel-year');
       if (m !== null) pickerMonth = m;
@@ -2232,118 +2582,6 @@
       staggerNextRender = true;
       render();
       try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
-    }
-
-    async function loadTasks() {
-      try {
-        if (tg.CloudStorage && typeof tg.CloudStorage.getItem === 'function') {
-          const saved = await tg.CloudStorage.getItem(STORAGE_KEY);
-          if (saved) {
-            const data = JSON.parse(saved);
-            tasks = Array.isArray(data.tasks) ? data.tasks : [];
-            projects = Array.isArray(data.projects) && data.projects.length ? data.projects : getDefaultProjects();
-            migrateTasks();
-            render();
-            if (currentView === 'detail') renderDetailView();
-            updateProjectUI();
-            updateEditProjectToggleUI();
-            return;
-          }
-        }
-        const localSaved = localStorage.getItem(FALLBACK_KEY);
-        if (localSaved) {
-          const data = JSON.parse(localSaved);
-          tasks = Array.isArray(data.tasks) ? data.tasks : [];
-          projects = Array.isArray(data.projects) && data.projects.length ? data.projects : getDefaultProjects();
-          migrateTasks();
-          render();
-          if (currentView === 'detail') renderDetailView();
-          updateProjectUI();
-          updateEditProjectToggleUI();
-          return;
-        }
-        let oldTasks = null;
-        try {
-          if (tg.CloudStorage && typeof tg.CloudStorage.getItem === 'function') {
-            const oldSaved = await tg.CloudStorage.getItem(OLD_STORAGE_KEY);
-            if (oldSaved) {
-              const parsed = JSON.parse(oldSaved);
-              if (Array.isArray(parsed)) oldTasks = parsed;
-            }
-          }
-        } catch (e) {}
-        if (!oldTasks) {
-          try {
-            const oldLocal = localStorage.getItem(OLD_FALLBACK_KEY);
-            if (oldLocal) {
-              const parsed = JSON.parse(oldLocal);
-              if (Array.isArray(parsed)) oldTasks = parsed;
-            }
-          } catch (e) {}
-        }
-        tasks = oldTasks || [];
-        projects = [];
-        migrateTasks();
-        render();
-        if (currentView === 'detail') renderDetailView();
-        updateProjectUI();
-        updateEditProjectToggleUI();
-      } catch (e) {
-        console.error('Ошибка загрузки:', e);
-        tasks = [];
-        projects = getDefaultProjects();
-        migrateTasks();
-        render();
-        if (currentView === 'detail') renderDetailView();
-        updateProjectUI();
-        updateEditProjectToggleUI();
-      }
-    }
-    function migrateTasks() {
-      let changed = false;
-      if (!projects || projects.length === 0) {
-        projects = getDefaultProjects();
-        changed = true;
-      }
-      tasks = tasks.map(t => {
-        let updated = { ...t };
-        if (!updated.id) { updated.id = makeTaskId(); changed = true; }
-        if (!updated.date) { updated.date = todayISO(); changed = true; }
-        if (updated.time === undefined || updated.time === null) { updated.time = ''; changed = true; }
-        if (!updated.projectId) {
-          if (updated.category === 'work') updated.projectId = 'work';
-          else updated.projectId = 'personal';
-          if (updated.category !== undefined) delete updated.category;
-          changed = true;
-        }
-        if (!projects.find(p => p.id === updated.projectId)) {
-          updated.projectId = projects[0].id;
-          changed = true;
-        }
-        return updated;
-      });
-      if (currentFilter !== 'all' && !projects.find(p => p.id === currentFilter)) {
-        currentFilter = 'all';
-        changed = true;
-      }
-      if (!projects.find(p => p.id === addProjectId)) {
-        addProjectId = projects[0].id;
-        changed = true;
-      }
-      if (!projects.find(p => p.id === editProjectId)) {
-        editProjectId = projects[0].id;
-        changed = true;
-      }
-      if (changed) saveTasks();
-    }
-    async function saveTasks() {
-      const data = { tasks, projects };
-      try { localStorage.setItem(FALLBACK_KEY, JSON.stringify(data)); } catch (e) {}
-      try {
-        if (tg.CloudStorage && typeof tg.CloudStorage.setItem === 'function') {
-          await tg.CloudStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        }
-      } catch (e) {}
     }
 
     function attachLongPress(card, index) {
@@ -2404,14 +2642,14 @@
         dot.type = 'button';
         dot.className = 'mini-timeline-dot';
         dot.style.left = pct + '%';
-        dot.dataset.taskId = tasks.indexOf(task);
+        dot.dataset.taskId = store.tasks.indexOf(task);
         if (isOverdue(task)) {
           dot.style.background = 'var(--danger-color)';
         } else {
-          dot.style.background = getProjectColor(task.projectId);
+          dot.style.background = store.getProjectColor(task.projectId);
         }
         if (task.done) dot.classList.add('done');
-        if (nextTask && tasks.indexOf(task) === tasks.indexOf(nextTask)) dot.classList.add('next');
+        if (nextTask && store.tasks.indexOf(task) === store.tasks.indexOf(nextTask)) dot.classList.add('next');
         dot.title = task.time + ' — ' + task.text;
         dot.addEventListener('click', () => scrollToTask(dot.dataset.taskId));
         dotsEl.appendChild(dot);
@@ -2471,10 +2709,10 @@
     }
 
     function buildTaskCard(task, isNext, position, doStagger) {
-      const globalIndex = tasks.indexOf(task);
+      const globalIndex = store.tasks.indexOf(task);
       const overdue = isOverdue(task);
       const isJustChecked = justCheckedIndex === globalIndex;
-      const borderColor = overdue ? 'var(--danger-color)' : getProjectColor(task.projectId);
+      const borderColor = overdue ? 'var(--danger-color)' : store.getProjectColor(task.projectId);
       const wrapper = document.createElement('li');
       wrapper.className = 'task-item-wrapper';
       wrapper.id = 'task-card-' + globalIndex;
@@ -2518,7 +2756,7 @@
       const emptyState = document.getElementById('empty-state');
       document.getElementById('date-label').textContent = formatDateLabel(selectedDate);
 
-      const dayTasks = tasks.filter(t => t.date === selectedDate && matchesCategory(t));
+      const dayTasks = store.filterTasks(selectedDate, currentFilter);
       const sections = { morning: [], day: [], evening: [], notime: [] };
       dayTasks.forEach(t => {
         if (!t.time) { sections.notime.push(t); return; }
@@ -2591,7 +2829,7 @@
         ' <span class="chevron">▼</span>';
       document.getElementById('detail-date-input').value = detailDate;
 
-      const dayTasks = tasks.filter(t => t.date === detailDate && matchesCategory(t));
+      const dayTasks = store.filterTasks(detailDate, currentFilter);
       const doneCount = dayTasks.filter(t => t.done).length;
       const total = dayTasks.length;
       const ring = document.getElementById('ring-fill');
@@ -2627,7 +2865,7 @@
         sorted.forEach(task => {
           const li = document.createElement('li');
           li.className = 'day-task-item' + (task.done ? ' done' : '');
-          li.style.borderLeftColor = getProjectColor(task.projectId);
+          li.style.borderLeftColor = store.getProjectColor(task.projectId);
           li.innerHTML = `
             <div class="day-task-content">
               <span class="day-task-text">${escapeHtml(task.text)}</span>
@@ -2643,11 +2881,11 @@
 
     function openEditModal(index) {
       editingIndex = index;
-      const task = tasks[index];
+      const task = store.tasks[index];
       if (!task) return;
       document.getElementById('edit-text').value = task.text;
       document.getElementById('edit-time').value = task.time || '';
-      editProjectId = task.projectId || (projects[0] && projects[0].id) || 'personal';
+      editProjectId = task.projectId || (store.projects[0] && store.projects[0].id) || 'personal';
       updateEditProjectToggleUI();
       updateEditTimeBtn();
       document.getElementById('edit-overlay').classList.add('active');
@@ -2658,18 +2896,20 @@
       document.body.classList.remove('picker-open');
       editingIndex = -1;
     }
-    function saveEdit() {
+    async function saveEdit() {
       if (editingIndex < 0) return;
       const text = document.getElementById('edit-text').value.trim();
       if (!text) return;
-      tasks[editingIndex].text = text;
-      tasks[editingIndex].time = document.getElementById('edit-time').value || '';
-      tasks[editingIndex].projectId = editProjectId;
+      store.updateTask(editingIndex, {
+        text,
+        time: document.getElementById('edit-time').value || '',
+        projectId: editProjectId
+      });
+      await store.save();
       const wasDetail = currentView === 'detail';
       closeEditModal();
       render();
       if (wasDetail) renderDetailView();
-      saveTasks();
       try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
     }
     function updateEditTimeBtn() {
@@ -2695,19 +2935,18 @@
         timeBtnText.classList.remove('has-value');
       }
     }
-    function addTask() {
+    async function addTask() {
       const input = document.getElementById('task-input');
       const timeInput = document.getElementById('task-time');
       const text = input.value.trim();
       if (!text) return;
-      tasks.push({
-        id: makeTaskId(),
+      store.addTask({
         text,
-        done: false,
         date: selectedDate,
         time: timeInput.value || '',
         projectId: addProjectId
       });
+      await store.save();
       input.value = '';
       timeInput.value = '';
       updateTimeBtn();
@@ -2717,21 +2956,20 @@
         updateProjectPillUI();
       }
       render();
-      saveTasks();
       try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
       input.blur();
     }
-    function toggleTask(index) {
-      tasks[index].done = !tasks[index].done;
-      justCheckedIndex = tasks[index].done ? index : -1;
+    async function toggleTask(index) {
+      store.toggleTask(index);
+      justCheckedIndex = store.tasks[index] && store.tasks[index].done ? index : -1;
       render();
       justCheckedIndex = -1;
-      saveTasks();
+      await store.save();
       try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
     }
 
     function deleteTask(index) {
-      const taskToDelete = tasks[index];
+      const taskToDelete = store.tasks[index];
       if (!taskToDelete) return;
 
       if (pendingUndo) {
@@ -2746,8 +2984,8 @@
         el.style.pointerEvents = 'none';
       }
 
-      tasks.splice(index, 1);
-      saveTasks();
+      store.deleteTask(index);
+      store.save();
       try { tg.HapticFeedback.impactOccurred('rigid'); } catch (e) {}
 
       pendingUndo = { task: taskToDelete, originalIndex: index, timeoutId: null };
@@ -2768,15 +3006,14 @@
       }, 250);
     }
 
-    function undoDelete() {
+    async function undoDelete() {
       if (!pendingUndo) return;
       clearTimeout(pendingUndo.timeoutId);
       const { task, originalIndex } = pendingUndo;
       pendingUndo = null;
 
-      const insertAt = Math.min(originalIndex, tasks.length);
-      tasks.splice(insertAt, 0, task);
-      saveTasks();
+      store.restoreTask(task, originalIndex);
+      await store.save();
 
       hideUndoToast();
 
@@ -2949,10 +3186,44 @@
     setInterval(() => {
       if (currentView === 'tasks') {
         updateNowMarker();
-        const dayTasks = tasks.filter(t => t.date === selectedDate && matchesCategory(t));
+        const dayTasks = store.filterTasks(selectedDate, currentFilter);
         updateDayFocus(dayTasks);
       }
     }, 60000);
+
+    async function bootstrap() {
+      restoreState();
+      detailDate = selectedDate;
+      buildWheels();
+      buildCalendar();
+      updateTimeBtn();
+      updateProjectUI();
+      updateEditProjectToggleUI();
+
+      if (currentView === 'detail') {
+        document.getElementById('view-tasks').classList.remove('active');
+        document.getElementById('view-detail').classList.add('active');
+        document.querySelectorAll('.tab-item').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.view === 'detail');
+        });
+      }
+
+      try {
+        await store.init();
+      } catch (e) {
+        console.error('store.init failed:', e);
+      }
+
+      updateProjectUI();
+      updateEditProjectToggleUI();
+      updateCalendarDots();
+      render();
+      renderDetailView();
+
+      setTimeout(playWelcome, 40);
+    }
+
+    bootstrap();
 
     setTimeout(() => {
       if (document.body.classList.contains('booting')) {
@@ -2960,26 +3231,6 @@
         console.warn('booting not cleared by playWelcome — forced removal');
       }
     }, 5000);
-
-    restoreState();
-    detailDate = selectedDate;
-    projects = getDefaultProjects();
-    buildCalendar();
-    buildWheels();
-    updateTimeBtn();
-    updateProjectUI();
-    updateEditProjectToggleUI();
-    if (currentView === 'detail') {
-      document.getElementById('view-tasks').classList.remove('active');
-      document.getElementById('view-detail').classList.add('active');
-      document.querySelectorAll('.tab-item').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.view === 'detail');
-      });
-    }
-    loadTasks();
-    renderDetailView();
-
-    setTimeout(playWelcome, 40);
   </script>
 </body>
 </html>
