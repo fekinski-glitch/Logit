@@ -1018,21 +1018,25 @@
     .edit-input:focus { box-shadow: 0 0 0 2px var(--button-color); }
     .edit-row { display: flex; gap: 8px; }
 
-    /* ====== ПРИВЕТСТВЕННЫЙ ЭКРАН — LIQUID PARTICLE ====== */
+    /* ====== ПРИВЕТСТВЕННЫЙ ЭКРАН — LIQUID PARTICLE + ГАЛОЧКА ПОД СЛОВОМ ====== */
     .welcome-screen {
       position: fixed;
       inset: 0;
       background: var(--bg-color);
       z-index: 3000;
-      display: none;
+      display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: calc(24px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom));
       text-align: center;
       overflow: hidden;
+      transition: opacity 0.3s ease;
     }
-    .welcome-screen.active { display: flex; }
+    .welcome-screen.closing {
+      opacity: 0;
+      pointer-events: none;
+    }
 
     .welcome-canvas {
       position: absolute;
@@ -1043,6 +1047,34 @@
       z-index: 1;
     }
 
+    /* Фирменная галочка — по центру, ПОД словом LOGIT */
+    .welcome-check {
+      position: absolute;
+      font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
+      font-size: clamp(22px, 7vw, 32px);
+      font-weight: 700;
+      color: var(--button-color);
+      text-shadow:
+        0 0 18px var(--button-color),
+        0 0 8px var(--button-color),
+        0 0 2px rgba(255,255,255,0.7);
+      opacity: 0;
+      pointer-events: none;
+      line-height: 1;
+      z-index: 3;
+      will-change: transform, opacity;
+      transform: translate(-50%, -50%) scale(0);
+    }
+    .welcome-check.pop {
+      animation: welcomeCheckPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    @keyframes welcomeCheckPop {
+      0%   { transform: translate(-50%, -50%) scale(0);    opacity: 0; }
+      35%  { transform: translate(-50%, -50%) scale(1.5);  opacity: 1; }
+      65%  { transform: translate(-50%, -50%) scale(0.85); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1);    opacity: 1; }
+    }
+
     .welcome-inner {
       position: relative;
       z-index: 2;
@@ -1051,7 +1083,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin-top: 10vh;
+      margin-top: 44vh;
     }
 
     .welcome-greeting {
@@ -1122,6 +1154,7 @@
 
   <div class="welcome-screen" id="welcome-screen">
     <canvas class="welcome-canvas" id="welcome-canvas"></canvas>
+    <div class="welcome-check" id="welcome-check">✓</div>
     <div class="welcome-inner">
       <h1 class="welcome-greeting" id="welcome-greeting"></h1>
       <p class="welcome-subtitle" id="welcome-subtitle"></p>
@@ -1466,7 +1499,7 @@
         canvas.height = h * dpr;
         canvas.style.width = w + 'px';
         canvas.style.height = h + 'px';
-        ctx.scale(dpr, dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
         const accent = getComputedStyle(document.documentElement).getPropertyValue('--button-color').trim() || '#2481cc';
 
@@ -1490,7 +1523,7 @@
           totalW += lw + (i < word.length - 1 ? letterSpacing : 0);
         }
         let cx = w / 2 - totalW / 2;
-        const cy = h * 0.42;
+        const cy = h * 0.30;
         for (let i = 0; i < word.length; i++) {
           octx.fillText(word[i], cx + letterWidths[i] / 2, cy);
           cx += letterWidths[i] + letterSpacing;
@@ -1513,6 +1546,10 @@
           for (let i = 0; i < maxParticles; i++) sampled.push(targets[Math.floor(i * stride)]);
         }
 
+        const assembleDuration = 1400;
+        const maxDelay = 250;
+        const moveWindow = assembleDuration - maxDelay;
+
         const particles = sampled.map(t => {
           const angle = Math.random() * Math.PI * 2;
           const radius = Math.max(w, h) * (0.5 + Math.random() * 0.6);
@@ -1524,73 +1561,32 @@
             x: 0,
             y: 0,
             size: 1.2 + Math.random() * 1.3,
-            delay: Math.random() * 180
+            delay: Math.random() * maxDelay
           };
         });
 
-        const assembleDuration = 900;
-        const holdDuration = 250;
-        const fadeDuration = 400;
-        const phaseStart0 = performance.now();
-        let phase = 'assemble';
-        let phaseStart = phaseStart0;
-
+        const phaseStart = performance.now();
         try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
 
         function loop(now) {
           const elapsed = now - phaseStart;
-
-          if (phase === 'assemble') {
-            ctx.clearRect(0, 0, w, h);
-            ctx.fillStyle = accent;
-            let allSettled = true;
-            for (let i = 0; i < particles.length; i++) {
-              const p = particles[i];
-              const localT = Math.min(Math.max((elapsed - p.delay) / (assembleDuration - 180), 0), 1);
-              const ease = 1 - Math.pow(1 - localT, 3);
-              p.x = p.startX + (p.tx - p.startX) * ease;
-              p.y = p.startY + (p.ty - p.startY) * ease;
-              if (localT < 1) allSettled = false;
-              ctx.globalAlpha = 0.85;
-              ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
-            }
-            ctx.globalAlpha = 1;
-            if (allSettled && elapsed >= assembleDuration + 180) {
-              phase = 'hold';
-              phaseStart = now;
-              try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
-            }
-          } else if (phase === 'hold') {
-            ctx.clearRect(0, 0, w, h);
-            ctx.fillStyle = accent;
-            ctx.globalAlpha = 0.9;
-            for (let i = 0; i < particles.length; i++) {
-              const p = particles[i];
-              ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
-            }
-            ctx.globalAlpha = 1;
-            if (elapsed >= holdDuration) {
-              phase = 'fade';
-              phaseStart = now;
-            }
-          } else if (phase === 'fade') {
-            const t = Math.min(elapsed / fadeDuration, 1);
-            ctx.clearRect(0, 0, w, h);
-            ctx.fillStyle = accent;
-            for (let i = 0; i < particles.length; i++) {
-              const p = particles[i];
-              p.x += (p.x - w / 2) * 0.02;
-              p.y += (p.y - h / 2) * 0.02 - 0.5;
-              ctx.globalAlpha = Math.max(0, (1 - t) * 0.9);
-              const s = p.size * (1 - t * 0.5);
-              ctx.fillRect(p.x - s / 2, p.y - s / 2, s, s);
-            }
-            ctx.globalAlpha = 1;
-            if (t >= 1) {
-              ctx.clearRect(0, 0, w, h);
-              resolve();
-              return;
-            }
+          ctx.clearRect(0, 0, w, h);
+          ctx.fillStyle = accent;
+          let allSettled = true;
+          for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            const localT = Math.min(Math.max((elapsed - p.delay) / moveWindow, 0), 1);
+            const ease = 1 - Math.pow(1 - localT, 3);
+            p.x = p.startX + (p.tx - p.startX) * ease;
+            p.y = p.startY + (p.ty - p.startY) * ease;
+            if (localT < 1) allSettled = false;
+            ctx.globalAlpha = 0.85;
+            ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+          }
+          ctx.globalAlpha = 1;
+          if (allSettled) {
+            resolve({ w, h, fontSize, cy });
+            return;
           }
           requestAnimationFrame(loop);
         }
@@ -1598,9 +1594,23 @@
       });
     }
 
+    function showCheckmark(layout) {
+      const check = document.getElementById('welcome-check');
+      const { w, fontSize, cy } = layout;
+      const x = w / 2;
+      const y = cy + fontSize * 0.85;
+      check.style.left = x + 'px';
+      check.style.top = y + 'px';
+      check.classList.remove('pop');
+      void check.offsetWidth;
+      check.classList.add('pop');
+      try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
+    }
+
     async function playWelcome() {
       const screen = document.getElementById('welcome-screen');
       const canvas = document.getElementById('welcome-canvas');
+      const check = document.getElementById('welcome-check');
       const startBtn = document.getElementById('welcome-start');
       const greeting = document.getElementById('welcome-greeting');
       const subtitle = document.getElementById('welcome-subtitle');
@@ -1610,34 +1620,44 @@
       subtitle.textContent = '';
       greeting.classList.remove('shown');
       subtitle.classList.remove('shown');
+      check.classList.remove('pop');
+      check.style.left = '';
+      check.style.top = '';
+      screen.classList.remove('closing');
+      screen.style.display = 'flex';
 
-      screen.classList.add('active');
       document.body.classList.add('welcome-open');
       document.body.classList.remove('booting');
 
       const userName = (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name) || 'друг';
 
       await sleep(80);
-      await runParticleAnimation(canvas);
+      const layout = await runParticleAnimation(canvas);
       await sleep(60);
+
+      showCheckmark(layout);
+
+      await sleep(280);
 
       greeting.textContent = getTimeGreeting() + ', ' + userName + '!';
       greeting.classList.add('shown');
       try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
-      await sleep(350);
+      await sleep(400);
 
       subtitle.textContent = 'Твой день начинается здесь';
       subtitle.classList.add('shown');
-      await sleep(400);
+      await sleep(350);
 
       startBtn.classList.add('visible');
       try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
     }
 
     document.getElementById('welcome-start').addEventListener('click', () => {
-      document.getElementById('welcome-screen').classList.remove('active');
+      const screen = document.getElementById('welcome-screen');
+      screen.classList.add('closing');
       document.body.classList.remove('welcome-open');
       try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
+      setTimeout(() => { screen.style.display = 'none'; }, 320);
     });
 
     function saveState() {
