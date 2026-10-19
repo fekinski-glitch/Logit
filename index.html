@@ -623,7 +623,7 @@
       to { opacity: 1; transform: translateY(0); }
     }
     @keyframes collapseOut {
-      0% { opacity: 1; max-height: 400px; margin-bottom: 10px; }
+      0% { opacity: 1; max-height: 500px; margin-bottom: 10px; }
       100% { opacity: 0; max-height: 0; margin-bottom: 0; }
     }
 
@@ -1018,6 +1018,64 @@
     .edit-input:focus { box-shadow: 0 0 0 2px var(--button-color); }
     .edit-row { display: flex; gap: 8px; }
 
+    /* ====== UNDO TOAST ====== */
+    .undo-toast {
+      position: fixed;
+      left: 16px;
+      right: 16px;
+      bottom: calc(50px + env(safe-area-inset-bottom) + 16px);
+      max-width: 468px;
+      margin: 0 auto;
+      background: rgba(28, 28, 30, 0.96);
+      color: #fff;
+      border-radius: 14px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      z-index: 200;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+      transform: translateY(120%);
+      opacity: 0;
+      transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1), opacity 0.35s ease;
+      pointer-events: none;
+    }
+    body.kb-open .undo-toast {
+      bottom: 16px;
+    }
+    .undo-toast.visible {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .undo-toast-text {
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: -0.2px;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .undo-toast-btn {
+      background: none;
+      border: none;
+      color: #4fa3ff;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      cursor: pointer;
+      padding: 4px 8px;
+      margin: -4px -8px -4px 0;
+      border-radius: 8px;
+      -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0;
+    }
+    .undo-toast-btn:active { opacity: 0.6; }
+
     /* ====== ПРИВЕТСТВЕННЫЙ ЭКРАН — LIQUID PARTICLE + ГАЛОЧКА ПОД СЛОВОМ ====== */
     .welcome-screen {
       position: fixed;
@@ -1047,7 +1105,6 @@
       z-index: 1;
     }
 
-    /* Фирменная галочка — по центру, ПОД словом LOGIT */
     .welcome-check {
       position: absolute;
       font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
@@ -1263,6 +1320,11 @@
     </button>
   </nav>
 
+  <div class="undo-toast" id="undo-toast">
+    <span class="undo-toast-text" id="undo-toast-text">Задача удалена</span>
+    <button class="undo-toast-btn" id="undo-toast-btn">Отменить</button>
+  </div>
+
   <div class="picker-overlay" id="picker-overlay">
     <div class="picker-sheet">
       <div class="picker-header">
@@ -1361,9 +1423,11 @@
     let editCategory = 'personal';
     let justCheckedIndex = -1;
     let staggerNextRender = false;
-    let pendingDelete = false;
     let skipSlideIn = false;
     let expandedTasks = new Set();
+    let pendingUndo = null;
+
+    const UNDO_DURATION = 4000;
 
     const TL_START_H = 5;
     const TL_END_H = 24;
@@ -2409,30 +2473,78 @@
       saveTasks();
       try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
     }
+
     function deleteTask(index) {
-      if (pendingDelete) return;
-      const el = document.getElementById('task-card-' + index);
       const taskToDelete = tasks[index];
       if (!taskToDelete) return;
+
+      if (pendingUndo) {
+        clearTimeout(pendingUndo.timeoutId);
+        pendingUndo = null;
+        hideUndoToast();
+      }
+
+      const el = document.getElementById('task-card-' + index);
       if (el) {
         el.classList.add('removing');
         el.style.pointerEvents = 'none';
       }
+
+      tasks.splice(index, 1);
+      if (taskToDelete.id) expandedTasks.delete(taskToDelete.id);
+
+      saveTasks();
       try { tg.HapticFeedback.impactOccurred('rigid'); } catch (e) {}
-      pendingDelete = true;
-      setTimeout(() => {
-        const actualIndex = tasks.indexOf(taskToDelete);
-        if (actualIndex >= 0) {
-          tasks.splice(actualIndex, 1);
-          if (taskToDelete.id) expandedTasks.delete(taskToDelete.id);
+
+      pendingUndo = { task: taskToDelete, originalIndex: index, timeoutId: null };
+      showUndoToast();
+
+      pendingUndo.timeoutId = setTimeout(() => {
+        if (pendingUndo) {
+          pendingUndo = null;
+          hideUndoToast();
         }
-        pendingDelete = false;
-        skipSlideIn = true;
+      }, UNDO_DURATION);
+
+      skipSlideIn = true;
+      setTimeout(() => {
         render();
-        saveTasks();
         skipSlideIn = false;
+        if (currentView === 'detail') renderDetailView();
       }, 250);
     }
+
+    function undoDelete() {
+      if (!pendingUndo) return;
+      clearTimeout(pendingUndo.timeoutId);
+      const { task, originalIndex } = pendingUndo;
+      pendingUndo = null;
+
+      const insertAt = Math.min(originalIndex, tasks.length);
+      tasks.splice(insertAt, 0, task);
+      saveTasks();
+
+      hideUndoToast();
+
+      skipSlideIn = true;
+      render();
+      skipSlideIn = false;
+      if (currentView === 'detail') renderDetailView();
+
+      try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
+    }
+
+    function showUndoToast() {
+      const toast = document.getElementById('undo-toast');
+      toast.classList.add('visible');
+    }
+    function hideUndoToast() {
+      const toast = document.getElementById('undo-toast');
+      toast.classList.remove('visible');
+    }
+
+    document.getElementById('undo-toast-btn').addEventListener('click', undoDelete);
+
     function escapeHtml(str) {
       const div = document.createElement('div');
       div.textContent = str;
