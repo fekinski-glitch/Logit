@@ -259,17 +259,42 @@
       appearance: none;
     }
 
+    .calendar-strip-wrap {
+      position: relative;
+      margin-bottom: 12px;
+    }
     .calendar-strip {
       display: flex;
       gap: 8px;
       overflow-x: auto;
       padding: 8px calc(50% - 26px);
-      margin-bottom: 12px;
       scrollbar-width: none;
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
     }
     .calendar-strip::-webkit-scrollbar { display: none; }
+    .calendar-strip-wrap::before,
+    .calendar-strip-wrap::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 32px;
+      pointer-events: none;
+      z-index: 2;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .calendar-strip-wrap::before {
+      left: 0;
+      background: linear-gradient(to right, var(--bg-color) 0%, transparent 100%);
+    }
+    .calendar-strip-wrap::after {
+      right: 0;
+      background: linear-gradient(to left, var(--bg-color) 0%, transparent 100%);
+    }
+    .calendar-strip-wrap.has-more-left::before { opacity: 1; }
+    .calendar-strip-wrap.has-more-right::after { opacity: 1; }
 
     .day-cell {
       flex-shrink: 0;
@@ -908,7 +933,7 @@
       color: var(--hint-color);
       font-variant-numeric: tabular-nums;
       transition: color 0.15s;
-      -webkit-tap-highlight-color: transparent;
+-to      -webkit-tap-highlight-color: transparent;
       user-select: none;
     }
     .wheel-item.active { color: var(--text-color); font-weight: 600; }
@@ -960,7 +985,7 @@
       pointer-events: none;
     }
     body.kb-open .undo-toast { bottom: 16px; }
-    .undo-toast.visible {
+    .undoast.visible {
       transform: translateY(0);
       opacity: 1;
       pointer-events: auto;
@@ -1153,7 +1178,9 @@
       </button>
     </div>
 
-    <div class="calendar-strip" id="calendar-strip"></div>
+    <div class="calendar-strip-wrap" id="calendar-strip-wrap">
+      <div class="calendar-strip" id="calendar-strip"></div>
+    </div>
     <p id="date-label">Загрузка...</p>
 
     <div class="mini-timeline" id="mini-timeline">
@@ -1740,6 +1767,7 @@
       requestAnimationFrame(() => scrollToSelected(false));
       attachScrollHandler();
       updateCalendarDots();
+      setTimeout(updateCalendarFade, 150);
     }
     function updateCalendarDots() {
       document.querySelectorAll('.day-cell').forEach(cell => {
@@ -1754,6 +1782,7 @@
       strip.dataset.hasScrollHandler = '1';
       let timer;
       strip.addEventListener('scroll', () => {
+        updateCalendarFade();
         if (suppressScrollSelect) return;
         clearTimeout(timer);
         timer = setTimeout(() => {
@@ -1770,6 +1799,15 @@
         }, 120);
       }, { passive: true });
     }
+    function updateCalendarFade() {
+      const wrap = document.getElementById('calendar-strip-wrap');
+      const strip = document.getElementById('calendar-strip');
+      if (!wrap || !strip) return;
+      const hasLeft = strip.scrollLeft > 4;
+      const hasRight = strip.scrollLeft + strip.clientWidth < strip.scrollWidth - 4;
+      wrap.classList.toggle('has-more-left', hasLeft);
+      wrap.classList.toggle('has-more-right', hasRight);
+    }
     function scrollToSelected(smooth) {
       const strip = document.getElementById('calendar-strip');
       const sel = strip.querySelector('.selected');
@@ -1777,7 +1815,10 @@
       suppressScrollSelect = true;
       const target = sel.offsetLeft - strip.clientWidth / 2 + sel.clientWidth / 2;
       strip.scrollTo({ left: target, behavior: smooth ? 'smooth' : 'auto' });
-      setTimeout(() => { suppressScrollSelect = false; }, smooth ? 500 : 100);
+      setTimeout(() => {
+        suppressScrollSelect = false;
+        updateCalendarFade();
+      }, smooth ? 500 : 100);
     }
     function selectDate(iso, scroll) {
       if (iso === selectedDate) {
@@ -2088,10 +2129,10 @@
           <div class="task-content">
             <span class="task-text">${escapeHtml(task.text)}</span>
             ${task.time
-              ? `<span class="task-time">${escapeHtml(task.time)}${badge}</span>`
-              : `<span class="task-time empty">Без времени</span>`}
-          </div>
-          <button class="delete-btn">✕</button>
+              ? `<span class="task-time">${escapeHtml(task.time)}${badronge}</span>">`
+              : `<span class="task▼-time empty">Без времени</span>`}
+</          </div>
+          <button class="deletespan-btn">✕</button>
         </div>
       `;
       const card = wrapper.querySelector('.task-item');
@@ -2189,7 +2230,7 @@
       document.getElementById('detail-weekday').textContent = WEEKDAYS_FULL[d.getDay()];
       document.getElementById('detail-date-pill').innerHTML =
         d.getDate() + ' ' + MONTHS_GEN[d.getMonth()] + ' ' + d.getFullYear() +
-        ' <span class="chevron">▼</span>';
+        ' <span class="chev>';
       document.getElementById('detail-date-input').value = detailDate;
 
       const dayTasks = tasks.filter(t => t.date === detailDate && matchesCategory(t));
