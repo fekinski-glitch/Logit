@@ -648,6 +648,15 @@
       font-weight: 700;
       line-height: 1;
     }
+    .task-checkbox.just-checked {
+      animation: checkboxPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes checkboxPop {
+      0% { transform: scale(1); }
+      35% { transform: scale(0.8); }
+      65% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
     .task-content {
       flex: 1;
       min-width: 0;
@@ -1501,6 +1510,7 @@
 
     let editingIndex = -1;
     let editCategory = 'personal';
+    let justCheckedIndex = -1;
 
     const TL_START_H = 5;
     const TL_END_H = 24;
@@ -2189,6 +2199,7 @@
     function buildTaskCard(task, isNext) {
       const globalIndex = tasks.indexOf(task);
       const overdue = isOverdue(task);
+      const isJustChecked = justCheckedIndex === globalIndex;
       const wrapper = document.createElement('li');
       wrapper.className = 'task-item-wrapper';
       wrapper.id = 'task-card-' + globalIndex;
@@ -2196,7 +2207,7 @@
       wrapper.innerHTML = `
         <div class="task-item${task.done ? ' done' : ''}${overdue ? ' overdue' : ''}${isNext ? ' next-task' : ''}"
              data-cat="${task.category}">
-          <div class="task-checkbox${task.done ? ' checked' : ''}"></div>
+          <div class="task-checkbox${task.done ? ' checked' : ''}${isJustChecked ? ' just-checked' : ''}"></div>
           <div class="task-content">
             <span class="task-text">${escapeHtml(task.text)}</span>
             ${task.time
@@ -2439,7 +2450,9 @@
     }
     function toggleTask(index) {
       tasks[index].done = !tasks[index].done;
+      justCheckedIndex = tasks[index].done ? index : -1;
       render();
+      justCheckedIndex = -1;
       saveTasks();
       try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
     }
