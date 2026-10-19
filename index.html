@@ -299,11 +299,10 @@
     .calendar-arrow {
       position: absolute;
       top: 50%;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: var(--bg-color);
-      border: 1px solid var(--separator);
+      width: 44px;
+      height: 44px;
+      background: none;
+      border: none;
       color: var(--hint-color);
       display: flex;
       align-items: center;
@@ -313,7 +312,6 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.2s ease, transform 0.15s ease;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
       -webkit-tap-highlight-color: transparent;
       padding: 0;
       transform: translateY(-50%) scale(0.85);
@@ -1240,7 +1238,7 @@
         <span id="cat-toggle-label">Личное</span>
       </button>
       <div class="time-btn-wrapper">
-        <div class="time-btn-display" id="time-btn-text">Без времени</div>
+        <div class="time-btn-display" id="time-btn-text">Во сколько?</div>
         <input type="time" id="task-time" class="time-input-overlay">
       </div>
       <button id="add-btn">+</button>
@@ -1362,7 +1360,7 @@
             <span id="edit-cat-label">Личное</span>
           </button>
           <div class="time-btn-wrapper" style="flex:1;">
-            <div class="time-btn-display" id="edit-time-btn-text">Без времени</div>
+            <div class="time-btn-display" id="edit-time-btn-text">Во сколько?</div>
             <input type="time" id="edit-time" class="time-input-overlay">
           </div>
         </div>
@@ -2373,7 +2371,7 @@
         btn.textContent = inp.value;
         btn.classList.add('has-value');
       } else {
-        btn.textContent = 'Без времени';
+        btn.textContent = 'Во сколько?';
         btn.classList.remove('has-value');
       }
     }
@@ -2385,7 +2383,7 @@
         timeBtnText.textContent = timeInput.value;
         timeBtnText.classList.add('has-value');
       } else {
-        timeBtnText.textContent = 'Без времени';
+        timeBtnText.textContent = 'Во сколько?';
         timeBtnText.classList.remove('has-value');
       }
     }
