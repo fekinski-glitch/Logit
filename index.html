@@ -367,7 +367,6 @@
     }
     .project-new-btn:active { opacity: 0.6; }
 
-    /* iOS bubble popover */
     .project-popover-overlay {
       position: fixed;
       inset: 0;
@@ -1135,7 +1134,6 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* === FLOATING BUBBLE TAB BAR === */
     .tab-bar {
       position: fixed;
       bottom: calc(14px + env(safe-area-inset-bottom));
@@ -2203,6 +2201,119 @@
       });
     }
 
+    function runFallingLettersAnimation(canvas) {
+      return new Promise((resolve) => {
+        try {
+          const ctx = canvas.getContext('2d');
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          const w = window.innerWidth;
+          const h = window.innerHeight;
+          canvas.width = w * dpr;
+          canvas.height = h * dpr;
+          canvas.style.width = w + 'px';
+          canvas.style.height = h + 'px';
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+          const accent = getComputedStyle(document.documentElement).getPropertyValue('--button-color').trim() || '#2481cc';
+          const fontSize = Math.min(w * 0.16, 64);
+          const letterSpacing = fontSize * 0.15;
+          const word = 'LOGIT';
+          const cy = h * 0.28;
+
+          const fontSpec = `700 ${fontSize}px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif`;
+
+          ctx.font = fontSpec;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+
+          const letterWidths = [];
+          let totalW = 0;
+          for (let i = 0; i < word.length; i++) {
+            const lw = ctx.measureText(word[i]).width;
+            letterWidths.push(lw);
+            totalW += lw + (i < word.length - 1 ? letterSpacing : 0);
+          }
+
+          const positions = [];
+          let cx = w / 2 - totalW / 2;
+          for (let i = 0; i < word.length; i++) {
+            positions.push({ x: cx + letterWidths[i] / 2, y: cy });
+            cx += letterWidths[i] + letterSpacing;
+          }
+
+          const startY = -fontSize * 2.5;
+          const fallDuration = 420;
+          const bounceDuration = 180;
+          const stagger = 85;
+          const totalDur = stagger * (word.length - 1) + fallDuration + bounceDuration;
+
+          const landed = new Array(word.length).fill(false);
+          const phaseStart = performance.now();
+
+          function easeOutCubic(t) {
+            return 1 - Math.pow(1 - t, 3);
+          }
+
+          function loop(now) {
+            const elapsed = now - phaseStart;
+            ctx.clearRect(0, 0, w, h);
+
+            ctx.font = fontSpec;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = accent;
+            ctx.shadowBlur = 14;
+            ctx.shadowColor = accent;
+
+            for (let i = 0; i < word.length; i++) {
+              const p = positions[i];
+              const localStart = i * stagger;
+              const localElapsed = elapsed - localStart;
+
+              if (localElapsed < 0) continue;
+
+              if (localElapsed < fallDuration) {
+                const t = localElapsed / fallDuration;
+                const ease = easeOutCubic(t);
+                const y = startY + (p.y - startY) * ease;
+                ctx.globalAlpha = Math.min(1, t * 1.5);
+                ctx.fillText(word[i], p.x, y);
+              } else if (localElapsed < fallDuration + bounceDuration) {
+                if (!landed[i]) {
+                  landed[i] = true;
+                  try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
+                }
+                const t = (localElapsed - fallDuration) / bounceDuration;
+                const bounce = Math.sin(t * Math.PI) * fontSize * 0.08;
+                ctx.globalAlpha = 1;
+                ctx.fillText(word[i], p.x, p.y + bounce);
+              } else {
+                if (!landed[i]) {
+                  landed[i] = true;
+                  try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
+                }
+                ctx.globalAlpha = 1;
+                ctx.fillText(word[i], p.x, p.y);
+              }
+            }
+
+            ctx.globalAlpha = 1;
+            ctx.shadowBlur = 0;
+
+            if (elapsed >= totalDur) {
+              resolve({ w, h, fontSize, cy });
+              return;
+            }
+            requestAnimationFrame(loop);
+          }
+          requestAnimationFrame(loop);
+        } catch (e) {
+          console.error('falling letters failed:', e);
+          resolve({ w: window.innerWidth, h: window.innerHeight, fontSize: 48, cy: window.innerHeight * 0.28 });
+        }
+      });
+    }
+
     function showCheckmark(layout) {
       try {
         const check = document.getElementById('welcome-check');
@@ -2247,7 +2358,12 @@
         const userName = (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name) || 'друг';
 
         await sleep(80);
-        const layout = await runParticleAnimation(canvas);
+
+        const useFall = Math.random() < 0.5;
+        const layout = useFall
+          ? await runFallingLettersAnimation(canvas)
+          : await runParticleAnimation(canvas);
+
         await sleep(60);
 
         showCheckmark(layout);
