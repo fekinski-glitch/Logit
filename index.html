@@ -357,13 +357,80 @@
       transition: opacity 0.15s;
     }
     .project-new-btn:active { opacity: 0.6; }
-    .project-new-form { display: none; flex-direction: column; gap: 12px; }
-    .project-new-form.open { display: flex; }
-    .project-new-input {
+
+    /* === iOS bubble popover для создания проекта === */
+    .project-popover-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      visibility: hidden;
+      opacity: 0;
+      z-index: 1100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+    .project-popover-overlay.active {
+      visibility: visible;
+      opacity: 1;
+    }
+    .project-popover {
+      background: var(--bg-color);
+      border-radius: 28px;
       width: 100%;
-      height: 52px;
-      padding: 0 20px;
-      border-radius: 999px;
+      max-width: 340px;
+      padding: 22px 20px 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 0 0.5px rgba(0,0,0,0.05);
+      transform: scale(0.85);
+      opacity: 0;
+      transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .project-popover-overlay.active .project-popover {
+      transform: scale(1);
+      opacity: 1;
+    }
+    .project-popover-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2px;
+    }
+    .project-popover-title {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      color: var(--text-color);
+    }
+    .project-popover-close {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--secondary-bg-color);
+      border: none;
+      color: var(--hint-color);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .project-popover-close:active {
+      opacity: 0.7;
+      transform: scale(0.9);
+    }
+    .project-popover-input {
+      width: 100%;
+      height: 48px;
+      padding: 0 16px;
+      border-radius: 14px;
       border: none;
       background: var(--secondary-bg-color);
       color: var(--text-color);
@@ -376,20 +443,20 @@
       -webkit-appearance: none;
       appearance: none;
     }
-    .project-new-input:focus {
+    .project-popover-input:focus {
       box-shadow: 0 0 0 2px var(--button-color);
       background: var(--bg-color);
     }
-    .project-palette {
+    .project-popover .project-palette {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       justify-content: center;
-      padding: 8px 0;
+      padding: 2px 0;
       flex-wrap: wrap;
     }
-    .project-color-dot {
-      width: 36px;
-      height: 36px;
+    .project-popover .project-color-dot {
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       border: 3px solid transparent;
       cursor: pointer;
@@ -398,28 +465,42 @@
       -webkit-tap-highlight-color: transparent;
       outline: none;
     }
-    .project-color-dot.selected {
+    .project-popover .project-color-dot.selected {
       border-color: var(--text-color);
-      transform: scale(1.1);
+      transform: scale(1.08);
     }
-    .project-color-dot:active { transform: scale(1.15); }
-    .project-new-save {
-      width: 100%;
-      height: 52px;
+    .project-popover .project-color-dot:active { transform: scale(1.15); }
+    .project-popover-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .project-popover-btn {
+      flex: 1;
+      height: 46px;
       border-radius: 999px;
       border: none;
-      background: var(--button-color);
-      color: var(--button-text-color);
       font-family: inherit;
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 600;
       letter-spacing: -0.2px;
       cursor: pointer;
       transition: opacity 0.15s, transform 0.1s;
       -webkit-tap-highlight-color: transparent;
+    }
+    .project-popover-btn:active {
+      opacity: 0.85;
+      transform: scale(0.97);
+    }
+    .project-popover-btn.secondary {
+      background: var(--secondary-bg-color);
+      color: var(--text-color);
+    }
+    .project-popover-btn.primary {
+      background: var(--button-color);
+      color: var(--button-text-color);
       box-shadow: 0 4px 12px rgba(36,129,204,0.3);
     }
-    .project-new-save:active { opacity: 0.85; transform: scale(0.97); }
 
     .date-pill-wrapper {
       position: relative;
@@ -562,7 +643,6 @@
     .day-cell.selected .date-num {
       background: var(--button-color);
       color: var(--button-text-color);
-      box-shadow: 0 2px 10px rgba(36,129,204,0.3);
     }
     .day-cell.selected .weekday { color: var(--button-color); }
     .day-cell.today:not(.selected) .date-num {
@@ -670,11 +750,12 @@
     #task-sections { display: flex; flex-direction: column; gap: 18px; }
     .time-section { display: flex; flex-direction: column; }
     .time-section-title {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
-      letter-spacing: 0.6px;
+      letter-spacing: 0.7px;
       text-transform: uppercase;
       color: var(--hint-color);
+      opacity: 0.9;
       margin-bottom: 8px;
       padding-left: 4px;
       display: flex;
@@ -825,18 +906,18 @@
       gap: 14px;
       padding: 16px 16px 16px 13px;
       background-color: var(--secondary-bg-color);
-      border-radius: 20px;
+      border-radius: 22px;
       border-left: 3px solid transparent;
       -webkit-user-select: none;
       user-select: none;
       transition: border-color 0.2s, box-shadow 0.3s;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
     }
-    .task-item.next-task { box-shadow: 0 0 0 2px var(--button-color), 0 2px 10px rgba(0,0,0,0.04); }
+    .task-item.next-task { box-shadow: 0 0 0 2px var(--button-color), 0 1px 4px rgba(0,0,0,0.03); }
     .task-item.flash { animation: flashHighlight 0.9s ease; }
     @keyframes flashHighlight {
-      0%, 100% { box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
-      30% { box-shadow: 0 0 0 3px var(--button-color), 0 2px 10px rgba(0,0,0,0.04); }
+      0%, 100% { box-shadow: 0 1px 4px rgba(0,0,0,0.03); }
+      30% { box-shadow: 0 0 0 3px var(--button-color), 0 1px 4px rgba(0,0,0,0.03); }
     }
     .task-item.done { opacity: 0.55; }
     .task-item.done .task-text { text-decoration: line-through; color: var(--hint-color); }
@@ -939,7 +1020,12 @@
       font-weight: 400;
       letter-spacing: -0.1px;
       display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
     }
+    #empty-state svg { opacity: 0.35; }
+    #empty-state p { margin: 0; }
 
     #detail-weekday {
       text-align: center;
@@ -970,9 +1056,9 @@
       gap: 12px;
       padding: 16px 16px 16px 13px;
       background: var(--secondary-bg-color);
-      border-radius: 20px;
+      border-radius: 22px;
       border-left: 3px solid transparent;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
     }
     .day-task-item.done { opacity: 0.55; }
     .day-task-item.done .day-task-text { text-decoration: line-through; color: var(--hint-color); }
@@ -1087,6 +1173,7 @@
       transition: color 0.15s, opacity 0.15s;
     }
     .tab-item.active { color: var(--button-color); }
+    .tab-item.active svg { stroke-width: 2.2; }
     .tab-item:active { opacity: 0.6; }
     .tab-item svg { width: 26px; height: 26px; }
     .tab-item.tab-bounce svg { animation: tabBounce 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
@@ -1425,7 +1512,17 @@
     </div>
 
     <div id="task-sections"></div>
-    <div id="empty-state">На этот день задач нет</div>
+    <div id="empty-state">
+      <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 8 9 4"/>
+        <line x1="13" y1="6" x2="21" y2="6"/>
+        <polyline points="3 13 5 15 9 11"/>
+        <line x1="13" y1="13" x2="21" y2="13"/>
+        <polyline points="3 20 5 22 9 18"/>
+        <line x1="13" y1="20" x2="21" y2="20"/>
+      </svg>
+      <p>На этот день задач нет</p>
+    </div>
   </div>
 
   <div class="view" id="view-detail">
@@ -1502,11 +1599,26 @@
       <div class="cat-filter-list" id="cat-filter-list"></div>
       <div class="project-new-wrap">
         <button class="project-new-btn" id="project-new-btn">+ Новый проект</button>
-        <div class="project-new-form" id="project-new-form">
-          <input type="text" id="project-new-input" placeholder="Название проекта" maxlength="30">
-          <div class="project-palette" id="project-palette"></div>
-          <button class="project-new-save" id="project-new-save">Создать</button>
-        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="project-popover-overlay" id="project-popover-overlay">
+    <div class="project-popover" id="project-popover">
+      <div class="project-popover-header">
+        <span class="project-popover-title">Новый проект</span>
+        <button class="project-popover-close" id="project-popover-close" aria-label="Закрыть">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <input type="text" id="project-popover-input" class="project-popover-input" placeholder="Название проекта" maxlength="30">
+      <div class="project-palette" id="project-popover-palette"></div>
+      <div class="project-popover-actions">
+        <button class="project-popover-btn secondary" id="project-popover-cancel">Отмена</button>
+        <button class="project-popover-btn primary" id="project-popover-create">Создать</button>
       </div>
     </div>
   </div>
@@ -2271,9 +2383,9 @@
       }
     }
 
-    function renderPalette() {
+    function renderPopoverPalette() {
       try {
-        const palette = document.getElementById('project-palette');
+        const palette = document.getElementById('project-popover-palette');
         if (!palette) return;
         palette.innerHTML = '';
         PALETTE.forEach(color => {
@@ -2283,34 +2395,28 @@
           dot.style.background = color;
           dot.addEventListener('click', () => {
             pendingProjectColor = color;
-            renderPalette();
+            renderPopoverPalette();
             try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
           });
           palette.appendChild(dot);
         });
       } catch (e) {
-        console.error('renderPalette failed:', e);
+        console.error('renderPopoverPalette failed:', e);
       }
     }
 
     function openProjectSheet(mode) {
       projectSheetMode = mode;
       renderProjectSheet();
-      renderPalette();
-      const form = document.getElementById('project-new-form');
-      const btn = document.getElementById('project-new-btn');
-      const input = document.getElementById('project-new-input');
-      if (form) form.classList.remove('open');
-      if (btn) btn.style.display = '';
-      if (input) input.value = '';
-      pendingProjectColor = PALETTE[0];
       document.getElementById('cat-filter-overlay').classList.add('active');
       document.body.classList.add('picker-open');
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
     function closeProjectSheet() {
       document.getElementById('cat-filter-overlay').classList.remove('active');
-      document.body.classList.remove('picker-open');
+      if (!document.querySelector('.project-popover-overlay.active')) {
+        document.body.classList.remove('picker-open');
+      }
     }
     function selectProjectFromSheet(id) {
       if (projectSheetMode === 'filter') {
@@ -2332,22 +2438,52 @@
       closeProjectSheet();
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
+
+    function openNewProjectPopover() {
+      try {
+        pendingProjectColor = PALETTE[0];
+        renderPopoverPalette();
+        const input = document.getElementById('project-popover-input');
+        if (input) input.value = '';
+        document.getElementById('project-popover-overlay').classList.add('active');
+        document.body.classList.add('picker-open');
+        setTimeout(() => {
+          try { input.focus(); } catch (e) {}
+        }, 350);
+        try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
+      } catch (e) {
+        console.error('openNewProjectPopover failed:', e);
+      }
+    }
+    function closeNewProjectPopover() {
+      try {
+        const overlay = document.getElementById('project-popover-overlay');
+        overlay.classList.remove('active');
+        const input = document.getElementById('project-popover-input');
+        if (input) input.blur();
+        if (!document.querySelector('.cat-filter-overlay.active')) {
+          document.body.classList.remove('picker-open');
+        }
+      } catch (e) {
+        console.error('closeNewProjectPopover failed:', e);
+      }
+    }
+
     function createNewProject() {
       try {
-        const input = document.getElementById('project-new-input');
+        const input = document.getElementById('project-popover-input');
         if (!input) return;
         const name = input.value.trim();
-        if (!name) { try { input.focus(); } catch (e) {} return; }
+        if (!name) {
+          try { input.focus(); } catch (e) {}
+          return;
+        }
         const newProject = store.addProject(name, pendingProjectColor);
         store.save();
 
         input.value = '';
         pendingProjectColor = PALETTE[0];
-        const form = document.getElementById('project-new-form');
-        const btn = document.getElementById('project-new-btn');
-        if (form) form.classList.remove('open');
-        if (btn) btn.style.display = '';
-        renderProjectSheet();
+        closeNewProjectPopover();
 
         if (projectSheetMode === 'add') {
           addProjectId = newProject.id;
@@ -2357,6 +2493,9 @@
           editProjectId = newProject.id;
           updateEditProjectToggleUI();
           closeProjectSheet();
+        } else if (projectSheetMode === 'filter') {
+          // Перерисовать шит фильтра, чтобы новый проект появился в списке
+          renderProjectSheet();
         }
         try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
       } catch (e) {
@@ -2862,9 +3001,12 @@
 
         sectionsEl.innerHTML = '';
         if (dayTasks.length === 0) {
-          emptyState.style.display = 'block';
-          if (currentFilter === 'all') emptyState.textContent = 'На этот день задач нет';
-          else emptyState.textContent = 'В этом проекте на день задач нет';
+          emptyState.style.display = 'flex';
+          const p = emptyState.querySelector('p');
+          if (p) {
+            if (currentFilter === 'all') p.textContent = 'На этот день задач нет';
+            else p.textContent = 'В этом проекте на день задач нет';
+          }
         } else {
           emptyState.style.display = 'none';
           const cfg = [
@@ -3211,24 +3353,28 @@
       if (e.target.id === 'cat-filter-overlay') closeProjectSheet();
     });
 
-    const projectNewBtn = document.getElementById('project-new-btn');
-    if (projectNewBtn) projectNewBtn.addEventListener('click', () => {
-      const form = document.getElementById('project-new-form');
-      const input = document.getElementById('project-new-input');
-      if (form) form.classList.add('open');
-      projectNewBtn.style.display = 'none';
-      setTimeout(() => { try { input.focus(); } catch (e) {} }, 100);
-    });
-
-    const projectNewSave = document.getElementById('project-new-save');
-    if (projectNewSave) projectNewSave.addEventListener('click', createNewProject);
-
-    const projectNewInput = document.getElementById('project-new-input');
-    if (projectNewInput) {
-      projectNewInput.addEventListener('keypress', (e) => {
+    // Popover
+    const projectPopoverOverlay = document.getElementById('project-popover-overlay');
+    if (projectPopoverOverlay) {
+      projectPopoverOverlay.addEventListener('click', (e) => {
+        if (e.target.id === 'project-popover-overlay') closeNewProjectPopover();
+      });
+    }
+    const projectPopoverCloseEl = document.getElementById('project-popover-close');
+    if (projectPopoverCloseEl) projectPopoverCloseEl.addEventListener('click', closeNewProjectPopover);
+    const projectPopoverCancelEl = document.getElementById('project-popover-cancel');
+    if (projectPopoverCancelEl) projectPopoverCancelEl.addEventListener('click', closeNewProjectPopover);
+    const projectPopoverCreateEl = document.getElementById('project-popover-create');
+    if (projectPopoverCreateEl) projectPopoverCreateEl.addEventListener('click', createNewProject);
+    const projectPopoverInputEl = document.getElementById('project-popover-input');
+    if (projectPopoverInputEl) {
+      projectPopoverInputEl.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') { e.preventDefault(); createNewProject(); }
       });
     }
+
+    const projectNewBtn = document.getElementById('project-new-btn');
+    if (projectNewBtn) projectNewBtn.addEventListener('click', openNewProjectPopover);
 
     const toTodayEl = document.getElementById('to-today-btn');
     if (toTodayEl) toTodayEl.addEventListener('click', () => {
@@ -3303,7 +3449,6 @@
       }
     }, 60000);
 
-    // Защита: если через 4 сек всё ещё booting — принудительно снимаем
     setTimeout(() => {
       if (document.body.classList.contains('booting')) {
         console.warn('booting still present after 4s — force removal');
@@ -3314,9 +3459,7 @@
       }
     }, 4000);
 
-    // ---- BOOTSTRAP ----
     function bootstrap() {
-      // 1. Сначала — UI (синхронно, мгновенно)
       try { restoreState(); } catch (e) { console.error('restoreState:', e); }
       detailDate = selectedDate;
 
@@ -3336,10 +3479,8 @@
         } catch (e) { console.error('view switch:', e); }
       }
 
-      // 2. Welcome запускается СРАЗУ, независимо от данных
       setTimeout(playWelcome, 40);
 
-      // 3. Данные грузятся параллельно — при готовности перерисовываем
       store.init()
         .then(() => {
           try { updateProjectUI(); } catch (e) { console.error(e); }
@@ -3350,7 +3491,6 @@
         })
         .catch((e) => {
           console.error('store.init failed:', e);
-          // Всё равно показываем UI с дефолтами
           try { render(); } catch (e2) { console.error(e2); }
           try { renderDetailView(); } catch (e2) { console.error(e2); }
         });
