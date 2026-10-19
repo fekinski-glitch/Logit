@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <title>Logit</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
@@ -55,6 +55,7 @@
       position: relative;
     }
     .view.active { display: block; }
+    body.kb-open .view { padding-bottom: 32px; }
 
     .header-wrap {
       position: relative;
@@ -752,6 +753,12 @@
       border-top: 0.5px solid var(--separator);
       display: flex;
       z-index: 100;
+      transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1), visibility 0.25s;
+      will-change: transform;
+    }
+    .tab-bar.kb-hidden {
+      transform: translateY(100%);
+      visibility: hidden;
     }
     @supports ((-webkit-backdrop-filter: blur(20px)) or (backdrop-filter: blur(20px))) {
       body[data-theme="light"] .tab-bar {
@@ -1151,7 +1158,7 @@
   </div>
 
   <!-- ============ ТАБ-БАР ============ -->
-  <nav class="tab-bar">
+  <nav class="tab-bar" id="tab-bar">
     <button class="tab-item active" data-view="tasks">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="3 6 5 8 9 4"/>
@@ -1335,6 +1342,72 @@
       if (cat === 'work') return 'Работа';
       return 'Все задачи';
     }
+
+    // ============ ОБРАБОТКА КЛАВИАТУРЫ (скрываем таб-бар) ============
+    (function setupKeyboardHandling() {
+      const tabBar = document.getElementById('tab-bar');
+      if (!tabBar) return;
+
+      function setKeyboardOpen(isOpen) {
+        if (isOpen) {
+          tabBar.classList.add('kb-hidden');
+          document.body.classList.add('kb-open');
+        } else {
+          tabBar.classList.remove('kb-hidden');
+          document.body.classList.remove('kb-open');
+        }
+      }
+
+      function isInputFocused() {
+        const el = document.activeElement;
+        if (!el) return false;
+        const tag = el.tagName;
+        return tag === 'INPUT' || tag === 'TEXTAREA' || el.isContentEditable;
+      }
+
+      // 1) Фокус на input — самый надёжный сигнал
+      document.addEventListener('focusin', (e) => {
+        const el = e.target;
+        if (!el) return;
+        const tag = el.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || el.isContentEditable) {
+          setKeyboardOpen(true);
+        }
+      });
+
+      document.addEventListener('focusout', () => {
+        // Небольшая задержка: если пользователь тапает по другому input —
+        // не мигаем
+        setTimeout(() => {
+          if (!isInputFocused()) setKeyboardOpen(false);
+        }, 120);
+      });
+
+      // 2) Страховка через visualViewport
+      if (window.visualViewport) {
+        const vv = window.visualViewport;
+        let stableHeight = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+          // Обновляем "стабильную" высоту только когда клавиатура закрыта
+          if (Math.abs(window.innerHeight - vv.height) < 100) {
+            stableHeight = window.innerHeight;
+          }
+        });
+
+        const onVpChange = () => {
+          const isKb = (stableHeight - vv.height) > 150;
+          if (isKb && isInputFocused()) {
+            setKeyboardOpen(true);
+          } else if (!isKb && !isInputFocused()) {
+            setKeyboardOpen(false);
+          }
+        };
+
+        vv.addEventListener('resize', onVpChange);
+        vv.addEventListener('scroll', onVpChange);
+      }
+    })();
 
     // ============ ПРИВЕТСТВЕННЫЙ ЭКРАН ============
     function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -1976,6 +2049,8 @@
       render();
       saveTasks();
       try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
+      // После добавления убираем фокус с поля — клавиатура закроется, таб-бар вернётся
+      input.blur();
     }
     function toggleTask(index) {
       tasks[index].done = !tasks[index].done;
@@ -2024,7 +2099,6 @@
       if (e.target.id === 'picker-overlay') closePicker();
     });
 
-    // Пилюля фильтра → открыть sheet
     document.getElementById('category-pill').addEventListener('click', openCategoryFilter);
     document.getElementById('cat-filter-cancel').addEventListener('click', closeCategoryFilter);
     document.getElementById('cat-filter-overlay').addEventListener('click', (e) => {
@@ -2072,8 +2146,9 @@
     buildWheels();
     updateTimeBtn();
     updateCategoryUI();
-    updateCatToggleUI();
+    updateCatToggleBtnUI();
     updateEditCatToggleUI();
+    function updateCatToggleBtnUI() { updateCatToggleUI(); }
     if (currentView === 'detail') {
       document.getElementById('view-tasks').classList.remove('active');
       document.getElementById('view-detail').classList.add('active');
