@@ -17,6 +17,8 @@
       --secondary-bg-color: var(--tg-theme-secondary-bg-color, #f1f1f1);
       --danger-color: #ff3b30;
       --separator: rgba(128,128,128,0.2);
+      --cat-personal: #34c759;
+      --cat-work: #ff9f0a;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -137,6 +139,8 @@
       flex-shrink: 0;
       transition: background 0.2s;
     }
+    #category-pill[data-cat="personal"] .cat-pill-dot { background: var(--cat-personal); }
+    #category-pill[data-cat="work"] .cat-pill-dot { background: var(--cat-work); }
     #category-pill .chevron { font-size: 9px; opacity: 0.5; transform: translateY(1px); margin-left: 2px; }
 
     .cat-filter-overlay, .picker-overlay, .edit-overlay {
@@ -165,13 +169,7 @@
       overflow: hidden;
       box-shadow: 0 -2px 20px rgba(0,0,0,0.15);
     }
-    .cat-filter-sheet {
-      max-height: 85vh;
-      display: flex;
-      flex-direction: column;
-      padding-bottom: env(safe-area-inset-bottom);
-    }
-    .picker-sheet { padding-bottom: env(safe-area-inset-bottom); }
+    .cat-filter-sheet, .picker-sheet { padding-bottom: env(safe-area-inset-bottom); }
     .edit-sheet { padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
     .cat-filter-overlay.active .cat-filter-sheet,
     .picker-overlay.active .picker-sheet,
@@ -183,7 +181,6 @@
       justify-content: space-between;
       padding: 12px 16px;
       border-bottom: 0.5px solid var(--separator);
-      flex-shrink: 0;
     }
     .cat-filter-header button, .picker-header button, .edit-header button {
       background: none;
@@ -211,18 +208,13 @@
     .cat-filter-spacer { min-width: 60px; }
     .picker-done, .edit-save { font-weight: 600; }
 
-    .cat-filter-list {
-      padding: 8px 0;
-      overflow-y: auto;
-      flex: 1;
-      min-height: 0;
-    }
+    .cat-filter-list { padding: 8px 0; }
     .cat-filter-item {
       width: 100%;
       display: flex;
       align-items: center;
       gap: 14px;
-      padding: 14px 20px;
+      padding: 16px 20px;
       background: none;
       border: none;
       font-family: inherit;
@@ -247,90 +239,8 @@
       color: var(--button-color);
       opacity: 0;
       transition: opacity 0.15s;
-      flex-shrink: 0;
     }
     .cat-filter-item.active .cat-filter-check { opacity: 1; }
-
-    .project-new-wrap {
-      padding: 12px 16px;
-      border-top: 0.5px solid var(--separator);
-      flex-shrink: 0;
-    }
-    .project-new-btn {
-      width: 100%;
-      height: 44px;
-      border-radius: 12px;
-      background: none;
-      border: 1.5px dashed var(--separator);
-      color: var(--button-color);
-      font-family: inherit;
-      font-size: 15px;
-      font-weight: 600;
-      letter-spacing: -0.2px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      -webkit-tap-highlight-color: transparent;
-      transition: opacity 0.15s;
-    }
-    .project-new-btn:active { opacity: 0.6; }
-    .project-new-form { display: none; flex-direction: column; gap: 12px; }
-    .project-new-form.open { display: flex; }
-    .project-new-input {
-      width: 100%;
-      height: 44px;
-      padding: 0 14px;
-      border-radius: 12px;
-      border: none;
-      background: var(--secondary-bg-color);
-      color: var(--text-color);
-      font-family: inherit;
-      font-size: 16px;
-      letter-spacing: -0.2px;
-      outline: none;
-      transition: box-shadow 0.2s;
-    }
-    .project-new-input:focus { box-shadow: 0 0 0 2px var(--button-color); }
-    .project-palette {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      padding: 4px 0;
-      flex-wrap: wrap;
-    }
-    .project-color-dot {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      border: 3px solid transparent;
-      cursor: pointer;
-      padding: 0;
-      transition: transform 0.15s, border-color 0.2s;
-      -webkit-tap-highlight-color: transparent;
-      outline: none;
-    }
-    .project-color-dot.selected {
-      border-color: var(--text-color);
-      transform: scale(1.1);
-    }
-    .project-color-dot:active { transform: scale(1.15); }
-    .project-new-save {
-      width: 100%;
-      height: 44px;
-      border-radius: 12px;
-      border: none;
-      background: var(--button-color);
-      color: var(--button-text-color);
-      font-family: inherit;
-      font-size: 15px;
-      font-weight: 600;
-      letter-spacing: -0.2px;
-      cursor: pointer;
-      transition: opacity 0.15s, transform 0.1s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .project-new-save:active { opacity: 0.85; transform: scale(0.97); }
 
     .date-pill-wrapper {
       position: relative;
@@ -546,6 +456,8 @@
     }
     .mini-timeline-dot:active { transform: translateX(-50%) scale(1.3); }
     .mini-timeline-dot.done { opacity: 0.3; }
+    .mini-timeline-dot[data-cat="personal"]:not(.overdue) { background: var(--cat-personal); }
+    .mini-timeline-dot[data-cat="work"]:not(.overdue) { background: var(--cat-work); }
     .mini-timeline-dot.overdue { background: var(--danger-color); }
     .mini-timeline-dot.next {
       width: 13px;
@@ -646,8 +558,9 @@
       border-radius: 50%;
       flex-shrink: 0;
       transition: background 0.2s;
-      background: var(--hint-color);
     }
+    .cat-toggle[data-cat="personal"] .cat-dot { background: var(--cat-personal); }
+    .cat-toggle[data-cat="work"] .cat-dot { background: var(--cat-work); }
 
     .time-btn-wrapper {
       flex: 1;
@@ -740,6 +653,9 @@
       user-select: none;
       transition: border-color 0.2s, box-shadow 0.3s;
     }
+    .task-item[data-cat="personal"] { border-left-color: var(--cat-personal); }
+    .task-item[data-cat="work"] { border-left-color: var(--cat-work); }
+    .task-item.overdue { border-left-color: var(--danger-color); }
     .task-item.next-task { box-shadow: 0 0 0 2px var(--button-color); }
     .task-item.flash { animation: flashHighlight 0.9s ease; }
     @keyframes flashHighlight {
@@ -881,6 +797,8 @@
       border-radius: 14px;
       border-left: 3px solid transparent;
     }
+    .day-task-item[data-cat="personal"] { border-left-color: var(--cat-personal); }
+    .day-task-item[data-cat="work"] { border-left-color: var(--cat-work); }
     .day-task-item.done { opacity: 0.55; }
     .day-task-item.done .day-task-text { text-decoration: line-through; color: var(--hint-color); }
     .day-task-content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
@@ -1306,8 +1224,8 @@
     <p id="progress"></p>
 
     <div class="category-pill-wrap">
-      <button id="category-pill">
-        <span class="cat-pill-dot" id="category-pill-dot"></span>
+      <button id="category-pill" data-cat="all">
+        <span class="cat-pill-dot"></span>
         <span id="category-pill-label">Все задачи</span>
         <span class="chevron">▼</span>
       </button>
@@ -1317,8 +1235,8 @@
       <input type="text" id="task-input" placeholder="Что нужно сделать?" maxlength="100">
     </div>
     <div class="add-form-2">
-      <button class="cat-toggle" id="cat-toggle">
-        <span class="cat-dot" id="cat-toggle-dot"></span>
+      <button class="cat-toggle" id="cat-toggle" data-cat="personal">
+        <span class="cat-dot"></span>
         <span id="cat-toggle-label">Личное</span>
       </button>
       <div class="time-btn-wrapper">
@@ -1400,17 +1318,31 @@
     <div class="cat-filter-sheet">
       <div class="cat-filter-header">
         <button id="cat-filter-cancel">Отмена</button>
-        <span class="cat-filter-title" id="cat-filter-title">Проект</span>
+        <span class="cat-filter-title">Фильтр</span>
         <span class="cat-filter-spacer"></span>
       </div>
-      <div class="cat-filter-list" id="cat-filter-list"></div>
-      <div class="project-new-wrap">
-        <button class="project-new-btn" id="project-new-btn">+ Новый проект</button>
-        <div class="project-new-form" id="project-new-form">
-          <input type="text" id="project-new-input" placeholder="Название проекта" maxlength="30">
-          <div class="project-palette" id="project-palette"></div>
-          <button class="project-new-save" id="project-new-save">Создать</button>
-        </div>
+      <div class="cat-filter-list">
+        <button class="cat-filter-item" data-cat="all">
+          <span class="cat-filter-dot" style="background: var(--hint-color);"></span>
+          <span class="cat-filter-label">Все задачи</span>
+          <svg class="cat-filter-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 12 10 18 20 6"/>
+          </svg>
+        </button>
+        <button class="cat-filter-item" data-cat="personal">
+          <span class="cat-filter-dot" style="background: var(--cat-personal);"></span>
+          <span class="cat-filter-label">Личное</span>
+          <svg class="cat-filter-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 12 10 18 20 6"/>
+          </svg>
+        </button>
+        <button class="cat-filter-item" data-cat="work">
+          <span class="cat-filter-dot" style="background: var(--cat-work);"></span>
+          <span class="cat-filter-label">Работа</span>
+          <svg class="cat-filter-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 12 10 18 20 6"/>
+          </svg>
+        </button>
       </div>
     </div>
   </div>
@@ -1425,8 +1357,8 @@
       <div class="edit-body">
         <input type="text" id="edit-text" class="edit-input" maxlength="100" placeholder="Что нужно сделать?">
         <div class="edit-row">
-          <button class="cat-toggle" id="edit-cat-toggle">
-            <span class="cat-dot" id="edit-cat-toggle-dot"></span>
+          <button class="cat-toggle" id="edit-cat-toggle" data-cat="personal">
+            <span class="cat-dot"></span>
             <span id="edit-cat-label">Личное</span>
           </button>
           <div class="time-btn-wrapper" style="flex:1;">
@@ -1444,36 +1376,24 @@
     tg.expand();
     if (tg.colorScheme) document.body.setAttribute('data-theme', tg.colorScheme);
 
-    const STORAGE_KEY = 'my_tasks_v2';
-    const FALLBACK_KEY = 'my_tasks_local_v2';
-    const OLD_STORAGE_KEY = 'my_tasks_v1';
-    const OLD_FALLBACK_KEY = 'my_tasks_local_v1';
-    const UI_STATE_KEY = 'logit_ui_state';
-
-    const PALETTE = [
-      '#34c759', '#ff9f0a', '#007aff', '#af52de',
-      '#ff2d55', '#5ac8fa', '#ffcc00', '#ff3b30'
-    ];
-
     let tasks = [];
-    let projects = [];
+    const STORAGE_KEY = 'my_tasks_v1';
+    const FALLBACK_KEY = 'my_tasks_local_v1';
+    const UI_STATE_KEY = 'logit_ui_state';
 
     let selectedDate = todayISO();
     let detailDate = todayISO();
     let calendarDays = [];
     let suppressScrollSelect = false;
     let currentView = 'tasks';
-
-    let currentFilter = 'all';
-    let addProjectId = 'personal';
-    let editProjectId = 'personal';
-    let projectSheetMode = 'filter';
-    let pendingProjectColor = PALETTE[0];
+    let currentCategory = 'all';
+    let addCategory = 'personal';
 
     let pickerMonth = new Date().getMonth();
     let pickerYearValue = new Date().getFullYear();
 
     let editingIndex = -1;
+    let editCategory = 'personal';
     let justCheckedIndex = -1;
     let staggerNextRender = false;
     let skipSlideIn = false;
@@ -1491,24 +1411,8 @@
     const MONTHS_GEN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
     const CIRCUMFERENCE = 2 * Math.PI * 52;
 
-    function getDefaultProjects() {
-      return [
-        { id: 'personal', name: 'Личное', color: '#34c759' },
-        { id: 'work', name: 'Работа', color: '#ff9f0a' }
-      ];
-    }
-
-    function getProject(id) {
-      return projects.find(p => p.id === id) || projects[0] || { id: 'personal', name: 'Личное', color: '#34c759' };
-    }
-    function getProjectColor(id) { return getProject(id).color; }
-    function getProjectName(id) { return getProject(id).name; }
-
     function makeTaskId() {
       return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-    }
-    function makeProjectId() {
-      return 'p_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     }
     function todayISO() { return dateToISO(new Date()); }
     function dateToISO(d) {
@@ -1547,7 +1451,13 @@
       return d < new Date();
     }
     function matchesCategory(task) {
-      return currentFilter === 'all' || task.projectId === currentFilter;
+      return currentCategory === 'all' || task.category === currentCategory;
+    }
+    function catLabel(cat) { return cat === 'work' ? 'Работа' : 'Личное'; }
+    function filterLabel(cat) {
+      if (cat === 'personal') return 'Личное';
+      if (cat === 'work') return 'Работа';
+      return 'Все задачи';
     }
     function timeToMinutes(t) {
       if (!t) return null;
@@ -1785,11 +1695,7 @@
 
     function saveState() {
       try {
-        localStorage.setItem(UI_STATE_KEY, JSON.stringify({
-          view: currentView,
-          currentFilter,
-          addProjectId
-        }));
+        localStorage.setItem(UI_STATE_KEY, JSON.stringify({ view: currentView, currentCategory }));
       } catch (e) {}
     }
     function restoreState() {
@@ -1798,172 +1704,69 @@
         if (!raw) return;
         const s = JSON.parse(raw);
         if (s.view === 'tasks' || s.view === 'detail') currentView = s.view;
-        if (typeof s.currentFilter === 'string') currentFilter = s.currentFilter;
-        if (typeof s.addProjectId === 'string') addProjectId = s.addProjectId;
+        if (s.currentCategory === 'all' || s.currentCategory === 'personal' || s.currentCategory === 'work') {
+          currentCategory = s.currentCategory;
+        }
       } catch (e) {}
     }
 
-    function updateProjectPillUI() {
-      const dot = document.getElementById('category-pill-dot');
-      const label = document.getElementById('category-pill-label');
-      if (!dot || !label) return;
-      if (currentFilter === 'all') {
-        dot.style.background = 'var(--hint-color)';
-        label.textContent = 'Все задачи';
-      } else {
-        const p = getProject(currentFilter);
-        dot.style.background = p.color;
-        label.textContent = p.name;
+    function updateCategoryUI() {
+      updateCatPillUI();
+      if (currentCategory !== 'all') {
+        addCategory = currentCategory;
+        updateCatToggleUI();
       }
     }
-    function updateProjectToggleUI() {
-      const dot = document.getElementById('cat-toggle-dot');
-      const label = document.getElementById('cat-toggle-label');
-      if (!dot || !label) return;
-      const p = getProject(addProjectId);
-      dot.style.background = p.color;
-      label.textContent = p.name;
+    function updateCatPillUI() {
+      const pill = document.getElementById('category-pill');
+      pill.dataset.cat = currentCategory;
+      document.getElementById('category-pill-label').textContent = filterLabel(currentCategory);
     }
-    function updateEditProjectToggleUI() {
-      const dot = document.getElementById('edit-cat-toggle-dot');
-      const label = document.getElementById('edit-cat-label');
-      if (!dot || !label) return;
-      const p = getProject(editProjectId);
-      dot.style.background = p.color;
-      label.textContent = p.name;
+    function updateCatToggleUI() {
+      const toggle = document.getElementById('cat-toggle');
+      toggle.dataset.cat = addCategory;
+      document.getElementById('cat-toggle-label').textContent = catLabel(addCategory);
     }
-    function updateProjectUI() {
-      updateProjectPillUI();
-      if (currentFilter !== 'all') addProjectId = currentFilter;
-      updateProjectToggleUI();
+    function updateEditCatToggleUI() {
+      const toggle = document.getElementById('edit-cat-toggle');
+      toggle.dataset.cat = editCategory;
+      document.getElementById('edit-cat-label').textContent = catLabel(editCategory);
     }
-
-    function renderProjectSheet() {
-      const list = document.getElementById('cat-filter-list');
-      const title = document.getElementById('cat-filter-title');
-      if (!list) return;
-      list.innerHTML = '';
-
-      if (projectSheetMode === 'filter') {
-        title.textContent = 'Фильтр';
-        const allBtn = document.createElement('button');
-        allBtn.className = 'cat-filter-item' + (currentFilter === 'all' ? ' active' : '');
-        allBtn.innerHTML = `
-          <span class="cat-filter-dot" style="background: var(--hint-color);"></span>
-          <span class="cat-filter-label">Все задачи</span>
-          <svg class="cat-filter-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 10 18 20 6"/></svg>
-        `;
-        allBtn.addEventListener('click', () => selectProjectFromSheet('all'));
-        list.appendChild(allBtn);
-      } else {
-        title.textContent = 'Проект';
-      }
-
-      projects.forEach(p => {
-        const isActive =
-          (projectSheetMode === 'filter' && currentFilter === p.id) ||
-          (projectSheetMode === 'add' && addProjectId === p.id) ||
-          (projectSheetMode === 'edit' && editProjectId === p.id);
-        const btn = document.createElement('button');
-        btn.className = 'cat-filter-item' + (isActive ? ' active' : '');
-        btn.innerHTML = `
-          <span class="cat-filter-dot" style="background: ${p.color};"></span>
-          <span class="cat-filter-label">${escapeHtml(p.name)}</span>
-          <svg class="cat-filter-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 10 18 20 6"/></svg>
-        `;
-        btn.addEventListener('click', () => selectProjectFromSheet(p.id));
-        list.appendChild(btn);
+    function updateCategoryFilterUI() {
+      document.querySelectorAll('.cat-filter-item').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.cat === currentCategory);
       });
     }
-
-    function renderPalette() {
-      const palette = document.getElementById('project-palette');
-      if (!palette) return;
-      palette.innerHTML = '';
-      PALETTE.forEach(color => {
-        const dot = document.createElement('button');
-        dot.type = 'button';
-        dot.className = 'project-color-dot' + (pendingProjectColor === color ? ' selected' : '');
-        dot.style.background = color;
-        dot.addEventListener('click', () => {
-          pendingProjectColor = color;
-          renderPalette();
-          try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
-        });
-        palette.appendChild(dot);
-      });
-    }
-
-    function openProjectSheet(mode) {
-      projectSheetMode = mode;
-      renderProjectSheet();
-      renderPalette();
-      const form = document.getElementById('project-new-form');
-      const btn = document.getElementById('project-new-btn');
-      const input = document.getElementById('project-new-input');
-      if (form) form.classList.remove('open');
-      if (btn) btn.style.display = '';
-      if (input) input.value = '';
-      pendingProjectColor = PALETTE[0];
+    function openCategoryFilter() {
+      updateCategoryFilterUI();
       document.getElementById('cat-filter-overlay').classList.add('active');
       document.body.classList.add('picker-open');
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
-    function closeProjectSheet() {
+    function closeCategoryFilter() {
       document.getElementById('cat-filter-overlay').classList.remove('active');
       document.body.classList.remove('picker-open');
     }
-    function selectProjectFromSheet(id) {
-      if (projectSheetMode === 'filter') {
-        currentFilter = id;
-        if (id !== 'all') addProjectId = id;
-        saveState();
-        updateProjectPillUI();
-        updateProjectToggleUI();
-        updateCalendarDots();
-        render();
-        if (currentView === 'detail') renderDetailView();
-      } else if (projectSheetMode === 'add') {
-        addProjectId = id;
-        updateProjectToggleUI();
-      } else if (projectSheetMode === 'edit') {
-        editProjectId = id;
-        updateEditProjectToggleUI();
-      }
-      closeProjectSheet();
+    function setFilter(cat) {
+      if (currentCategory === cat) return;
+      currentCategory = cat;
+      saveState();
+      updateCategoryUI();
+      updateCalendarDots();
+      render();
+      if (currentView === 'detail') renderDetailView();
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
-    function createNewProject() {
-      const input = document.getElementById('project-new-input');
-      if (!input) return;
-      const name = input.value.trim();
-      if (!name) { try { input.focus(); } catch (e) {} return; }
-      const newProject = {
-        id: makeProjectId(),
-        name: name,
-        color: pendingProjectColor
-      };
-      projects.push(newProject);
-      input.value = '';
-      pendingProjectColor = PALETTE[0];
-      const form = document.getElementById('project-new-form');
-      const btn = document.getElementById('project-new-btn');
-      if (form) form.classList.remove('open');
-      if (btn) btn.style.display = '';
-      saveTasks();
-      renderProjectSheet();
-
-      if (projectSheetMode === 'add') {
-        addProjectId = newProject.id;
-        updateProjectToggleUI();
-        closeProjectSheet();
-      } else if (projectSheetMode === 'edit') {
-        editProjectId = newProject.id;
-        updateEditProjectToggleUI();
-        closeProjectSheet();
-      }
-      try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
-    }
+    document.getElementById('cat-toggle').addEventListener('click', () => {
+      addCategory = addCategory === 'personal' ? 'work' : 'personal';
+      updateCatToggleUI();
+      try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
+    });
+    document.getElementById('edit-cat-toggle').addEventListener('click', () => {
+      editCategory = editCategory === 'personal' ? 'work' : 'personal';
+      updateEditCatToggleUI();
+      try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
+    });
 
     function buildCalendar() {
       const base = isoToDate(selectedDate);
@@ -2197,110 +2000,44 @@
         if (tg.CloudStorage && typeof tg.CloudStorage.getItem === 'function') {
           const saved = await tg.CloudStorage.getItem(STORAGE_KEY);
           if (saved) {
-            const data = JSON.parse(saved);
-            tasks = Array.isArray(data.tasks) ? data.tasks : [];
-            projects = Array.isArray(data.projects) && data.projects.length ? data.projects : getDefaultProjects();
+            tasks = JSON.parse(saved);
             migrateTasks();
             render();
             if (currentView === 'detail') renderDetailView();
-            updateProjectUI();
-            updateEditProjectToggleUI();
             return;
           }
         }
         const localSaved = localStorage.getItem(FALLBACK_KEY);
-        if (localSaved) {
-          const data = JSON.parse(localSaved);
-          tasks = Array.isArray(data.tasks) ? data.tasks : [];
-          projects = Array.isArray(data.projects) && data.projects.length ? data.projects : getDefaultProjects();
-          migrateTasks();
-          render();
-          if (currentView === 'detail') renderDetailView();
-          updateProjectUI();
-          updateEditProjectToggleUI();
-          return;
-        }
-        // Миграция из старого формата (v1 = массив задач)
-        let oldTasks = null;
-        try {
-          if (tg.CloudStorage && typeof tg.CloudStorage.getItem === 'function') {
-            const oldSaved = await tg.CloudStorage.getItem(OLD_STORAGE_KEY);
-            if (oldSaved) {
-              const parsed = JSON.parse(oldSaved);
-              if (Array.isArray(parsed)) oldTasks = parsed;
-            }
-          }
-        } catch (e) {}
-        if (!oldTasks) {
-          try {
-            const oldLocal = localStorage.getItem(OLD_FALLBACK_KEY);
-            if (oldLocal) {
-              const parsed = JSON.parse(oldLocal);
-              if (Array.isArray(parsed)) oldTasks = parsed;
-            }
-          } catch (e) {}
-        }
-        tasks = oldTasks || [];
-        projects = [];
-        migrateTasks();
-        render();
-        if (currentView === 'detail') renderDetailView();
-        updateProjectUI();
-        updateEditProjectToggleUI();
+        if (localSaved) tasks = JSON.parse(localSaved);
       } catch (e) {
         console.error('Ошибка загрузки:', e);
-        tasks = [];
-        projects = getDefaultProjects();
-        migrateTasks();
-        render();
-        if (currentView === 'detail') renderDetailView();
-        updateProjectUI();
-        updateEditProjectToggleUI();
+        const localSaved = localStorage.getItem(FALLBACK_KEY);
+        if (localSaved) tasks = JSON.parse(localSaved);
       }
+      migrateTasks();
+      render();
+      if (currentView === 'detail') renderDetailView();
     }
     function migrateTasks() {
       let changed = false;
-      if (!projects || projects.length === 0) {
-        projects = getDefaultProjects();
-        changed = true;
-      }
       tasks = tasks.map(t => {
         let updated = { ...t };
         if (!updated.id) { updated.id = makeTaskId(); changed = true; }
         if (!updated.date) { updated.date = todayISO(); changed = true; }
         if (updated.time === undefined || updated.time === null) { updated.time = ''; changed = true; }
-        if (!updated.projectId) {
-          if (updated.category === 'work') updated.projectId = 'work';
-          else updated.projectId = 'personal';
-          if (updated.category !== undefined) delete updated.category;
-          changed = true;
-        }
-        if (!projects.find(p => p.id === updated.projectId)) {
-          updated.projectId = projects[0].id;
+        if (updated.category !== 'personal' && updated.category !== 'work') {
+          updated.category = 'personal';
           changed = true;
         }
         return updated;
       });
-      if (currentFilter !== 'all' && !projects.find(p => p.id === currentFilter)) {
-        currentFilter = 'all';
-        changed = true;
-      }
-      if (!projects.find(p => p.id === addProjectId)) {
-        addProjectId = projects[0].id;
-        changed = true;
-      }
-      if (!projects.find(p => p.id === editProjectId)) {
-        editProjectId = projects[0].id;
-        changed = true;
-      }
       if (changed) saveTasks();
     }
     async function saveTasks() {
-      const data = { tasks, projects };
-      try { localStorage.setItem(FALLBACK_KEY, JSON.stringify(data)); } catch (e) {}
+      try { localStorage.setItem(FALLBACK_KEY, JSON.stringify(tasks)); } catch (e) {}
       try {
         if (tg.CloudStorage && typeof tg.CloudStorage.setItem === 'function') {
-          await tg.CloudStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          await tg.CloudStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
         }
       } catch (e) {}
     }
@@ -2363,13 +2100,10 @@
         dot.type = 'button';
         dot.className = 'mini-timeline-dot';
         dot.style.left = pct + '%';
+        dot.dataset.cat = task.category;
         dot.dataset.taskId = tasks.indexOf(task);
-        if (isOverdue(task)) {
-          dot.style.background = 'var(--danger-color)';
-        } else {
-          dot.style.background = getProjectColor(task.projectId);
-        }
         if (task.done) dot.classList.add('done');
+        if (isOverdue(task)) dot.classList.add('overdue');
         if (nextTask && tasks.indexOf(task) === tasks.indexOf(nextTask)) dot.classList.add('next');
         dot.title = task.time + ' — ' + task.text;
         dot.addEventListener('click', () => scrollToTask(dot.dataset.taskId));
@@ -2433,7 +2167,6 @@
       const globalIndex = tasks.indexOf(task);
       const overdue = isOverdue(task);
       const isJustChecked = justCheckedIndex === globalIndex;
-      const borderColor = overdue ? 'var(--danger-color)' : getProjectColor(task.projectId);
       const wrapper = document.createElement('li');
       wrapper.className = 'task-item-wrapper';
       wrapper.id = 'task-card-' + globalIndex;
@@ -2442,7 +2175,7 @@
       const badge = isNext ? '<span class="next-badge">дальше</span>' : '';
       wrapper.innerHTML = `
         <div class="task-item${task.done ? ' done' : ''}${overdue ? ' overdue' : ''}${isNext ? ' next-task' : ''}"
-             style="border-left-color: ${borderColor}">
+             data-cat="${task.category}">
           <div class="task-checkbox${task.done ? ' checked' : ''}${isJustChecked ? ' just-checked' : ''}"></div>
           <div class="task-content">
             <span class="task-text">${escapeHtml(task.text)}</span>
@@ -2501,8 +2234,9 @@
       sectionsEl.innerHTML = '';
       if (dayTasks.length === 0) {
         emptyState.style.display = 'block';
-        if (currentFilter === 'all') emptyState.textContent = 'На этот день задач нет';
-        else emptyState.textContent = 'В этом проекте на день задач нет';
+        if (currentCategory === 'personal') emptyState.textContent = 'Нет личных задач на этот день';
+        else if (currentCategory === 'work') emptyState.textContent = 'Нет рабочих задач на этот день';
+        else emptyState.textContent = 'На этот день задач нет';
       } else {
         emptyState.style.display = 'none';
         const cfg = [
@@ -2573,8 +2307,9 @@
       list.innerHTML = '';
       if (dayTasks.length === 0) {
         emptyEl.style.display = 'block';
-        if (currentFilter === 'all') emptyEl.textContent = 'На этот день задач нет';
-        else emptyEl.textContent = 'В этом проекте на день задач нет';
+        if (currentCategory === 'personal') emptyEl.textContent = 'Нет личных задач на этот день';
+        else if (currentCategory === 'work') emptyEl.textContent = 'Нет рабочих задач на этот день';
+        else emptyEl.textContent = 'На этот день задач нет';
       } else {
         emptyEl.style.display = 'none';
         const sorted = [...dayTasks].sort((a, b) => {
@@ -2586,7 +2321,7 @@
         sorted.forEach(task => {
           const li = document.createElement('li');
           li.className = 'day-task-item' + (task.done ? ' done' : '');
-          li.style.borderLeftColor = getProjectColor(task.projectId);
+          li.dataset.cat = task.category;
           li.innerHTML = `
             <div class="day-task-content">
               <span class="day-task-text">${escapeHtml(task.text)}</span>
@@ -2606,8 +2341,8 @@
       if (!task) return;
       document.getElementById('edit-text').value = task.text;
       document.getElementById('edit-time').value = task.time || '';
-      editProjectId = task.projectId || (projects[0] && projects[0].id) || 'personal';
-      updateEditProjectToggleUI();
+      editCategory = task.category || 'personal';
+      updateEditCatToggleUI();
       updateEditTimeBtn();
       document.getElementById('edit-overlay').classList.add('active');
       document.body.classList.add('picker-open');
@@ -2623,7 +2358,7 @@
       if (!text) return;
       tasks[editingIndex].text = text;
       tasks[editingIndex].time = document.getElementById('edit-time').value || '';
-      tasks[editingIndex].projectId = editProjectId;
+      tasks[editingIndex].category = editCategory;
       const wasDetail = currentView === 'detail';
       closeEditModal();
       render();
@@ -2665,15 +2400,15 @@
         done: false,
         date: selectedDate,
         time: timeInput.value || '',
-        projectId: addProjectId
+        category: addCategory
       });
       input.value = '';
       timeInput.value = '';
       updateTimeBtn();
-      if (currentFilter !== 'all' && currentFilter !== addProjectId) {
-        currentFilter = addProjectId;
+      if (currentCategory !== 'all' && currentCategory !== addCategory) {
+        currentCategory = addCategory;
         saveState();
-        updateProjectPillUI();
+        updateCategoryUI();
       }
       render();
       saveTasks();
@@ -2813,34 +2548,22 @@
     });
 
     const categoryPillEl = document.getElementById('category-pill');
-    if (categoryPillEl) categoryPillEl.addEventListener('click', () => openProjectSheet('filter'));
+    if (categoryPillEl) categoryPillEl.addEventListener('click', openCategoryFilter);
 
     const catFilterCancelEl = document.getElementById('cat-filter-cancel');
-    if (catFilterCancelEl) catFilterCancelEl.addEventListener('click', closeProjectSheet);
+    if (catFilterCancelEl) catFilterCancelEl.addEventListener('click', closeCategoryFilter);
 
     const catFilterOverlayEl = document.getElementById('cat-filter-overlay');
     if (catFilterOverlayEl) catFilterOverlayEl.addEventListener('click', (e) => {
-      if (e.target.id === 'cat-filter-overlay') closeProjectSheet();
+      if (e.target.id === 'cat-filter-overlay') closeCategoryFilter();
     });
 
-    const projectNewBtn = document.getElementById('project-new-btn');
-    if (projectNewBtn) projectNewBtn.addEventListener('click', () => {
-      const form = document.getElementById('project-new-form');
-      const input = document.getElementById('project-new-input');
-      if (form) form.classList.add('open');
-      projectNewBtn.style.display = 'none';
-      setTimeout(() => { try { input.focus(); } catch (e) {} }, 100);
-    });
-
-    const projectNewSave = document.getElementById('project-new-save');
-    if (projectNewSave) projectNewSave.addEventListener('click', createNewProject);
-
-    const projectNewInput = document.getElementById('project-new-input');
-    if (projectNewInput) {
-      projectNewInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); createNewProject(); }
+    document.querySelectorAll('.cat-filter-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        setFilter(btn.dataset.cat);
+        closeCategoryFilter();
       });
-    }
+    });
 
     const toTodayEl = document.getElementById('to-today-btn');
     if (toTodayEl) toTodayEl.addEventListener('click', () => {
@@ -2899,12 +2622,6 @@
       editTimeEl.addEventListener('change', updateEditTimeBtn);
     }
 
-    const catToggleEl = document.getElementById('cat-toggle');
-    if (catToggleEl) catToggleEl.addEventListener('click', () => openProjectSheet('add'));
-
-    const editCatToggleEl = document.getElementById('edit-cat-toggle');
-    if (editCatToggleEl) editCatToggleEl.addEventListener('click', () => openProjectSheet('edit'));
-
     setInterval(() => {
       if (currentView === 'tasks') {
         updateNowMarker();
@@ -2922,12 +2639,12 @@
 
     restoreState();
     detailDate = selectedDate;
-    projects = getDefaultProjects();
     buildCalendar();
     buildWheels();
     updateTimeBtn();
-    updateProjectUI();
-    updateEditProjectToggleUI();
+    updateCategoryUI();
+    updateCatToggleUI();
+    updateEditCatToggleUI();
     if (currentView === 'detail') {
       document.getElementById('view-tasks').classList.remove('active');
       document.getElementById('view-detail').classList.add('active');
