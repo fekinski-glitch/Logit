@@ -1,3 +1,6 @@
+Возвращаю прежнюю компоновку: категория снова в одном ряду с временем и кнопкой «+». Всё остальное — как было (стрелки без кругов, «Во сколько?», все анимации, undo-toast, fade календаря).
+
+```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -510,15 +513,6 @@
       text-transform: none;
     }
     .section-task-list { list-style: none; display: flex; flex-direction: column; }
-
-    .cat-pill-row {
-      display: flex;
-      margin-bottom: 8px;
-    }
-    .cat-pill-row .cat-toggle {
-      height: 40px;
-      padding: 0 14px;
-    }
 
     .add-form { margin-bottom: 8px; }
     .add-form input {
@@ -1238,16 +1232,14 @@
 
     <p id="progress"></p>
 
-    <div class="cat-pill-row">
-      <button class="cat-toggle" id="cat-toggle" data-cat="personal">
-        <span class="cat-dot"></span>
-        <span id="cat-toggle-label">Личное</span>
-      </button>
-    </div>
     <div class="add-form">
       <input type="text" id="task-input" placeholder="Что нужно сделать?" maxlength="100">
     </div>
     <div class="add-form-2">
+      <button class="cat-toggle" id="cat-toggle" data-cat="personal">
+        <span class="cat-dot"></span>
+        <span id="cat-toggle-label">Личное</span>
+      </button>
       <div class="time-btn-wrapper">
         <div class="time-btn-display" id="time-btn-text">Во сколько?</div>
         <input type="time" id="task-time" class="time-input-overlay">
@@ -2668,3 +2660,25 @@
   </script>
 </body>
 </html>
+```
+
+---
+
+Что вернул
+
+HTML:
+
+```html
+<div class="add-form">
+  <input type="text" id="task-input" ...>
+</div>
+<div class="add-form-2">
+  <button class="cat-toggle" id="cat-toggle" data-cat="personal">...</button>
+  <div class="time-btn-wrapper">...</div>
+  <button id="add-btn">+</button>
+</div>
+```
+
+CSS: удалил .cat-pill-row и его правила — они больше не нужны.
+
+Всё остальное без изменений: стрелки без кругов, «Во сколько?», fade календаря, undo-toast, все анимации.
