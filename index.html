@@ -480,7 +480,6 @@
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 10px;
     }
 
     .add-form { margin-bottom: 8px; }
@@ -591,10 +590,36 @@
     }
     .add-form-2 button#add-btn:active { transform: scale(0.95); opacity: 0.8; }
 
-    .task-item-wrapper { animation: slideIn 0.3s ease backwards; }
+    .task-item-wrapper {
+      animation: slideIn 0.3s ease backwards;
+      margin-bottom: 10px;
+    }
+    .section-task-list .task-item-wrapper:last-child {
+      margin-bottom: 0;
+    }
+    .task-item-wrapper.no-slide {
+      animation: none;
+    }
+    .task-item-wrapper.removing {
+      animation: collapseOut 0.25s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+      pointer-events: none;
+      overflow: hidden;
+    }
     @keyframes slideIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes collapseOut {
+      0% {
+        opacity: 1;
+        max-height: 200px;
+        margin-bottom: 10px;
+      }
+      100% {
+        opacity: 0;
+        max-height: 0;
+        margin-bottom: 0;
+      }
     }
     .task-item {
       display: flex;
@@ -1520,6 +1545,8 @@
     let editCategory = 'personal';
     let justCheckedIndex = -1;
     let staggerNextRender = false;
+    let pendingDelete = false;
+    let skipSlideIn = false;
 
     const TL_START_H = 5;
     const TL_END_H = 24;
@@ -2214,7 +2241,9 @@
       const wrapper = document.createElement('li');
       wrapper.className = 'task-item-wrapper';
       wrapper.id = 'task-card-' + globalIndex;
-      if (doStagger) {
+      if (skipSlideIn) {
+        wrapper.classList.add('no-slide');
+      } else if (doStagger) {
         wrapper.style.animationDelay = (Math.min(position, 8) * 35) + 'ms';
       }
       const badge = isNext ? '<span class="next-badge">дальше</span>' : '';
@@ -2476,10 +2505,27 @@
       try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
     }
     function deleteTask(index) {
+      if (pendingDelete) return;
+      const el = document.getElementById('task-card-' + index);
+      if (!el) {
+        tasks.splice(index, 1);
+        render();
+        saveTasks();
+        try { tg.HapticFeedback.impactOccurred('rigid'); } catch (e) {}
+        return;
+      }
       tasks.splice(index, 1);
-      render();
-      saveTasks();
+      el.classList.add('removing');
+      el.style.pointerEvents = 'none';
       try { tg.HapticFeedback.impactOccurred('rigid'); } catch (e) {}
+      pendingDelete = true;
+      setTimeout(() => {
+        pendingDelete = false;
+        skipSlideIn = true;
+        render();
+        saveTasks();
+        skipSlideIn = false;
+      }, 250);
     }
     function escapeHtml(str) {
       const div = document.createElement('div');
