@@ -42,6 +42,11 @@
     body.picker-open { overflow: hidden; }
     body.welcome-open { overflow: hidden; }
 
+    body.booting .view,
+    body.booting .tab-bar {
+      visibility: hidden;
+    }
+
     ::placeholder {
       color: var(--hint-color);
       opacity: 1;
@@ -365,7 +370,6 @@
       line-height: 1.4;
     }
 
-    /* ==== Мини-таймлайн ==== */
     .mini-timeline {
       position: relative;
       height: 48px;
@@ -446,7 +450,6 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* ==== Секции ==== */
     #task-sections {
       display: flex;
       flex-direction: column;
@@ -723,7 +726,6 @@
       display: none;
     }
 
-    /* Экран "Подробнее" */
     #detail-date {
       text-align: center;
       font-size: 30px;
@@ -1100,16 +1102,16 @@
       align-items: center;
     }
 
-    /* Обёртка вокруг ASCII для сканера */
     .ascii-wrap {
       position: relative;
       display: inline-block;
       margin: 0 auto 32px;
     }
 
+    /* Логотип крупнее */
     .ascii-art {
       font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
-      font-size: clamp(11px, 3.4vw, 15px);
+      font-size: clamp(13px, 4.5vw, 19px);
       line-height: 1.15;
       letter-spacing: 0;
       white-space: pre;
@@ -1120,7 +1122,6 @@
       min-height: calc(9 * 1.15em);
       font-variant-ligatures: none;
       font-feature-settings: "liga" 0, "calt" 0;
-      /* скрыт по умолчанию — «проявится» сканером */
       clip-path: inset(0 0 100% 0);
       -webkit-clip-path: inset(0 0 100% 0);
     }
@@ -1132,17 +1133,70 @@
       to { clip-path: inset(0 0 0 0); -webkit-clip-path: inset(0 0 0 0); }
     }
 
-    /* Светящаяся линия-сканер */
+    /* Слово LOGIT — по буквам */
+    .logit-word {
+      position: absolute;
+      top: 72.22%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      gap: 1ch;
+      font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
+      font-size: clamp(13px, 4.5vw, 19px);
+      font-weight: 700;
+      color: var(--button-color);
+      white-space: pre;
+      pointer-events: none;
+      z-index: 4;
+      line-height: 1;
+    }
+    .logit-word span {
+      display: inline-block;
+      opacity: 0;
+      transform: scale(0.3);
+      transform-origin: center;
+    }
+    /* У каждой буквы своя задержка — «неоновая вывеска» загорается слева направо */
+    .logit-word.show span:nth-child(1) { animation: letterGlow 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both 0.00s; }
+    .logit-word.show span:nth-child(2) { animation: letterGlow 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both 0.08s; }
+    .logit-word.show span:nth-child(3) { animation: letterGlow 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both 0.16s; }
+    .logit-word.show span:nth-child(4) { animation: letterGlow 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both 0.24s; }
+    .logit-word.show span:nth-child(5) { animation: letterGlow 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both 0.32s; }
+
+    @keyframes letterGlow {
+      0% {
+        opacity: 0;
+        transform: scale(0.3);
+        text-shadow: 0 0 0 transparent;
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.4);
+        text-shadow:
+          0 0 20px var(--button-color),
+          0 0 8px var(--button-color),
+          0 0 2px rgba(255,255,255,0.9);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+        text-shadow:
+          0 0 14px var(--button-color),
+          0 0 5px var(--button-color);
+      }
+    }
+
+    /* Сканер */
     .ascii-scan-line {
       position: absolute;
-      left: -12px;
-      right: -12px;
+      left: -14px;
+      right: -14px;
       top: 0;
       height: 2px;
       background: var(--button-color);
       box-shadow:
-        0 0 12px var(--button-color),
-        0 0 4px var(--button-color),
+        0 0 14px var(--button-color),
+        0 0 5px var(--button-color),
         0 0 1px rgba(255,255,255,0.9);
       border-radius: 2px;
       opacity: 0;
@@ -1159,19 +1213,19 @@
       100% { opacity: 0; top: calc(100% - 2px); }
     }
 
-    /* Галочка поверх арта — вспыхивает после сканера */
+    /* Галочка в центре */
     .ascii-check {
       position: absolute;
       top: 38.9%;
       left: 50%;
       transform: translate(-50%, -50%) scale(0);
       font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
-      font-size: clamp(11px, 3.4vw, 15px);
+      font-size: clamp(13px, 4.5vw, 19px);
       font-weight: 700;
       color: var(--button-color);
       text-shadow:
-        0 0 12px var(--button-color),
-        0 0 4px var(--button-color);
+        0 0 14px var(--button-color),
+        0 0 5px var(--button-color);
       opacity: 0;
       pointer-events: none;
       line-height: 1;
@@ -1248,13 +1302,15 @@
     .welcome-start-btn.visible:active { transform: scale(0.96); opacity: 0.85; }
   </style>
 </head>
-<body>
+<body class="booting">
 
-  <!-- Приветствие -->
   <div class="welcome-screen" id="welcome-screen">
     <div class="welcome-inner">
       <div class="ascii-wrap">
         <pre class="ascii-art" id="welcome-art"></pre>
+        <div class="logit-word" id="logit-word">
+          <span>L</span><span>O</span><span>G</span><span>I</span><span>T</span>
+        </div>
         <div class="ascii-scan-line" id="scan-line"></div>
         <div class="ascii-check" id="ascii-check">✓</div>
       </div>
@@ -1264,7 +1320,6 @@
     </div>
   </div>
 
-  <!-- Экран 1: Задачи -->
   <div class="view active" id="view-tasks">
     <div class="header-wrap">
       <h1 id="month-label">Загрузка... <span class="chevron">▼</span></h1>
@@ -1318,7 +1373,6 @@
     <div id="empty-state">На этот день задач нет</div>
   </div>
 
-  <!-- Экран 2: Подробнее -->
   <div class="view" id="view-detail">
     <div class="header-wrap">
       <div class="date-pill-wrapper">
@@ -1343,7 +1397,6 @@
     </div>
   </div>
 
-  <!-- Таб-бар -->
   <nav class="tab-bar" id="tab-bar">
     <button class="tab-item active" data-view="tasks">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -1365,7 +1418,6 @@
     </button>
   </nav>
 
-  <!-- Пикер месяца -->
   <div class="picker-overlay" id="picker-overlay">
     <div class="picker-sheet">
       <div class="picker-header">
@@ -1381,7 +1433,6 @@
     </div>
   </div>
 
-  <!-- Фильтр категорий -->
   <div class="cat-filter-overlay" id="cat-filter-overlay">
     <div class="cat-filter-sheet">
       <div class="cat-filter-header">
@@ -1415,7 +1466,6 @@
     </div>
   </div>
 
-  <!-- Редактирование -->
   <div class="edit-overlay" id="edit-overlay">
     <div class="edit-sheet">
       <div class="edit-header">
@@ -1474,7 +1524,7 @@
     const MONTHS_GEN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
     const CIRCUMFERENCE = 2 * Math.PI * 52;
 
-    // ASCII без галочки — галочка отдельным элементом, чтобы bounce работал
+    // Рамка без надписи LOGIT — буквы теперь отдельным слоем .logit-word
     const ASCII_ART =
       '╭────────────────────╮\n' +
       '│                    │\n' +
@@ -1482,7 +1532,7 @@
       '│                    │\n' +
       '│                    │\n' +
       '│                    │\n' +
-      '│     L O G I T      │\n' +
+      '│                    │\n' +
       '│                    │\n' +
       '╰────────────────────╯';
 
@@ -1540,7 +1590,6 @@
       return Math.max(0, Math.min(100, (min - TL_START_H * 60) / TL_RANGE_MIN * 100));
     }
 
-    // ====== Клавиатура ======
     (function setupKeyboardHandling() {
       const tabBar = document.getElementById('tab-bar');
       if (!tabBar) return;
@@ -1590,7 +1639,7 @@
       }
     })();
 
-    // ====== Приветствие со «сканером» ======
+    // ====== Приветствие ======
     function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
     function typeText(el, text, delay) {
@@ -1620,46 +1669,58 @@
       const art = document.getElementById('welcome-art');
       const scanLine = document.getElementById('scan-line');
       const check = document.getElementById('ascii-check');
+      const logitWord = document.getElementById('logit-word');
       const greeting = document.getElementById('welcome-greeting');
       const subtitle = document.getElementById('welcome-subtitle');
 
-      // Сброс всех состояний анимации
+      // Сброс всех состояний
       startBtn.classList.remove('visible');
       art.classList.remove('revealing');
       scanLine.classList.remove('scanning');
       check.classList.remove('pop');
+      logitWord.classList.remove('show');
       art.textContent = ASCII_ART;
       greeting.textContent = '';
       subtitle.textContent = '';
       greeting.classList.remove('typing');
       subtitle.classList.remove('typing');
 
+      // Показываем welcome, потом снимаем booting
       screen.classList.add('active');
       document.body.classList.add('welcome-open');
+      document.body.classList.remove('booting');
 
       const userName = (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name) || 'друг';
 
-      // Небольшая пауза, чтобы экран успел «появиться»
       await sleep(180);
 
-      // 1. Запускаем сканер и «проявление» рамки за ним
-      // Форсируем рефлоу для перезапуска CSS-анимации
+      // 1. Сканер + проявление рамки
       void art.offsetWidth;
       void scanLine.offsetWidth;
       art.classList.add('revealing');
       scanLine.classList.add('scanning');
 
-      // 2. Ждём завершения сканера (0.85s)
+      // 2. Ждём сканер (0.87s)
       await sleep(870);
 
-      // 3. Галочка вспыхивает с bounce
+      // 3. Галочка в центре — pop
       check.classList.add('pop');
       try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
 
-      // 4. Пауза, чтобы галочка «отдышалась»
+      // 4. Ждём галочку (0.55s)
       await sleep(550);
 
-      // 5. Печатаем имя — как раньше
+      // 5. Запускаем появление букв L-O-G-I-T
+      //    Форсим рефлоу, чтобы анимация гарантированно стартовала
+      void logitWord.offsetWidth;
+      logitWord.classList.add('show');
+      try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
+
+      // 6. Небольшая пауза, чтобы первые буквы «отстрелялись»
+      //    (последняя буква T завершит bounce на 1.74 + 0.6 = 2.34s от старта show)
+      await sleep(480);
+
+      // 7. Печатаем имя — пока последние буквы ещё допрыгивают
       await typeText(greeting, 'Привет, ' + userName + '!', 40);
       await sleep(150);
       await typeText(subtitle, 'Твой день начинается здесь', 22);
@@ -1675,7 +1736,6 @@
     });
 
     // ====== Сохранение UI ======
-    // ВАЖНО: даты больше не восстанавливаем — при старте всегда сегодня
     function saveState() {
       try {
         localStorage.setItem(UI_STATE_KEY, JSON.stringify({
@@ -1689,7 +1749,6 @@
         const raw = localStorage.getItem(UI_STATE_KEY);
         if (!raw) return;
         const s = JSON.parse(raw);
-        // selectedDate и detailDate НЕ восстанавливаем — всегда todayISO() при старте
         if (s.view === 'tasks' || s.view === 'detail') currentView = s.view;
         if (s.currentCategory === 'all' || s.currentCategory === 'personal' || s.currentCategory === 'work') {
           currentCategory = s.currentCategory;
@@ -2510,9 +2569,15 @@
       }
     }, 60000);
 
+    setTimeout(() => {
+      if (document.body.classList.contains('booting')) {
+        document.body.classList.remove('booting');
+        console.warn('booting not cleared by playWelcome — forced removal');
+      }
+    }, 3000);
+
     // ====== Старт ======
     restoreState();
-    // detailDate = selectedDate — они обе todayISO() по умолчанию
     detailDate = selectedDate;
     buildCalendar();
     buildWheels();
@@ -2530,7 +2595,7 @@
     loadTasks();
     renderDetailView();
 
-    setTimeout(playWelcome, 150);
+    setTimeout(playWelcome, 40);
   </script>
 </body>
 </html>
