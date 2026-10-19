@@ -501,6 +501,50 @@
     .add-form input:focus { box-shadow: 0 0 0 2px var(--button-color); }
     .add-form-2 { display: flex; gap: 8px; margin-bottom: 22px; }
 
+    .note-toggle-btn {
+      display: block;
+      margin: 6px auto 0;
+      padding: 4px 10px;
+      background: none;
+      border: none;
+      color: var(--hint-color);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: -0.1px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: opacity 0.15s;
+    }
+    .note-toggle-btn:active { opacity: 0.6; }
+
+    .note-field-wrap {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, margin-bottom 0.3s ease;
+      margin-bottom: 0;
+    }
+    .note-field-wrap.open {
+      max-height: 200px;
+      margin-bottom: 8px;
+    }
+    .add-note-textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: none;
+      background-color: var(--secondary-bg-color);
+      color: var(--text-color);
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      resize: none;
+      letter-spacing: -0.2px;
+      line-height: 1.4;
+      transition: box-shadow 0.2s;
+    }
+    .add-note-textarea:focus { box-shadow: 0 0 0 2px var(--button-color); }
+
     .cat-toggle {
       height: 52px;
       padding: 0 12px;
@@ -612,7 +656,7 @@
     @keyframes collapseOut {
       0% {
         opacity: 1;
-        max-height: 200px;
+        max-height: 400px;
         margin-bottom: 10px;
       }
       100% {
@@ -687,7 +731,6 @@
       min-width: 0;
       display: flex;
       flex-direction: column;
-      gap: 5px;
       justify-content: center;
     }
     .task-text {
@@ -698,6 +741,7 @@
       word-break: break-word;
     }
     .task-time {
+      margin-top: 5px;
       font-size: 13px;
       font-weight: 600;
       letter-spacing: 0.1px;
@@ -726,6 +770,35 @@
       letter-spacing: 0.4px;
       text-transform: uppercase;
       line-height: 1.4;
+    }
+    .task-expand-indicator {
+      font-size: 10px;
+      color: var(--hint-color);
+      opacity: 0.7;
+      transition: transform 0.25s ease;
+      line-height: 1;
+      display: inline-block;
+    }
+    .task-item.expanded .task-expand-indicator {
+      transform: rotate(180deg);
+    }
+    .task-note-wrap {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .task-item.expanded .task-note-wrap {
+      max-height: 400px;
+    }
+    .task-note-inner {
+      padding-top: 8px;
+      font-size: 14px;
+      color: var(--hint-color);
+      letter-spacing: -0.1px;
+      line-height: 1.4;
+      word-break: break-word;
+      white-space: pre-wrap;
+      font-weight: 400;
     }
     .delete-btn {
       background: none;
@@ -760,7 +833,7 @@
       display: none;
     }
 
-    /* Экран "Подробнее" — день недели под пилюлей */
+    /* Экран "Подробнее" */
     #detail-weekday {
       text-align: center;
       font-size: 15px;
@@ -824,6 +897,16 @@
     }
     .day-task-time.empty { color: var(--hint-color); font-weight: 500; }
     .day-task-item.done .day-task-time { color: var(--hint-color); }
+    .day-task-note {
+      font-size: 13px;
+      color: var(--hint-color);
+      font-weight: 400;
+      letter-spacing: -0.1px;
+      line-height: 1.4;
+      word-break: break-word;
+      white-space: pre-wrap;
+      margin-top: 4px;
+    }
     .day-empty {
       text-align: center;
       color: var(--hint-color);
@@ -1112,6 +1195,22 @@
       transition: box-shadow 0.2s;
     }
     .edit-input:focus { box-shadow: 0 0 0 2px var(--button-color); }
+    .edit-note-textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: none;
+      background-color: var(--secondary-bg-color);
+      color: var(--text-color);
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      resize: none;
+      letter-spacing: -0.2px;
+      line-height: 1.4;
+      transition: box-shadow 0.2s;
+    }
+    .edit-note-textarea:focus { box-shadow: 0 0 0 2px var(--button-color); }
     .edit-row { display: flex; gap: 8px; }
 
     /* ====== ПРИВЕТСТВЕННЫЙ ЭКРАН ====== */
@@ -1195,26 +1294,9 @@
     .logit-word.show span:nth-child(5) { animation: letterGlow 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both 0.32s; }
 
     @keyframes letterGlow {
-      0% {
-        opacity: 0;
-        transform: scale(0.3);
-        text-shadow: 0 0 0 transparent;
-      }
-      50% {
-        opacity: 1;
-        transform: scale(1.4);
-        text-shadow:
-          0 0 20px var(--button-color),
-          0 0 8px var(--button-color),
-          0 0 2px rgba(255,255,255,0.9);
-      }
-      100% {
-        opacity: 1;
-        transform: scale(1);
-        text-shadow:
-          0 0 14px var(--button-color),
-          0 0 5px var(--button-color);
-      }
+      0% { opacity: 0; transform: scale(0.3); text-shadow: 0 0 0 transparent; }
+      50% { opacity: 1; transform: scale(1.4); text-shadow: 0 0 20px var(--button-color), 0 0 8px var(--button-color), 0 0 2px rgba(255,255,255,0.9); }
+      100% { opacity: 1; transform: scale(1); text-shadow: 0 0 14px var(--button-color), 0 0 5px var(--button-color); }
     }
 
     .ascii-scan-line {
@@ -1224,10 +1306,7 @@
       top: 0;
       height: 2px;
       background: var(--button-color);
-      box-shadow:
-        0 0 14px var(--button-color),
-        0 0 5px var(--button-color),
-        0 0 1px rgba(255,255,255,0.9);
+      box-shadow: 0 0 14px var(--button-color), 0 0 5px var(--button-color), 0 0 1px rgba(255,255,255,0.9);
       border-radius: 2px;
       opacity: 0;
       pointer-events: none;
@@ -1252,10 +1331,7 @@
       font-size: clamp(22px, 7vw, 32px);
       font-weight: 700;
       color: var(--button-color);
-      text-shadow:
-        0 0 18px var(--button-color),
-        0 0 8px var(--button-color),
-        0 0 2px rgba(255,255,255,0.7);
+      text-shadow: 0 0 18px var(--button-color), 0 0 8px var(--button-color), 0 0 2px rgba(255,255,255,0.7);
       opacity: 0;
       pointer-events: none;
       line-height: 1;
@@ -1386,6 +1462,10 @@
 
     <div class="add-form">
       <input type="text" id="task-input" placeholder="Что нужно сделать?" maxlength="100">
+      <button type="button" class="note-toggle-btn" id="note-toggle-btn">+ Заметка</button>
+    </div>
+    <div class="note-field-wrap" id="note-field-wrap">
+      <textarea id="task-note" class="add-note-textarea" placeholder="Заметка (опционально)" rows="2" maxlength="500"></textarea>
     </div>
     <div class="add-form-2">
       <button class="cat-toggle" id="cat-toggle" data-cat="personal">
@@ -1403,7 +1483,6 @@
     <div id="empty-state">На этот день задач нет</div>
   </div>
 
-  <!-- Экран Подробнее — БЕЗ дубля даты -->
   <div class="view" id="view-detail">
     <div class="header-wrap">
       <div class="date-pill-wrapper">
@@ -1505,6 +1584,7 @@
       </div>
       <div class="edit-body">
         <input type="text" id="edit-text" class="edit-input" maxlength="100" placeholder="Что нужно сделать?">
+        <textarea id="edit-note" class="edit-note-textarea" placeholder="Заметка (опционально)" rows="2" maxlength="500"></textarea>
         <div class="edit-row">
           <button class="cat-toggle" id="edit-cat-toggle" data-cat="personal">
             <span class="cat-dot"></span>
@@ -1547,6 +1627,7 @@
     let staggerNextRender = false;
     let pendingDelete = false;
     let skipSlideIn = false;
+    let expandedTasks = new Set();
 
     const TL_START_H = 5;
     const TL_END_H = 24;
@@ -1569,6 +1650,9 @@
       '│                    │\n' +
       '╰────────────────────╯';
 
+    function makeTaskId() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    }
     function todayISO() { return dateToISO(new Date()); }
     function dateToISO(d) {
       const y = d.getFullYear();
@@ -1622,6 +1706,9 @@
     function minutesToPct(min) {
       return Math.max(0, Math.min(100, (min - TL_START_H * 60) / TL_RANGE_MIN * 100));
     }
+    function hasNote(task) {
+      return !!(task && task.note && task.note.trim().length > 0);
+    }
 
     function getTimeGreeting() {
       const h = new Date().getHours();
@@ -1671,985 +1758,4 @@
           }
         });
         const onVpChange = () => {
-          const isKb = (stableHeight - vv.height) > 150;
-          if (isKb && isInputFocused()) setKeyboardOpen(true);
-          else if (!isKb && !isInputFocused()) setKeyboardOpen(false);
-        };
-        vv.addEventListener('resize', onVpChange);
-        vv.addEventListener('scroll', onVpChange);
-      }
-    })();
-
-    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-    function typeText(el, text, delay) {
-      return new Promise(resolve => {
-        el.textContent = '';
-        el.classList.add('typing');
-        let i = 0;
-        function tick() {
-          if (i < text.length) {
-            const char = text[i];
-            el.textContent += char;
-            i++;
-            const pause = char === '\n' ? delay * 4 : delay;
-            setTimeout(tick, pause);
-          } else {
-            el.classList.remove('typing');
-            resolve();
-          }
-        }
-        tick();
-      });
-    }
-
-    async function playWelcome() {
-      const screen = document.getElementById('welcome-screen');
-      const startBtn = document.getElementById('welcome-start');
-      const art = document.getElementById('welcome-art');
-      const scanLine = document.getElementById('scan-line');
-      const check = document.getElementById('ascii-check');
-      const logitWord = document.getElementById('logit-word');
-      const greeting = document.getElementById('welcome-greeting');
-      const subtitle = document.getElementById('welcome-subtitle');
-
-      startBtn.classList.remove('visible');
-      art.classList.remove('revealing');
-      scanLine.classList.remove('scanning');
-      check.classList.remove('pop');
-      logitWord.classList.remove('show');
-      art.textContent = ASCII_ART;
-      greeting.textContent = '';
-      subtitle.textContent = '';
-      greeting.classList.remove('typing');
-      subtitle.classList.remove('typing');
-
-      screen.classList.add('active');
-      document.body.classList.add('welcome-open');
-      document.body.classList.remove('booting');
-
-      const userName = (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name) || 'друг';
-
-      await sleep(180);
-
-      void art.offsetWidth;
-      void scanLine.offsetWidth;
-      art.classList.add('revealing');
-      scanLine.classList.add('scanning');
-
-      await sleep(870);
-
-      check.classList.add('pop');
-      try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
-
-      await sleep(550);
-
-      void logitWord.offsetWidth;
-      logitWord.classList.add('show');
-      try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
-
-      await sleep(480);
-
-      await typeText(greeting, getTimeGreeting() + ', ' + userName + '!', 40);
-      await sleep(150);
-      await typeText(subtitle, 'Твой день начинается здесь', 22);
-      await sleep(200);
-      startBtn.classList.add('visible');
-      try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
-    }
-
-    document.getElementById('welcome-start').addEventListener('click', () => {
-      document.getElementById('welcome-screen').classList.remove('active');
-      document.body.classList.remove('welcome-open');
-      try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
-    });
-
-    function saveState() {
-      try {
-        localStorage.setItem(UI_STATE_KEY, JSON.stringify({
-          view: currentView,
-          currentCategory
-        }));
-      } catch (e) {}
-    }
-    function restoreState() {
-      try {
-        const raw = localStorage.getItem(UI_STATE_KEY);
-        if (!raw) return;
-        const s = JSON.parse(raw);
-        if (s.view === 'tasks' || s.view === 'detail') currentView = s.view;
-        if (s.currentCategory === 'all' || s.currentCategory === 'personal' || s.currentCategory === 'work') {
-          currentCategory = s.currentCategory;
-        }
-      } catch (e) {}
-    }
-
-    function updateCategoryUI() {
-      updateCatPillUI();
-      if (currentCategory !== 'all') {
-        addCategory = currentCategory;
-        updateCatToggleUI();
-      }
-    }
-    function updateCatPillUI() {
-      const pill = document.getElementById('category-pill');
-      pill.dataset.cat = currentCategory;
-      document.getElementById('category-pill-label').textContent = filterLabel(currentCategory);
-    }
-    function updateCatToggleUI() {
-      const toggle = document.getElementById('cat-toggle');
-      toggle.dataset.cat = addCategory;
-      document.getElementById('cat-toggle-label').textContent = catLabel(addCategory);
-    }
-    function updateEditCatToggleUI() {
-      const toggle = document.getElementById('edit-cat-toggle');
-      toggle.dataset.cat = editCategory;
-      document.getElementById('edit-cat-label').textContent = catLabel(editCategory);
-    }
-    function updateCategoryFilterUI() {
-      document.querySelectorAll('.cat-filter-item').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.cat === currentCategory);
-      });
-    }
-    function openCategoryFilter() {
-      updateCategoryFilterUI();
-      document.getElementById('cat-filter-overlay').classList.add('active');
-      document.body.classList.add('picker-open');
-      try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
-    }
-    function closeCategoryFilter() {
-      document.getElementById('cat-filter-overlay').classList.remove('active');
-      document.body.classList.remove('picker-open');
-    }
-    function setFilter(cat) {
-      if (currentCategory === cat) return;
-      currentCategory = cat;
-      saveState();
-      updateCategoryUI();
-      updateCalendarDots();
-      render();
-      if (currentView === 'detail') renderDetailView();
-      try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
-    }
-    document.getElementById('cat-toggle').addEventListener('click', () => {
-      addCategory = addCategory === 'personal' ? 'work' : 'personal';
-      updateCatToggleUI();
-      try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
-    });
-    document.getElementById('edit-cat-toggle').addEventListener('click', () => {
-      editCategory = editCategory === 'personal' ? 'work' : 'personal';
-      updateEditCatToggleUI();
-      try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
-    });
-
-    function buildCalendar() {
-      const base = isoToDate(selectedDate);
-      base.setHours(0,0,0,0);
-      const days = [];
-      for (let i = -180; i <= 180; i++) {
-        const d = new Date(base);
-        d.setDate(d.getDate() + i);
-        days.push(dateToISO(d));
-      }
-      calendarDays = days;
-      renderCalendar();
-    }
-    function renderCalendar() {
-      const strip = document.getElementById('calendar-strip');
-      strip.innerHTML = '';
-      const todayStr = todayISO();
-      const weekdays = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
-      calendarDays.forEach(iso => {
-        const d = isoToDate(iso);
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'day-cell';
-        if (iso === selectedDate) btn.classList.add('selected');
-        if (iso === todayStr) btn.classList.add('today');
-        const dow = d.getDay();
-        if (dow === 0 || dow === 6) btn.classList.add('weekend');
-        btn.dataset.date = iso;
-        btn.innerHTML = `
-          <span class="weekday">${weekdays[dow]}</span>
-          <span class="date-num">${d.getDate()}</span>
-          <span class="day-dot"></span>
-        `;
-        btn.addEventListener('click', () => selectDate(iso, true));
-        strip.appendChild(btn);
-      });
-      requestAnimationFrame(() => scrollToSelected(false));
-      attachScrollHandler();
-      updateCalendarDots();
-    }
-    function updateCalendarDots() {
-      document.querySelectorAll('.day-cell').forEach(cell => {
-        const iso = cell.dataset.date;
-        const hasPending = tasks.some(t =>
-          t.date === iso && !t.done && matchesCategory(t)
-        );
-        cell.classList.toggle('has-tasks', hasPending);
-      });
-    }
-    function attachScrollHandler() {
-      const strip = document.getElementById('calendar-strip');
-      if (strip.dataset.hasScrollHandler) return;
-      strip.dataset.hasScrollHandler = '1';
-      let timer;
-      strip.addEventListener('scroll', () => {
-        if (suppressScrollSelect) return;
-        clearTimeout(timer);
-        timer = setTimeout(() => {
-          const center = strip.scrollLeft + strip.clientWidth / 2;
-          let closest = null, minDist = Infinity;
-          strip.querySelectorAll('.day-cell').forEach(cell => {
-            const cc = cell.offsetLeft + cell.offsetWidth / 2;
-            const dist = Math.abs(cc - center);
-            if (dist < minDist) { minDist = dist; closest = cell; }
-          });
-          if (closest && closest.dataset.date !== selectedDate) {
-            selectDate(closest.dataset.date, false);
-          }
-        }, 120);
-      }, { passive: true });
-    }
-    function scrollToSelected(smooth) {
-      const strip = document.getElementById('calendar-strip');
-      const sel = strip.querySelector('.selected');
-      if (!sel) return;
-      suppressScrollSelect = true;
-      const target = sel.offsetLeft - strip.clientWidth / 2 + sel.clientWidth / 2;
-      strip.scrollTo({ left: target, behavior: smooth ? 'smooth' : 'auto' });
-      setTimeout(() => { suppressScrollSelect = false; }, smooth ? 500 : 100);
-    }
-    function selectDate(iso, scroll) {
-      if (iso === selectedDate) {
-        if (scroll) scrollToSelected(true);
-        return;
-      }
-      selectedDate = iso;
-      saveState();
-      document.querySelectorAll('.day-cell').forEach(cell => {
-        cell.classList.toggle('selected', cell.dataset.date === iso);
-      });
-      staggerNextRender = true;
-      render();
-      if (scroll) scrollToSelected(true);
-      try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
-    }
-
-    function buildWheels() {
-      const currentYear = new Date().getFullYear();
-      const mw = document.querySelector('#wheel-month .wheel-inner');
-      mw.innerHTML = '';
-      MONTHS.forEach((name, i) => {
-        const el = document.createElement('div');
-        el.className = 'wheel-item';
-        el.dataset.value = i;
-        el.textContent = name;
-        mw.appendChild(el);
-      });
-      const yw = document.querySelector('#wheel-year .wheel-inner');
-      yw.innerHTML = '';
-      for (let y = currentYear - 10; y <= currentYear + 10; y++) {
-        const el = document.createElement('div');
-        el.className = 'wheel-item';
-        el.dataset.value = y;
-        el.textContent = y;
-        yw.appendChild(el);
-      }
-      attachWheelScroll('wheel-month');
-      attachWheelScroll('wheel-year');
-    }
-    function getWheelValue(wheelId) {
-      const wheel = document.getElementById(wheelId);
-      const center = wheel.scrollTop + wheel.clientHeight / 2;
-      let closest = null, minDist = Infinity;
-      wheel.querySelectorAll('.wheel-item').forEach(item => {
-        const ic = item.offsetTop + item.offsetHeight / 2;
-        const dist = Math.abs(ic - center);
-        if (dist < minDist) { minDist = dist; closest = item; }
-      });
-      if (!closest) return null;
-      return parseInt(closest.dataset.value, 10);
-    }
-    function updateWheelVisual(wheelId) {
-      const wheel = document.getElementById(wheelId);
-      const center = wheel.scrollTop + wheel.clientHeight / 2;
-      let closest = null, minDist = Infinity;
-      wheel.querySelectorAll('.wheel-item').forEach(item => {
-        const ic = item.offsetTop + item.offsetHeight / 2;
-        const dist = Math.abs(ic - center);
-        if (dist < minDist) { minDist = dist; closest = item; }
-      });
-      wheel.querySelectorAll('.wheel-item').forEach(el => el.classList.remove('active'));
-      if (closest) closest.classList.add('active');
-    }
-    function scrollWheelTo(wheelId, value) {
-      const wheel = document.getElementById(wheelId);
-      const item = wheel.querySelector(`.wheel-item[data-value="${value}"]`);
-      if (!item) return;
-      const target = item.offsetTop - wheel.clientHeight / 2 + item.offsetHeight / 2;
-      wheel.scrollTop = target;
-      updateWheelVisual(wheelId);
-    }
-    function attachWheelScroll(wheelId) {
-      const wheel = document.getElementById(wheelId);
-      let hapticTimer;
-      let lastValue = getWheelValue(wheelId);
-      const update = () => {
-        updateWheelVisual(wheelId);
-        const v = getWheelValue(wheelId);
-        if (v !== null && v !== lastValue) {
-          lastValue = v;
-          clearTimeout(hapticTimer);
-          hapticTimer = setTimeout(() => {
-            try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
-          }, 80);
-        }
-      };
-      wheel.addEventListener('scroll', update, { passive: true });
-      wheel.addEventListener('touchend', () => setTimeout(update, 50), { passive: true });
-    }
-    function openPicker() {
-      const d = isoToDate(selectedDate);
-      pickerMonth = d.getMonth();
-      pickerYearValue = d.getFullYear();
-      document.getElementById('picker-overlay').classList.add('active');
-      document.body.classList.add('picker-open');
-      setTimeout(() => {
-        scrollWheelTo('wheel-month', pickerMonth);
-        scrollWheelTo('wheel-year', pickerYearValue);
-      }, 80);
-    }
-    function closePicker() {
-      document.getElementById('picker-overlay').classList.remove('active');
-      document.body.classList.remove('picker-open');
-    }
-    function applyPicker() {
-      const m = getWheelValue('wheel-month');
-      const y = getWheelValue('wheel-year');
-      if (m !== null) pickerMonth = m;
-      if (y !== null) pickerYearValue = y;
-      jumpToMonthYear(pickerMonth, pickerYearValue);
-      closePicker();
-    }
-    function jumpToMonthYear(monthIndex, year) {
-      const current = isoToDate(selectedDate);
-      const lastDay = new Date(year, monthIndex + 1, 0).getDate();
-      const day = Math.min(current.getDate(), lastDay);
-      selectedDate = dateToISO(new Date(year, monthIndex, day));
-      saveState();
-      buildCalendar();
-      staggerNextRender = true;
-      render();
-      try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
-    }
-
-    async function loadTasks() {
-      try {
-        if (tg.CloudStorage && typeof tg.CloudStorage.getItem === 'function') {
-          const saved = await tg.CloudStorage.getItem(STORAGE_KEY);
-          if (saved) {
-            tasks = JSON.parse(saved);
-            migrateTasks();
-            render();
-            if (currentView === 'detail') renderDetailView();
-            return;
-          }
-        }
-        const localSaved = localStorage.getItem(FALLBACK_KEY);
-        if (localSaved) tasks = JSON.parse(localSaved);
-      } catch (e) {
-        console.error('Ошибка загрузки:', e);
-        const localSaved = localStorage.getItem(FALLBACK_KEY);
-        if (localSaved) tasks = JSON.parse(localSaved);
-      }
-      migrateTasks();
-      render();
-      if (currentView === 'detail') renderDetailView();
-    }
-    function migrateTasks() {
-      let changed = false;
-      tasks = tasks.map(t => {
-        let updated = { ...t };
-        if (!updated.date) { updated.date = todayISO(); changed = true; }
-        if (updated.time === undefined || updated.time === null) {
-          updated.time = '';
-          changed = true;
-        }
-        if (updated.category !== 'personal' && updated.category !== 'work') {
-          updated.category = 'personal';
-          changed = true;
-        }
-        return updated;
-      });
-      if (changed) saveTasks();
-    }
-    async function saveTasks() {
-      try { localStorage.setItem(FALLBACK_KEY, JSON.stringify(tasks)); } catch (e) {}
-      try {
-        if (tg.CloudStorage && typeof tg.CloudStorage.setItem === 'function') {
-          await tg.CloudStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-        }
-      } catch (e) {}
-    }
-
-    function attachLongPress(card, index) {
-      let startX = 0, startY = 0;
-      let moved = false;
-      let timer = null;
-      card.addEventListener('touchstart', (e) => {
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
-        moved = false;
-        clearTimeout(timer);
-        timer = setTimeout(() => {
-          if (!moved) {
-            openEditModal(index);
-            try { tg.HapticFeedback.impactOccurred('medium'); } catch (err) {}
-          }
-        }, 500);
-      }, { passive: true });
-      card.addEventListener('touchmove', (e) => {
-        const dx = Math.abs(e.touches[0].clientX - startX);
-        const dy = Math.abs(e.touches[0].clientY - startY);
-        if (dx > 8 || dy > 8) {
-          moved = true;
-          clearTimeout(timer);
-        }
-      }, { passive: true });
-      card.addEventListener('touchend', () => clearTimeout(timer));
-      card.addEventListener('touchcancel', () => clearTimeout(timer));
-    }
-
-    function renderTimeline(dayTasks) {
-      const timeline = document.getElementById('mini-timeline');
-      const dotsEl = document.getElementById('mini-timeline-dots');
-      const labelsEl = document.getElementById('mini-timeline-labels');
-      const nowEl = document.getElementById('mini-timeline-now');
-
-      const timedTasks = dayTasks.filter(t => t.time);
-
-      if (timedTasks.length === 0) {
-        timeline.classList.remove('visible');
-        nowEl.style.display = 'none';
-        return;
-      }
-
-      timeline.classList.add('visible');
-      dotsEl.innerHTML = '';
-      labelsEl.innerHTML = '';
-
-      [6, 9, 12, 15, 18, 21].forEach(h => {
-        const pct = ((h - TL_START_H) * 60) / TL_RANGE_MIN * 100;
-        if (pct < 0 || pct > 100) return;
-        const span = document.createElement('span');
-        span.textContent = h;
-        span.style.left = pct + '%';
-        labelsEl.appendChild(span);
-      });
-
-      const nextTask = getNextUpcoming(timedTasks);
-
-      timedTasks.forEach(task => {
-        const min = timeToMinutes(task.time);
-        const pct = minutesToPct(min);
-        const dot = document.createElement('button');
-        dot.type = 'button';
-        dot.className = 'mini-timeline-dot';
-        dot.style.left = pct + '%';
-        dot.dataset.cat = task.category;
-        dot.dataset.taskId = tasks.indexOf(task);
-        if (task.done) dot.classList.add('done');
-        if (isOverdue(task)) dot.classList.add('overdue');
-        if (nextTask && tasks.indexOf(task) === tasks.indexOf(nextTask)) {
-          dot.classList.add('next');
-        }
-        dot.title = task.time + ' — ' + task.text;
-        dot.addEventListener('click', () => scrollToTask(dot.dataset.taskId));
-        dotsEl.appendChild(dot);
-      });
-
-      updateNowMarker();
-    }
-
-    function getNextUpcoming(dayTasks) {
-      if (selectedDate !== todayISO()) return null;
-      const now = new Date();
-      const nowMin = now.getHours() * 60 + now.getMinutes();
-      const upcoming = dayTasks
-        .filter(t => !t.done && t.time && timeToMinutes(t.time) > nowMin)
-        .map(t => ({ task: t, min: timeToMinutes(t.time) }))
-        .sort((a, b) => a.min - b.min)[0];
-      return upcoming ? upcoming.task : null;
-    }
-
-    function updateNowMarker() {
-      const nowEl = document.getElementById('mini-timeline-now');
-      const timeline = document.getElementById('mini-timeline');
-      if (!nowEl || !timeline.classList.contains('visible')) return;
-
-      if (selectedDate !== todayISO()) {
-        nowEl.style.display = 'none';
-        return;
-      }
-      const now = new Date();
-      const min = now.getHours() * 60 + now.getMinutes();
-      if (min < TL_START_H * 60 || min > TL_END_H * 60) {
-        nowEl.style.display = 'none';
-        return;
-      }
-      const pct = minutesToPct(min);
-      nowEl.style.display = 'block';
-      nowEl.style.left = pct + '%';
-    }
-
-    function scrollToTask(id) {
-      const el = document.getElementById('task-card-' + id);
-      if (!el) return;
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      el.classList.remove('flash');
-      void el.offsetWidth;
-      el.classList.add('flash');
-      setTimeout(() => el.classList.remove('flash'), 1000);
-    }
-
-    function updateDayFocus(dayTasks) {
-      const progressEl = document.getElementById('progress');
-      if (dayTasks.length === 0) {
-        progressEl.textContent = '';
-        return;
-      }
-      const doneCount = dayTasks.filter(t => t.done).length;
-      if (doneCount === dayTasks.length) {
-        progressEl.textContent = 'Все выполнены 🎉';
-        return;
-      }
-      const next = getNextUpcoming(dayTasks.filter(t => t.time));
-      if (next) {
-        const text = next.text.length > 24 ? next.text.slice(0, 24) + '…' : next.text;
-        progressEl.textContent = `Выполнено ${doneCount} из ${dayTasks.length} · Дальше: ${text} в ${next.time}`;
-      } else {
-        progressEl.textContent = `Выполнено ${doneCount} из ${dayTasks.length}`;
-      }
-    }
-
-    function buildTaskCard(task, isNext, position, doStagger) {
-      const globalIndex = tasks.indexOf(task);
-      const overdue = isOverdue(task);
-      const isJustChecked = justCheckedIndex === globalIndex;
-      const wrapper = document.createElement('li');
-      wrapper.className = 'task-item-wrapper';
-      wrapper.id = 'task-card-' + globalIndex;
-      if (skipSlideIn) {
-        wrapper.classList.add('no-slide');
-      } else if (doStagger) {
-        wrapper.style.animationDelay = (Math.min(position, 8) * 35) + 'ms';
-      }
-      const badge = isNext ? '<span class="next-badge">дальше</span>' : '';
-      wrapper.innerHTML = `
-        <div class="task-item${task.done ? ' done' : ''}${overdue ? ' overdue' : ''}${isNext ? ' next-task' : ''}"
-             data-cat="${task.category}">
-          <div class="task-checkbox${task.done ? ' checked' : ''}${isJustChecked ? ' just-checked' : ''}"></div>
-          <div class="task-content">
-            <span class="task-text">${escapeHtml(task.text)}</span>
-            ${task.time
-              ? `<span class="task-time">${escapeHtml(task.time)}${badge}</span>`
-              : `<span class="task-time empty">Без времени</span>`}
-          </div>
-          <button class="delete-btn">✕</button>
-        </div>
-      `;
-      const card = wrapper.querySelector('.task-item');
-      const checkbox = wrapper.querySelector('.task-checkbox');
-      const crossBtn = wrapper.querySelector('.delete-btn');
-      checkbox.addEventListener('click', (e) => {
-        e.stopPropagation();
-        toggleTask(globalIndex);
-      });
-      crossBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        deleteTask(globalIndex);
-      });
-      attachLongPress(card, globalIndex);
-      return wrapper;
-    }
-
-    function render() {
-      document.getElementById('month-label').innerHTML =
-        formatMonthYear(selectedDate) + ' <span class="chevron">▼</span>';
-      updateToTodayBtn();
-
-      const sectionsEl = document.getElementById('task-sections');
-      const emptyState = document.getElementById('empty-state');
-      const dateLabel = document.getElementById('date-label');
-      dateLabel.textContent = formatDateLabel(selectedDate);
-
-      const dayTasks = tasks.filter(t => t.date === selectedDate && matchesCategory(t));
-
-      const sections = { morning: [], day: [], evening: [], notime: [] };
-      dayTasks.forEach(t => {
-        if (!t.time) { sections.notime.push(t); return; }
-        const h = parseInt(t.time.split(':')[0], 10);
-        if (h >= 5 && h < 12) sections.morning.push(t);
-        else if (h >= 12 && h < 17) sections.day.push(t);
-        else sections.evening.push(t);
-      });
-      ['morning','day','evening','notime'].forEach(k => {
-        sections[k].sort((a, b) => {
-          if (!a.time && !b.time) return 0;
-          if (!a.time) return 1;
-          if (!b.time) return -1;
-          return a.time.localeCompare(b.time);
-        });
-      });
-
-      const nextTask = getNextUpcoming(dayTasks.filter(t => t.time));
-
-      const doStagger = staggerNextRender;
-      staggerNextRender = false;
-
-      sectionsEl.innerHTML = '';
-      if (dayTasks.length === 0) {
-        emptyState.style.display = 'block';
-        if (currentCategory === 'personal') emptyState.textContent = 'Нет личных задач на этот день';
-        else if (currentCategory === 'work') emptyState.textContent = 'Нет рабочих задач на этот день';
-        else emptyState.textContent = 'На этот день задач нет';
-      } else {
-        emptyState.style.display = 'none';
-        const cfg = [
-          { key: 'morning', title: 'Утро' },
-          { key: 'day', title: 'День' },
-          { key: 'evening', title: 'Вечер' },
-          { key: 'notime', title: 'Без времени' }
-        ];
-        let cardPosition = 0;
-        cfg.forEach(c => {
-          const items = sections[c.key];
-          if (items.length === 0) return;
-          const sectionEl = document.createElement('div');
-          sectionEl.className = 'time-section';
-          const titleEl = document.createElement('div');
-          titleEl.className = 'time-section-title';
-          titleEl.innerHTML = `${c.title} <span class="time-section-count">${items.length}</span>`;
-          const listEl = document.createElement('ul');
-          listEl.className = 'section-task-list';
-          items.forEach(t => {
-            const isNext = nextTask && t === nextTask;
-            listEl.appendChild(buildTaskCard(t, isNext, cardPosition, doStagger));
-            cardPosition++;
-          });
-          sectionEl.appendChild(titleEl);
-          sectionEl.appendChild(listEl);
-          sectionsEl.appendChild(sectionEl);
-        });
-      }
-
-      renderTimeline(dayTasks);
-      updateDayFocus(dayTasks);
-      updateCalendarDots();
-    }
-
-    function updateToTodayBtn() {
-      const btn = document.getElementById('to-today-btn');
-      btn.style.display = selectedDate === todayISO() ? 'none' : 'flex';
-    }
-
-    // Подробнее — без крупной даты, только пилюля + день недели
-    function renderDetailView() {
-      const d = isoToDate(detailDate);
-      document.getElementById('detail-weekday').textContent = WEEKDAYS_FULL[d.getDay()];
-      document.getElementById('detail-date-pill').innerHTML =
-        d.getDate() + ' ' + MONTHS_GEN[d.getMonth()] + ' ' + d.getFullYear() +
-        ' <span class="chevron">▼</span>';
-      document.getElementById('detail-date-input').value = detailDate;
-
-      const dayTasks = tasks.filter(t => t.date === detailDate && matchesCategory(t));
-      const doneCount = dayTasks.filter(t => t.done).length;
-      const total = dayTasks.length;
-
-      const ring = document.getElementById('ring-fill');
-      const percentEl = document.getElementById('ring-percent');
-      const labelEl = document.getElementById('ring-label');
-
-      if (total === 0) {
-        ring.style.strokeDashoffset = CIRCUMFERENCE;
-        percentEl.textContent = '—';
-        labelEl.textContent = 'нет задач';
-      } else {
-        const percent = Math.round((doneCount / total) * 100);
-        ring.style.strokeDashoffset = CIRCUMFERENCE - (percent / 100) * CIRCUMFERENCE;
-        percentEl.textContent = percent + '%';
-        labelEl.textContent = doneCount + ' из ' + total;
-      }
-
-      const list = document.getElementById('detail-task-list');
-      const emptyEl = document.getElementById('detail-empty');
-      list.innerHTML = '';
-
-      if (dayTasks.length === 0) {
-        emptyEl.style.display = 'block';
-        if (currentCategory === 'personal') emptyEl.textContent = 'Нет личных задач на этот день';
-        else if (currentCategory === 'work') emptyEl.textContent = 'Нет рабочих задач на этот день';
-        else emptyEl.textContent = 'На этот день задач нет';
-      } else {
-        emptyEl.style.display = 'none';
-        const sorted = [...dayTasks].sort((a, b) => {
-          if (a.time && b.time) return a.time.localeCompare(b.time);
-          if (a.time) return -1;
-          if (b.time) return 1;
-          return 0;
-        });
-        sorted.forEach(task => {
-          const li = document.createElement('li');
-          li.className = 'day-task-item' + (task.done ? ' done' : '');
-          li.dataset.cat = task.category;
-          li.innerHTML = `
-            <div class="day-task-content">
-              <span class="day-task-text">${escapeHtml(task.text)}</span>
-              ${task.time
-                ? `<span class="day-task-time">${escapeHtml(task.time)}</span>`
-                : `<span class="day-task-time empty">Без времени</span>`}
-            </div>
-          `;
-          list.appendChild(li);
-        });
-      }
-    }
-
-    function openEditModal(index) {
-      editingIndex = index;
-      const task = tasks[index];
-      if (!task) return;
-      document.getElementById('edit-text').value = task.text;
-      document.getElementById('edit-time').value = task.time || '';
-      editCategory = task.category || 'personal';
-      updateEditCatToggleUI();
-      updateEditTimeBtn();
-      document.getElementById('edit-overlay').classList.add('active');
-      document.body.classList.add('picker-open');
-    }
-    function closeEditModal() {
-      document.getElementById('edit-overlay').classList.remove('active');
-      document.body.classList.remove('picker-open');
-      editingIndex = -1;
-    }
-    function saveEdit() {
-      if (editingIndex < 0) return;
-      const text = document.getElementById('edit-text').value.trim();
-      if (!text) return;
-      tasks[editingIndex].text = text;
-      tasks[editingIndex].time = document.getElementById('edit-time').value || '';
-      tasks[editingIndex].category = editCategory;
-      const wasDetail = currentView === 'detail';
-      closeEditModal();
-      render();
-      if (wasDetail) renderDetailView();
-      saveTasks();
-      try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
-    }
-    function updateEditTimeBtn() {
-      const inp = document.getElementById('edit-time');
-      const btn = document.getElementById('edit-time-btn-text');
-      if (inp.value) {
-        btn.textContent = inp.value;
-        btn.classList.add('has-value');
-      } else {
-        btn.textContent = 'Без времени';
-        btn.classList.remove('has-value');
-      }
-    }
-
-    function updateTimeBtn() {
-      const timeInput = document.getElementById('task-time');
-      const timeBtnText = document.getElementById('time-btn-text');
-      if (timeInput.value) {
-        timeBtnText.textContent = timeInput.value;
-        timeBtnText.classList.add('has-value');
-      } else {
-        timeBtnText.textContent = 'Без времени';
-        timeBtnText.classList.remove('has-value');
-      }
-    }
-    function addTask() {
-      const input = document.getElementById('task-input');
-      const timeInput = document.getElementById('task-time');
-      const text = input.value.trim();
-      if (!text) return;
-      tasks.push({
-        text,
-        done: false,
-        date: selectedDate,
-        time: timeInput.value || '',
-        category: addCategory
-      });
-      input.value = '';
-      timeInput.value = '';
-      updateTimeBtn();
-      if (currentCategory !== 'all' && currentCategory !== addCategory) {
-        currentCategory = addCategory;
-        saveState();
-        updateCategoryUI();
-      }
-      render();
-      saveTasks();
-      try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
-      input.blur();
-    }
-    function toggleTask(index) {
-      tasks[index].done = !tasks[index].done;
-      justCheckedIndex = tasks[index].done ? index : -1;
-      render();
-      justCheckedIndex = -1;
-      saveTasks();
-      try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
-    }
-    function deleteTask(index) {
-      if (pendingDelete) return;
-      const el = document.getElementById('task-card-' + index);
-      if (!el) {
-        tasks.splice(index, 1);
-        render();
-        saveTasks();
-        try { tg.HapticFeedback.impactOccurred('rigid'); } catch (e) {}
-        return;
-      }
-      tasks.splice(index, 1);
-      el.classList.add('removing');
-      el.style.pointerEvents = 'none';
-      try { tg.HapticFeedback.impactOccurred('rigid'); } catch (e) {}
-      pendingDelete = true;
-      setTimeout(() => {
-        pendingDelete = false;
-        skipSlideIn = true;
-        render();
-        saveTasks();
-        skipSlideIn = false;
-      }, 250);
-    }
-    function escapeHtml(str) {
-      const div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
-    }
-
-    function switchView(view) {
-      if (view === currentView) return;
-      currentView = view;
-      if (view === 'detail') {
-        detailDate = selectedDate;
-      }
-      saveState();
-      document.getElementById('view-tasks').classList.toggle('active', view === 'tasks');
-      document.getElementById('view-detail').classList.toggle('active', view === 'detail');
-      document.querySelectorAll('.tab-item').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.view === view);
-      });
-      const activeBtn = document.querySelector('.tab-item[data-view="' + view + '"]');
-      if (activeBtn) {
-        activeBtn.classList.remove('tab-bounce');
-        void activeBtn.offsetWidth;
-        activeBtn.classList.add('tab-bounce');
-        setTimeout(() => activeBtn.classList.remove('tab-bounce'), 400);
-      }
-      if (view === 'detail') renderDetailView();
-      try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
-    }
-
-    document.getElementById('add-btn').addEventListener('click', addTask);
-    document.getElementById('task-input').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') addTask();
-    });
-    document.getElementById('task-time').addEventListener('input', updateTimeBtn);
-    document.getElementById('task-time').addEventListener('change', updateTimeBtn);
-
-    document.getElementById('month-label').addEventListener('click', openPicker);
-    document.getElementById('picker-cancel').addEventListener('click', closePicker);
-    document.getElementById('picker-done').addEventListener('click', applyPicker);
-    document.getElementById('picker-overlay').addEventListener('click', (e) => {
-      if (e.target.id === 'picker-overlay') closePicker();
-    });
-
-    document.getElementById('category-pill').addEventListener('click', openCategoryFilter);
-    document.getElementById('cat-filter-cancel').addEventListener('click', closeCategoryFilter);
-    document.getElementById('cat-filter-overlay').addEventListener('click', (e) => {
-      if (e.target.id === 'cat-filter-overlay') closeCategoryFilter();
-    });
-    document.querySelectorAll('.cat-filter-item').forEach(btn => {
-      btn.addEventListener('click', () => {
-        setFilter(btn.dataset.cat);
-        closeCategoryFilter();
-      });
-    });
-
-    document.getElementById('to-today-btn').addEventListener('click', () => {
-      selectedDate = todayISO();
-      saveState();
-      buildCalendar();
-      staggerNextRender = true;
-      render();
-      try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
-    });
-
-    document.getElementById('detail-date-input').addEventListener('change', (e) => {
-      if (e.target.value) {
-        detailDate = e.target.value;
-        selectedDate = e.target.value;
-        saveState();
-        buildCalendar();
-        staggerNextRender = true;
-        render();
-        renderDetailView();
-        try { tg.HapticFeedback.impactOccurred('light'); } catch (err) {}
-      }
-    });
-
-    document.querySelectorAll('.tab-item').forEach(btn => {
-      btn.addEventListener('click', () => switchView(btn.dataset.view));
-    });
-
-    document.getElementById('edit-cancel').addEventListener('click', closeEditModal);
-    document.getElementById('edit-save').addEventListener('click', saveEdit);
-    document.getElementById('edit-overlay').addEventListener('click', (e) => {
-      if (e.target.id === 'edit-overlay') closeEditModal();
-    });
-    document.getElementById('edit-time').addEventListener('input', updateEditTimeBtn);
-    document.getElementById('edit-time').addEventListener('change', updateEditTimeBtn);
-
-    setInterval(() => {
-      if (currentView === 'tasks') {
-        updateNowMarker();
-        const dayTasks = tasks.filter(t => t.date === selectedDate && matchesCategory(t));
-        updateDayFocus(dayTasks);
-      }
-    }, 60000);
-
-    setTimeout(() => {
-      if (document.body.classList.contains('booting')) {
-        document.body.classList.remove('booting');
-        console.warn('booting not cleared by playWelcome — forced removal');
-      }
-    }, 3000);
-
-    restoreState();
-    detailDate = selectedDate;
-    buildCalendar();
-    buildWheels();
-    updateTimeBtn();
-    updateCategoryUI();
-    updateCatToggleUI();
-    updateEditCatToggleUI();
-    if (currentView === 'detail') {
-      document.getElementById('view-tasks').classList.remove('active');
-      document.getElementById('view-detail').classList.add('active');
-      document.querySelectorAll('.tab-item').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.view === 'detail');
-      });
-    }
-    loadTasks();
-    renderDetailView();
-
-    setTimeout(playWelcome, 40);
-  </script>
-</body>
-</html>
+          const isKb = (stableHeight - vv
