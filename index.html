@@ -902,6 +902,14 @@
     .tab-item.active { color: var(--button-color); }
     .tab-item:active { opacity: 0.6; }
     .tab-item svg { width: 26px; height: 26px; }
+    .tab-item.tab-bounce svg {
+      animation: tabBounce 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes tabBounce {
+      0% { transform: translateY(0) scale(1); }
+      40% { transform: translateY(-4px) scale(1.1); }
+      100% { transform: translateY(0) scale(1); }
+    }
 
     .picker-overlay {
       position: fixed;
@@ -2480,6 +2488,13 @@
       document.querySelectorAll('.tab-item').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.view === view);
       });
+      const activeBtn = document.querySelector('.tab-item[data-view="' + view + '"]');
+      if (activeBtn) {
+        activeBtn.classList.remove('tab-bounce');
+        void activeBtn.offsetWidth;
+        activeBtn.classList.add('tab-bounce');
+        setTimeout(() => activeBtn.classList.remove('tab-bounce'), 400);
+      }
       if (view === 'detail') renderDetailView();
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
