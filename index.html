@@ -591,7 +591,7 @@
     }
     .add-form-2 button#add-btn:active { transform: scale(0.95); opacity: 0.8; }
 
-    .task-item-wrapper { animation: slideIn 0.3s ease; }
+    .task-item-wrapper { animation: slideIn 0.3s ease backwards; }
     @keyframes slideIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
@@ -1519,6 +1519,7 @@
     let editingIndex = -1;
     let editCategory = 'personal';
     let justCheckedIndex = -1;
+    let staggerNextRender = false;
 
     const TL_START_H = 5;
     const TL_END_H = 24;
@@ -1903,6 +1904,7 @@
       document.querySelectorAll('.day-cell').forEach(cell => {
         cell.classList.toggle('selected', cell.dataset.date === iso);
       });
+      staggerNextRender = true;
       render();
       if (scroll) scrollToSelected(true);
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
@@ -2011,6 +2013,7 @@
       selectedDate = dateToISO(new Date(year, monthIndex, day));
       saveState();
       buildCalendar();
+      staggerNextRender = true;
       render();
       try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
     }
@@ -2204,13 +2207,16 @@
       }
     }
 
-    function buildTaskCard(task, isNext) {
+    function buildTaskCard(task, isNext, position, doStagger) {
       const globalIndex = tasks.indexOf(task);
       const overdue = isOverdue(task);
       const isJustChecked = justCheckedIndex === globalIndex;
       const wrapper = document.createElement('li');
       wrapper.className = 'task-item-wrapper';
       wrapper.id = 'task-card-' + globalIndex;
+      if (doStagger) {
+        wrapper.style.animationDelay = (Math.min(position, 8) * 35) + 'ms';
+      }
       const badge = isNext ? '<span class="next-badge">дальше</span>' : '';
       wrapper.innerHTML = `
         <div class="task-item${task.done ? ' done' : ''}${overdue ? ' overdue' : ''}${isNext ? ' next-task' : ''}"
@@ -2271,6 +2277,9 @@
 
       const nextTask = getNextUpcoming(dayTasks.filter(t => t.time));
 
+      const doStagger = staggerNextRender;
+      staggerNextRender = false;
+
       sectionsEl.innerHTML = '';
       if (dayTasks.length === 0) {
         emptyState.style.display = 'block';
@@ -2285,6 +2294,7 @@
           { key: 'evening', title: 'Вечер' },
           { key: 'notime', title: 'Без времени' }
         ];
+        let cardPosition = 0;
         cfg.forEach(c => {
           const items = sections[c.key];
           if (items.length === 0) return;
@@ -2297,7 +2307,8 @@
           listEl.className = 'section-task-list';
           items.forEach(t => {
             const isNext = nextTask && t === nextTask;
-            listEl.appendChild(buildTaskCard(t, isNext));
+            listEl.appendChild(buildTaskCard(t, isNext, cardPosition, doStagger));
+            cardPosition++;
           });
           sectionEl.appendChild(titleEl);
           sectionEl.appendChild(listEl);
@@ -2529,6 +2540,7 @@
       selectedDate = todayISO();
       saveState();
       buildCalendar();
+      staggerNextRender = true;
       render();
       try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
     });
@@ -2539,6 +2551,7 @@
         selectedDate = e.target.value;
         saveState();
         buildCalendar();
+        staggerNextRender = true;
         render();
         renderDetailView();
         try { tg.HapticFeedback.impactOccurred('light'); } catch (err) {}
