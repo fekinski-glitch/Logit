@@ -511,6 +511,15 @@
     }
     .section-task-list { list-style: none; display: flex; flex-direction: column; }
 
+    .cat-pill-row {
+      display: flex;
+      margin-bottom: 8px;
+    }
+    .cat-pill-row .cat-toggle {
+      height: 40px;
+      padding: 0 14px;
+    }
+
     .add-form { margin-bottom: 8px; }
     .add-form input {
       width: 100%;
@@ -1183,7 +1192,7 @@
     <div class="welcome-inner">
       <h1 class="welcome-greeting" id="welcome-greeting"></h1>
       <p class="welcome-subtitle" id="welcome-subtitle"></p>
-      <button class="welcome-start-btn" id="welcome-start">Задачи</button>
+      <button class="welcome-start-btn" id="welcome-start">Начать</button>
     </div>
   </div>
 
@@ -1229,14 +1238,16 @@
 
     <p id="progress"></p>
 
-    <div class="add-form">
-      <input type="text" id="task-input" placeholder="Что нужно сделать?" maxlength="100">
-    </div>
-    <div class="add-form-2">
+    <div class="cat-pill-row">
       <button class="cat-toggle" id="cat-toggle" data-cat="personal">
         <span class="cat-dot"></span>
         <span id="cat-toggle-label">Личное</span>
       </button>
+    </div>
+    <div class="add-form">
+      <input type="text" id="task-input" placeholder="Что нужно сделать?" maxlength="100">
+    </div>
+    <div class="add-form-2">
       <div class="time-btn-wrapper">
         <div class="time-btn-display" id="time-btn-text">Во сколько?</div>
         <input type="time" id="task-time" class="time-input-overlay">
