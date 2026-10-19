@@ -446,7 +446,7 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* ==== Секции по времени суток ==== */
+    /* ==== Секции ==== */
     #task-sections {
       display: flex;
       flex-direction: column;
@@ -588,7 +588,6 @@
     }
     .add-form-2 button#add-btn:active { transform: scale(0.95); opacity: 0.8; }
 
-    /* Карточка задачи */
     .task-item-wrapper { animation: slideIn 0.3s ease; }
     @keyframes slideIn {
       from { opacity: 0; transform: translateY(10px); }
@@ -1079,6 +1078,7 @@
     .edit-input:focus { box-shadow: 0 0 0 2px var(--button-color); }
     .edit-row { display: flex; gap: 8px; }
 
+    /* ====== ПРИВЕТСТВЕННЫЙ ЭКРАН ====== */
     .welcome-screen {
       position: fixed;
       inset: 0;
@@ -1099,6 +1099,14 @@
       flex-direction: column;
       align-items: center;
     }
+
+    /* Обёртка вокруг ASCII для сканера */
+    .ascii-wrap {
+      position: relative;
+      display: inline-block;
+      margin: 0 auto 32px;
+    }
+
     .ascii-art {
       font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
       font-size: clamp(11px, 3.4vw, 15px);
@@ -1107,12 +1115,79 @@
       white-space: pre;
       color: var(--button-color);
       text-align: center;
-      margin: 0 0 32px 0;
+      margin: 0;
       text-shadow: 0 0 16px rgba(36, 129, 204, 0.25);
       min-height: calc(9 * 1.15em);
       font-variant-ligatures: none;
       font-feature-settings: "liga" 0, "calt" 0;
+      /* скрыт по умолчанию — «проявится» сканером */
+      clip-path: inset(0 0 100% 0);
+      -webkit-clip-path: inset(0 0 100% 0);
     }
+    .ascii-art.revealing {
+      animation: artReveal 0.85s cubic-bezier(0.25, 0.8, 0.4, 1) forwards;
+    }
+    @keyframes artReveal {
+      from { clip-path: inset(0 0 100% 0); -webkit-clip-path: inset(0 0 100% 0); }
+      to { clip-path: inset(0 0 0 0); -webkit-clip-path: inset(0 0 0 0); }
+    }
+
+    /* Светящаяся линия-сканер */
+    .ascii-scan-line {
+      position: absolute;
+      left: -12px;
+      right: -12px;
+      top: 0;
+      height: 2px;
+      background: var(--button-color);
+      box-shadow:
+        0 0 12px var(--button-color),
+        0 0 4px var(--button-color),
+        0 0 1px rgba(255,255,255,0.9);
+      border-radius: 2px;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 3;
+    }
+    .ascii-scan-line.scanning {
+      animation: scanDown 0.85s cubic-bezier(0.25, 0.8, 0.4, 1) forwards;
+    }
+    @keyframes scanDown {
+      0% { opacity: 0; top: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { opacity: 0; top: calc(100% - 2px); }
+    }
+
+    /* Галочка поверх арта — вспыхивает после сканера */
+    .ascii-check {
+      position: absolute;
+      top: 38.9%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
+      font-size: clamp(11px, 3.4vw, 15px);
+      font-weight: 700;
+      color: var(--button-color);
+      text-shadow:
+        0 0 12px var(--button-color),
+        0 0 4px var(--button-color);
+      opacity: 0;
+      pointer-events: none;
+      line-height: 1;
+      z-index: 2;
+      will-change: transform, opacity;
+    }
+    .ascii-check.pop {
+      animation: checkPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    @keyframes checkPop {
+      0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+      35% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
+      65% { transform: translate(-50%, -50%) scale(0.85); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+
     .welcome-greeting {
       font-size: 28px;
       font-weight: 700;
@@ -1178,7 +1253,11 @@
   <!-- Приветствие -->
   <div class="welcome-screen" id="welcome-screen">
     <div class="welcome-inner">
-      <pre class="ascii-art" id="welcome-art"></pre>
+      <div class="ascii-wrap">
+        <pre class="ascii-art" id="welcome-art"></pre>
+        <div class="ascii-scan-line" id="scan-line"></div>
+        <div class="ascii-check" id="ascii-check">✓</div>
+      </div>
       <h1 class="welcome-greeting" id="welcome-greeting"></h1>
       <p class="welcome-subtitle" id="welcome-subtitle"></p>
       <button class="welcome-start-btn" id="welcome-start">Начать</button>
@@ -1395,11 +1474,12 @@
     const MONTHS_GEN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
     const CIRCUMFERENCE = 2 * Math.PI * 52;
 
+    // ASCII без галочки — галочка отдельным элементом, чтобы bounce работал
     const ASCII_ART =
       '╭────────────────────╮\n' +
       '│                    │\n' +
       '│                    │\n' +
-      '│         ✓          │\n' +
+      '│                    │\n' +
       '│                    │\n' +
       '│                    │\n' +
       '│     L O G I T      │\n' +
@@ -1510,8 +1590,9 @@
       }
     })();
 
-    // ====== Приветствие ======
+    // ====== Приветствие со «сканером» ======
     function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
     function typeText(el, text, delay) {
       return new Promise(resolve => {
         el.textContent = '';
@@ -1532,18 +1613,53 @@
         tick();
       });
     }
+
     async function playWelcome() {
       const screen = document.getElementById('welcome-screen');
       const startBtn = document.getElementById('welcome-start');
-      startBtn.classList.remove('visible');
-      screen.classList.add('active');
-      document.body.classList.add('welcome-open');
-      const userName = (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name) || 'друг';
       const art = document.getElementById('welcome-art');
+      const scanLine = document.getElementById('scan-line');
+      const check = document.getElementById('ascii-check');
       const greeting = document.getElementById('welcome-greeting');
       const subtitle = document.getElementById('welcome-subtitle');
-      await typeText(art, ASCII_ART, 6);
-      await sleep(250);
+
+      // Сброс всех состояний анимации
+      startBtn.classList.remove('visible');
+      art.classList.remove('revealing');
+      scanLine.classList.remove('scanning');
+      check.classList.remove('pop');
+      art.textContent = ASCII_ART;
+      greeting.textContent = '';
+      subtitle.textContent = '';
+      greeting.classList.remove('typing');
+      subtitle.classList.remove('typing');
+
+      screen.classList.add('active');
+      document.body.classList.add('welcome-open');
+
+      const userName = (tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name) || 'друг';
+
+      // Небольшая пауза, чтобы экран успел «появиться»
+      await sleep(180);
+
+      // 1. Запускаем сканер и «проявление» рамки за ним
+      // Форсируем рефлоу для перезапуска CSS-анимации
+      void art.offsetWidth;
+      void scanLine.offsetWidth;
+      art.classList.add('revealing');
+      scanLine.classList.add('scanning');
+
+      // 2. Ждём завершения сканера (0.85s)
+      await sleep(870);
+
+      // 3. Галочка вспыхивает с bounce
+      check.classList.add('pop');
+      try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
+
+      // 4. Пауза, чтобы галочка «отдышалась»
+      await sleep(550);
+
+      // 5. Печатаем имя — как раньше
       await typeText(greeting, 'Привет, ' + userName + '!', 40);
       await sleep(150);
       await typeText(subtitle, 'Твой день начинается здесь', 22);
@@ -1551,6 +1667,7 @@
       startBtn.classList.add('visible');
       try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
     }
+
     document.getElementById('welcome-start').addEventListener('click', () => {
       document.getElementById('welcome-screen').classList.remove('active');
       document.body.classList.remove('welcome-open');
@@ -1558,10 +1675,12 @@
     });
 
     // ====== Сохранение UI ======
+    // ВАЖНО: даты больше не восстанавливаем — при старте всегда сегодня
     function saveState() {
       try {
         localStorage.setItem(UI_STATE_KEY, JSON.stringify({
-          selectedDate, detailDate, view: currentView, currentCategory
+          view: currentView,
+          currentCategory
         }));
       } catch (e) {}
     }
@@ -1570,14 +1689,7 @@
         const raw = localStorage.getItem(UI_STATE_KEY);
         if (!raw) return;
         const s = JSON.parse(raw);
-        if (s.selectedDate) {
-          const d = isoToDate(s.selectedDate);
-          if (!isNaN(d.getTime())) selectedDate = s.selectedDate;
-        }
-        if (s.detailDate) {
-          const d = isoToDate(s.detailDate);
-          if (!isNaN(d.getTime())) detailDate = s.detailDate;
-        }
+        // selectedDate и detailDate НЕ восстанавливаем — всегда todayISO() при старте
         if (s.view === 'tasks' || s.view === 'detail') currentView = s.view;
         if (s.currentCategory === 'all' || s.currentCategory === 'personal' || s.currentCategory === 'work') {
           currentCategory = s.currentCategory;
@@ -1585,7 +1697,7 @@
       } catch (e) {}
     }
 
-    // ====== Фильтр категорий ======
+    // ====== Фильтр ======
     function updateCategoryUI() {
       updateCatPillUI();
       if (currentCategory !== 'all') {
@@ -1729,7 +1841,7 @@
         if (scroll) scrollToSelected(true);
         return;
       }
-      selectedВсеDate = iso;
+      selectedDate = iso;
       saveState();
       document.querySelectorAll('.day-cell').forEach(cell => {
         cell.classList.toggle('selected', cell.dataset.date === iso);
@@ -1739,7 +1851,7 @@
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
 
-    // ====== Барабаны месяца ======
+    // ====== Барабаны ======
     function buildWheels() {
       const currentYear = new Date().getFullYear();
       const mw = document.querySelector('#wheel-month .wheel-inner');
@@ -1765,7 +1877,7 @@
     }
     function getWheelValue(wheelId) {
       const wheel = document.getElementById(wheelId);
-      const center = wheel.sc выполнrollTop + wheelены.clientHeight / 2;
+      const center = wheel.scrollTop + wheel.clientHeight / 2;
       let closest = null, minDist = Infinity;
       wheel.querySelectorAll('.wheel-item').forEach(item => {
         const ic = item.offsetTop + item.offsetHeight / 2;
@@ -1799,7 +1911,7 @@
       const wheel = document.getElementById(wheelId);
       let hapticTimer;
       let lastValue = getWheelValue(wheelId);
- 🎉      const update = () => {
+      const update = () => {
         updateWheelVisual(wheelId);
         const v = getWheelValue(wheelId);
         if (v !== null && v !== lastValue) {
@@ -1926,7 +2038,7 @@
       card.addEventListener('touchcancel', () => clearTimeout(timer));
     }
 
-    // ====== Мини-таймлайн ======
+    // ====== Таймлайн ======
     function renderTimeline(dayTasks) {
       const timeline = document.getElementById('mini-timeline');
       const dotsEl = document.getElementById('mini-timeline-dots');
@@ -2028,7 +2140,7 @@
       }
       const doneCount = dayTasks.filter(t => t.done).length;
       if (doneCount === dayTasks.length) {
-        progressEl.textContent = '';
+        progressEl.textContent = 'Все выполнены 🎉';
         return;
       }
       const next = getNextUpcoming(dayTasks.filter(t => t.time));
@@ -2040,7 +2152,7 @@
       }
     }
 
-    // ====== Карточка задачи ======
+    // ====== Карточка ======
     function buildTaskCard(task, isNext) {
       const globalIndex = tasks.indexOf(task);
       const overdue = isOverdue(task);
@@ -2076,7 +2188,7 @@
       return wrapper;
     }
 
-    // ====== Рендер главного экрана ======
+    // ====== Главный экран ======
     function render() {
       document.getElementById('month-label').innerHTML =
         formatMonthYear(selectedDate) + ' <span class="chevron">▼</span>';
@@ -2089,7 +2201,6 @@
 
       const dayTasks = tasks.filter(t => t.date === selectedDate && matchesCategory(t));
 
-      // Группировка по секциям
       const sections = { morning: [], day: [], evening: [], notime: [] };
       dayTasks.forEach(t => {
         if (!t.time) { sections.notime.push(t); return; }
@@ -2153,7 +2264,7 @@
       btn.style.display = selectedDate === todayISO() ? 'none' : 'flex';
     }
 
-    // ====== Рендер "Подробнее" — по выбранному дню ======
+    // ====== Подробнее ======
     function renderDetailView() {
       const d = isoToDate(detailDate);
       document.getElementById('detail-date').textContent = d.getDate() + ' ' + MONTHS_GEN[d.getMonth()];
@@ -2315,11 +2426,10 @@
       return div.innerHTML;
     }
 
-    // ====== Переключение экранов — СИНХРОНИЗАЦИЯ detailDate ======
+    // ====== Переключение экранов ======
     function switchView(view) {
       if (view === currentView) return;
       currentView = view;
-      // При переходе на «Подробнее» — берём дату с главного экрана
       if (view === 'detail') {
         detailDate = selectedDate;
       }
@@ -2368,7 +2478,6 @@
       try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
     });
 
-    // Правка 2: смена даты в «Подробнее» синхронизируется обратно на главный
     document.getElementById('detail-date-input').addEventListener('change', (e) => {
       if (e.target.value) {
         detailDate = e.target.value;
@@ -2393,7 +2502,6 @@
     document.getElementById('edit-time').addEventListener('input', updateEditTimeBtn);
     document.getElementById('edit-time').addEventListener('change', updateEditTimeBtn);
 
-    // Раз в минуту — обновляем «сейчас» и «Дальше» на главном
     setInterval(() => {
       if (currentView === 'tasks') {
         updateNowMarker();
@@ -2404,10 +2512,8 @@
 
     // ====== Старт ======
     restoreState();
-    // При старте синхронизируем detailDate с selectedDate
-    if (!localStorage.getItem(UI_STATE_KEY)) {
-      detailDate = selectedDate;
-    }
+    // detailDate = selectedDate — они обе todayISO() по умолчанию
+    detailDate = selectedDate;
     buildCalendar();
     buildWheels();
     updateTimeBtn();
