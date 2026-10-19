@@ -726,21 +726,13 @@
       display: none;
     }
 
-    #detail-date {
-      text-align: center;
-      font-size: 30px;
-      font-weight: 700;
-      letter-spacing: -0.7px;
-      margin-bottom: 2px;
-      line-height: 1.15;
-      font-variant-numeric: tabular-nums;
-    }
+    /* Экран "Подробнее" — день недели под пилюлей */
     #detail-weekday {
       text-align: center;
       font-size: 15px;
       font-weight: 400;
       color: var(--hint-color);
-      margin-bottom: 28px;
+      margin-bottom: 20px;
     }
     .day-section-title {
       font-size: 13px;
@@ -1108,7 +1100,6 @@
       margin: 0 auto 32px;
     }
 
-    /* Логотип крупнее */
     .ascii-art {
       font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
       font-size: clamp(13px, 4.5vw, 19px);
@@ -1133,7 +1124,7 @@
       to { clip-path: inset(0 0 0 0); -webkit-clip-path: inset(0 0 0 0); }
     }
 
-    /* Слово LOGIT — по буквам */
+    /* Слово LOGIT по буквам */
     .logit-word {
       position: absolute;
       top: 72.22%;
@@ -1156,7 +1147,6 @@
       transform: scale(0.3);
       transform-origin: center;
     }
-    /* У каждой буквы своя задержка — «неоновая вывеска» загорается слева направо */
     .logit-word.show span:nth-child(1) { animation: letterGlow 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both 0.00s; }
     .logit-word.show span:nth-child(2) { animation: letterGlow 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both 0.08s; }
     .logit-word.show span:nth-child(3) { animation: letterGlow 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both 0.16s; }
@@ -1213,19 +1203,20 @@
       100% { opacity: 0; top: calc(100% - 2px); }
     }
 
-    /* Галочка в центре */
+    /* Галочка в центре — КРУПНЕЕ */
     .ascii-check {
       position: absolute;
       top: 38.9%;
       left: 50%;
       transform: translate(-50%, -50%) scale(0);
       font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
-      font-size: clamp(13px, 4.5vw, 19px);
+      font-size: clamp(22px, 7vw, 32px);
       font-weight: 700;
       color: var(--button-color);
       text-shadow:
-        0 0 14px var(--button-color),
-        0 0 5px var(--button-color);
+        0 0 18px var(--button-color),
+        0 0 8px var(--button-color),
+        0 0 2px rgba(255,255,255,0.7);
       opacity: 0;
       pointer-events: none;
       line-height: 1;
@@ -1373,6 +1364,7 @@
     <div id="empty-state">На этот день задач нет</div>
   </div>
 
+  <!-- Экран Подробнее — БЕЗ дубля даты -->
   <div class="view" id="view-detail">
     <div class="header-wrap">
       <div class="date-pill-wrapper">
@@ -1380,7 +1372,6 @@
         <input type="date" id="detail-date-input" class="date-input-overlay">
       </div>
     </div>
-    <h2 id="detail-date">19 октября</h2>
     <p id="detail-weekday">воскресенье</p>
     <h3 class="day-section-title">Задачи</h3>
     <ul id="detail-task-list" class="day-task-list"></ul>
@@ -1524,7 +1515,6 @@
     const MONTHS_GEN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
     const CIRCUMFERENCE = 2 * Math.PI * 52;
 
-    // Рамка без надписи LOGIT — буквы теперь отдельным слоем .logit-word
     const ASCII_ART =
       '╭────────────────────╮\n' +
       '│                    │\n' +
@@ -1639,7 +1629,6 @@
       }
     })();
 
-    // ====== Приветствие ======
     function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
     function typeText(el, text, delay) {
@@ -1673,7 +1662,6 @@
       const greeting = document.getElementById('welcome-greeting');
       const subtitle = document.getElementById('welcome-subtitle');
 
-      // Сброс всех состояний
       startBtn.classList.remove('visible');
       art.classList.remove('revealing');
       scanLine.classList.remove('scanning');
@@ -1685,7 +1673,6 @@
       greeting.classList.remove('typing');
       subtitle.classList.remove('typing');
 
-      // Показываем welcome, потом снимаем booting
       screen.classList.add('active');
       document.body.classList.add('welcome-open');
       document.body.classList.remove('booting');
@@ -1694,33 +1681,24 @@
 
       await sleep(180);
 
-      // 1. Сканер + проявление рамки
       void art.offsetWidth;
       void scanLine.offsetWidth;
       art.classList.add('revealing');
       scanLine.classList.add('scanning');
 
-      // 2. Ждём сканер (0.87s)
       await sleep(870);
 
-      // 3. Галочка в центре — pop
       check.classList.add('pop');
       try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
 
-      // 4. Ждём галочку (0.55s)
       await sleep(550);
 
-      // 5. Запускаем появление букв L-O-G-I-T
-      //    Форсим рефлоу, чтобы анимация гарантированно стартовала
       void logitWord.offsetWidth;
       logitWord.classList.add('show');
       try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
 
-      // 6. Небольшая пауза, чтобы первые буквы «отстрелялись»
-      //    (последняя буква T завершит bounce на 1.74 + 0.6 = 2.34s от старта show)
       await sleep(480);
 
-      // 7. Печатаем имя — пока последние буквы ещё допрыгивают
       await typeText(greeting, 'Привет, ' + userName + '!', 40);
       await sleep(150);
       await typeText(subtitle, 'Твой день начинается здесь', 22);
@@ -1735,7 +1713,6 @@
       try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
     });
 
-    // ====== Сохранение UI ======
     function saveState() {
       try {
         localStorage.setItem(UI_STATE_KEY, JSON.stringify({
@@ -1756,7 +1733,6 @@
       } catch (e) {}
     }
 
-    // ====== Фильтр ======
     function updateCategoryUI() {
       updateCatPillUI();
       if (currentCategory !== 'all') {
@@ -1815,7 +1791,6 @@
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     });
 
-    // ====== Календарь ======
     function buildCalendar() {
       const base = isoToDate(selectedDate);
       base.setHours(0,0,0,0);
@@ -1910,7 +1885,6 @@
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
 
-    // ====== Барабаны ======
     function buildWheels() {
       const currentYear = new Date().getFullYear();
       const mw = document.querySelector('#wheel-month .wheel-inner');
@@ -2018,7 +1992,6 @@
       try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
     }
 
-    // ====== Хранение ======
     async function loadTasks() {
       try {
         if (tg.CloudStorage && typeof tg.CloudStorage.getItem === 'function') {
@@ -2068,7 +2041,6 @@
       } catch (e) {}
     }
 
-    // ====== Долгое нажатие ======
     function attachLongPress(card, index) {
       let startX = 0, startY = 0;
       let moved = false;
@@ -2097,7 +2069,6 @@
       card.addEventListener('touchcancel', () => clearTimeout(timer));
     }
 
-    // ====== Таймлайн ======
     function renderTimeline(dayTasks) {
       const timeline = document.getElementById('mini-timeline');
       const dotsEl = document.getElementById('mini-timeline-dots');
@@ -2190,7 +2161,6 @@
       setTimeout(() => el.classList.remove('flash'), 1000);
     }
 
-    // ====== Прогресс + Дальше ======
     function updateDayFocus(dayTasks) {
       const progressEl = document.getElementById('progress');
       if (dayTasks.length === 0) {
@@ -2211,7 +2181,6 @@
       }
     }
 
-    // ====== Карточка ======
     function buildTaskCard(task, isNext) {
       const globalIndex = tasks.indexOf(task);
       const overdue = isOverdue(task);
@@ -2247,7 +2216,6 @@
       return wrapper;
     }
 
-    // ====== Главный экран ======
     function render() {
       document.getElementById('month-label').innerHTML =
         formatMonthYear(selectedDate) + ' <span class="chevron">▼</span>';
@@ -2323,10 +2291,9 @@
       btn.style.display = selectedDate === todayISO() ? 'none' : 'flex';
     }
 
-    // ====== Подробнее ======
+    // Подробнее — без крупной даты, только пилюля + день недели
     function renderDetailView() {
       const d = isoToDate(detailDate);
-      document.getElementById('detail-date').textContent = d.getDate() + ' ' + MONTHS_GEN[d.getMonth()];
       document.getElementById('detail-weekday').textContent = WEEKDAYS_FULL[d.getDay()];
       document.getElementById('detail-date-pill').innerHTML =
         d.getDate() + ' ' + MONTHS_GEN[d.getMonth()] + ' ' + d.getFullYear() +
@@ -2386,7 +2353,6 @@
       }
     }
 
-    // ====== Редактирование ======
     function openEditModal(index) {
       editingIndex = index;
       const task = tasks[index];
@@ -2430,7 +2396,6 @@
       }
     }
 
-    // ====== Действия ======
     function updateTimeBtn() {
       const timeInput = document.getElementById('task-time');
       const timeBtnText = document.getElementById('time-btn-text');
@@ -2485,7 +2450,6 @@
       return div.innerHTML;
     }
 
-    // ====== Переключение экранов ======
     function switchView(view) {
       if (view === currentView) return;
       currentView = view;
@@ -2502,7 +2466,6 @@
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
 
-    // ====== События ======
     document.getElementById('add-btn').addEventListener('click', addTask);
     document.getElementById('task-input').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') addTask();
@@ -2576,7 +2539,6 @@
       }
     }, 3000);
 
-    // ====== Старт ======
     restoreState();
     detailDate = selectedDate;
     buildCalendar();
