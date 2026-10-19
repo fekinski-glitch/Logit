@@ -1124,7 +1124,6 @@
       to { clip-path: inset(0 0 0 0); -webkit-clip-path: inset(0 0 0 0); }
     }
 
-    /* Слово LOGIT по буквам */
     .logit-word {
       position: absolute;
       top: 72.22%;
@@ -1176,7 +1175,6 @@
       }
     }
 
-    /* Сканер */
     .ascii-scan-line {
       position: absolute;
       left: -14px;
@@ -1203,7 +1201,6 @@
       100% { opacity: 0; top: calc(100% - 2px); }
     }
 
-    /* Галочка в центре — КРУПНЕЕ */
     .ascii-check {
       position: absolute;
       top: 38.9%;
@@ -1580,6 +1577,14 @@
       return Math.max(0, Math.min(100, (min - TL_START_H * 60) / TL_RANGE_MIN * 100));
     }
 
+    function getTimeGreeting() {
+      const h = new Date().getHours();
+      if (h >= 5 && h < 12) return 'Доброе утро';
+      if (h >= 12 && h < 17) return 'Добрый день';
+      if (h >= 17 && h < 23) return 'Добрый вечер';
+      return 'Доброй ночи';
+    }
+
     (function setupKeyboardHandling() {
       const tabBar = document.getElementById('tab-bar');
       if (!tabBar) return;
@@ -1699,7 +1704,7 @@
 
       await sleep(480);
 
-      await typeText(greeting, 'Привет, ' + userName + '!', 40);
+      await typeText(greeting, getTimeGreeting() + ', ' + userName + '!', 40);
       await sleep(150);
       await typeText(subtitle, 'Твой день начинается здесь', 22);
       await sleep(200);
