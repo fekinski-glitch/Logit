@@ -1100,7 +1100,58 @@
       font-size: var(--fs-base);
       font-weight: 400;
       color: var(--hint-color);
-      margin-bottom: var(--sp-4);
+      margin-bottom: var(--sp-1);
+    }
+
+    #detail-stats {
+      text-align: center;
+      font-size: var(--fs-sm);
+      font-weight: 500;
+      color: var(--hint-color);
+      margin-bottom: var(--sp-3);
+      min-height: 16px;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.1px;
+    }
+
+    .detail-focus {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      background: var(--secondary-bg-color);
+      border-radius: var(--r-pill);
+      margin-bottom: var(--sp-3);
+      font-size: var(--fs-sm);
+      font-weight: 500;
+      color: var(--text-color);
+      letter-spacing: -0.1px;
+      min-height: 38px;
+    }
+    .detail-focus--warn {
+      background: var(--danger-soft);
+      color: var(--danger-color);
+    }
+    .detail-focus-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: var(--hint-color);
+    }
+    .detail-focus--warn .detail-focus-dot {
+      background: var(--danger-color);
+    }
+    .detail-focus-text {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #detail-add-form {
+      margin-bottom: var(--sp-3);
     }
 
     .detail-group-toggle {
@@ -1217,6 +1268,17 @@
       font-size: var(--fs-base);
       letter-spacing: -0.1px;
       margin-bottom: var(--sp-3);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--sp-4);
+    }
+    .day-empty p { margin: 0; }
+    .day-empty .btn-ghost {
+      max-width: 280px;
+      width: 100%;
+      height: 44px;
+      flex: none;
     }
 
     /* === Projects view === */
@@ -1860,6 +1922,16 @@
       </button>
     </div>
     <p id="detail-weekday">воскресенье</p>
+    <p id="detail-stats"></p>
+
+    <div id="detail-focus" class="detail-focus" style="display: none;">
+      <span class="detail-focus-dot" id="detail-focus-dot"></span>
+      <span class="detail-focus-text" id="detail-focus-text"></span>
+    </div>
+
+    <div class="add-form" id="detail-add-form">
+      <input type="text" id="detail-task-input" placeholder="Добавить задачу на день" maxlength="100">
+    </div>
 
     <div class="detail-group-toggle" id="detail-group-toggle">
       <button data-mode="time" class="active">По времени</button>
@@ -1867,7 +1939,10 @@
     </div>
 
     <div id="detail-tasks-grouped"></div>
-    <div id="detail-empty" class="day-empty">На этот день задач нет</div>
+    <div id="detail-empty" class="day-empty">
+      <p id="detail-empty-text">День свободен</p>
+      <button class="btn-ghost" id="detail-empty-carry" style="display: none;"></button>
+    </div>
 
     <div class="ring-progress">
       <svg viewBox="0 0 120 120">
@@ -1917,7 +1992,7 @@
         <circle cx="12" cy="12" r="9"/>
         <path d="M12 3 v9 h9"/>
       </svg>
-      <span>Детали</span>
+      <span>День</span>
     </button>
     <button class="tab-item" data-view="projects">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
@@ -3524,6 +3599,190 @@
       return upcoming ? upcoming.task : null;
     }
 
+    // === Detail: stats line ===
+    function renderDetailStats(dayTasks) {
+      const el = document.getElementById('detail-stats');
+      if (!el) return;
+      const total = dayTasks.length;
+      if (total === 0) {
+        el.textContent = '';
+        return;
+      }
+      const done = dayTasks.filter(t => t.done).length;
+      const overdue = dayTasks.filter(t => !t.done && isOverdue(t)).length;
+      const parts = [total + ' ' + pluralForm(total, 'задача', 'задачи', 'задач')];
+      if (done === total) {
+        parts.push('все выполнены 🎉');
+      } else {
+        parts.push(done + ' сделано');
+        if (overdue > 0) parts.push('просрочено ' + overdue);
+      }
+      el.textContent = parts.join(' · ');
+    }
+
+    // === Detail: focus block ===
+    function getDetailFocus(dayTasks) {
+      if (dayTasks.length === 0) return null;
+      const today = todayISO();
+      const isToday = detailDate === today;
+      const isFuture = detailDate > today;
+
+      if (isToday) {
+        const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+        const upcoming = dayTasks
+          .filter(t => !t.done && t.time && timeToMinutes(t.time) > nowMin)
+          .sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+        if (upcoming.length > 0) {
+          const next = upcoming[0];
+          return {
+            type: 'next',
+            projectId: next.projectId,
+            text: 'Дальше: ' + next.text + ' · ' + formatRelativeTime(next)
+          };
+        }
+        const overdue = dayTasks.filter(t => !t.done && isOverdue(t));
+        if (overdue.length > 0) {
+          return {
+            type: 'warn',
+            text: 'Просрочено: ' + overdue.length + ' ' + pluralForm(overdue.length, 'задача', 'задачи', 'задач')
+          };
+        }
+        const pendingNoTime = dayTasks.filter(t => !t.done && !t.time);
+        if (pendingNoTime.length > 0) {
+          return {
+            type: 'plain',
+            text: 'Ещё ' + pendingNoTime.length + ' ' + pluralForm(pendingNoTime.length, 'задача', 'задачи', 'задач') + ' без времени'
+          };
+        }
+        return null;
+      }
+
+      if (isFuture) {
+        const pending = dayTasks.filter(t => !t.done);
+        if (pending.length === 0) return null;
+        const withTime = pending.filter(t => t.time).sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+        if (withTime.length > 0) {
+          const first = withTime[0];
+          return {
+            type: 'next',
+            projectId: first.projectId,
+            text: 'Первая: ' + first.text + ' в ' + first.time
+          };
+        }
+        return {
+          type: 'plain',
+          text: pending.length + ' ' + pluralForm(pending.length, 'задача', 'задачи', 'задач') + ' без времени'
+        };
+      }
+
+      return null;
+    }
+
+    function renderDetailFocus(dayTasks) {
+      const el = document.getElementById('detail-focus');
+      const dotEl = document.getElementById('detail-focus-dot');
+      const textEl = document.getElementById('detail-focus-text');
+      if (!el || !dotEl || !textEl) return;
+
+      const focus = getDetailFocus(dayTasks);
+      if (!focus) {
+        el.style.display = 'none';
+        return;
+      }
+
+      el.style.display = 'flex';
+      el.classList.toggle('detail-focus--warn', focus.type === 'warn');
+      textEl.textContent = focus.text;
+
+      if (focus.type === 'warn') {
+        dotEl.style.background = '';
+      } else if (focus.projectId) {
+        dotEl.style.background = store.getProjectColor(focus.projectId);
+      } else {
+        dotEl.style.background = 'var(--hint-color)';
+      }
+    }
+
+    // === Detail: empty state + carry ===
+    function getCarryableTasks() {
+      const yesterday = isoToDate(detailDate);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayISO = dateToISO(yesterday);
+      return store.tasks.filter(t =>
+        t.date === yesterdayISO &&
+        !t.done &&
+        (currentFilter === 'all' || t.projectId === currentFilter)
+      );
+    }
+
+    function renderDetailEmpty(dayTasks) {
+      const emptyEl = document.getElementById('detail-empty');
+      const textEl = document.getElementById('detail-empty-text');
+      const carryBtn = document.getElementById('detail-empty-carry');
+      if (!emptyEl) return;
+
+      if (dayTasks.length > 0) {
+        emptyEl.style.display = 'none';
+        return;
+      }
+
+      emptyEl.style.display = 'flex';
+      if (textEl) {
+        textEl.textContent = currentFilter === 'all' ? 'День свободен' : 'В этом проекте на день задач нет';
+      }
+
+      if (carryBtn) {
+        const carryable = getCarryableTasks();
+        if (carryable.length > 0) {
+          const word = pluralForm(carryable.length, 'задачу', 'задачи', 'задач');
+          carryBtn.textContent = 'Перенести ' + carryable.length + ' ' + word + ' со вчера';
+          carryBtn.style.display = 'block';
+        } else {
+          carryBtn.style.display = 'none';
+        }
+      }
+    }
+
+    function carryYesterdayTasks() {
+      try {
+        const carryable = getCarryableTasks();
+        if (carryable.length === 0) return;
+
+        const doCarry = () => {
+          carryable.forEach(t => { t.date = detailDate; });
+          store.save();
+          renderDetailView();
+          render();
+          try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
+        };
+
+        const word = pluralForm(carryable.length, 'задачу', 'задачи', 'задач');
+        const message = 'Перенести ' + carryable.length + ' ' + word + ' со вчера на этот день?';
+        if (tg.showConfirm && typeof tg.showConfirm === 'function') {
+          try { tg.showConfirm(message, (ok) => { if (ok) doCarry(); }); return; } catch (e) {}
+        }
+        if (window.confirm(message)) doCarry();
+      } catch (e) { console.error('carryYesterdayTasks failed:', e); }
+    }
+
+    // === Detail: quick add ===
+    function addDetailTask() {
+      try {
+        const input = document.getElementById('detail-task-input');
+        if (!input) return;
+        const text = input.value.trim();
+        if (!text) return;
+        const projectId = currentFilter !== 'all' ? currentFilter : addProjectId;
+        store.addTask({ text, date: detailDate, time: '', projectId });
+        store.save();
+        input.value = '';
+        renderDetailView();
+        render();
+        try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
+      } catch (e) { console.error('addDetailTask failed:', e); }
+    }
+
+    // === Detail: groups ===
     function renderDetailTimeGroups(dayTasks, nowTask) {
       const sections = { morning: [], day: [], evening: [], notime: [] };
       dayTasks.forEach(t => {
@@ -3631,26 +3890,23 @@
         document.getElementById('detail-date-input').value = detailDate;
 
         const dayTasks = store.filterTasks(detailDate, currentFilter);
+        renderDetailStats(dayTasks);
+        renderDetailFocus(dayTasks);
         renderDetailFooter(dayTasks);
 
         document.querySelectorAll('#detail-group-toggle button').forEach(btn => {
           btn.classList.toggle('active', btn.dataset.mode === detailGroupMode);
         });
-        // Теперь учитываем ВСЕ проекты дня, а не только те, где есть задачи со временем
         const projectsInDay = new Set(dayTasks.map(t => t.projectId));
         document.getElementById('detail-group-toggle').style.display = projectsInDay.size >= 2 ? 'flex' : 'none';
 
         const container = document.getElementById('detail-tasks-grouped');
-        const emptyEl = document.getElementById('detail-empty');
         container.innerHTML = '';
 
-        // Пустое состояние — если вообще нет задач, а не только задач со временем
-        if (dayTasks.length === 0) {
-          emptyEl.style.display = 'block';
-          emptyEl.textContent = currentFilter === 'all' ? 'На этот день задач нет' : 'В этом проекте на день задач нет';
-          return;
-        }
-        emptyEl.style.display = 'none';
+        renderDetailEmpty(dayTasks);
+
+        if (dayTasks.length === 0) return;
+
         const nowTask = getNextUpcomingForDetail(dayTasks.filter(t => t.time));
         const effectiveMode = (detailGroupMode === 'project' && projectsInDay.size >= 2) ? 'project' : 'time';
         if (effectiveMode === 'project') {
@@ -3730,6 +3986,7 @@
           updateProjectPillUI();
         }
         render();
+        if (currentView === 'detail') renderDetailView();
         try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
         input.blur();
       } catch (e) { console.error('addTask failed:', e); }
@@ -3851,6 +4108,12 @@
       const taskTimeEl = document.getElementById('task-time');
       taskTimeEl.addEventListener('input', updateTimeBtn);
       taskTimeEl.addEventListener('change', updateTimeBtn);
+
+      // Detail quick-add
+      document.getElementById('detail-task-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addDetailTask();
+      });
+      document.getElementById('detail-empty-carry').addEventListener('click', carryYesterdayTasks);
 
       document.getElementById('month-label').addEventListener('click', openPicker);
       document.getElementById('picker-cancel').addEventListener('click', closePicker);
