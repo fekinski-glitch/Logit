@@ -103,7 +103,7 @@
     }
 
     @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-      #month-label, #detail-date-pill, #category-pill, .tab-bar, .pill {
+      #month-label, #category-pill, .tab-bar, .pill {
         background: var(--bg-color);
       }
     }
@@ -556,26 +556,6 @@
       color: var(--text-color);
     }
 
-    /* === Date picker (detail) === */
-    .date-pill-wrapper {
-      position: relative;
-      display: inline-flex;
-      transition: opacity 0.15s, transform 0.1s;
-    }
-    .date-pill-wrapper:active { opacity: 0.7; transform: scale(0.97); }
-    .date-input-overlay {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-
     /* === Calendar strip === */
     .calendar-strip-wrap {
       position: relative;
@@ -972,14 +952,11 @@
       0%, 100% { box-shadow: var(--shadow-card); }
       30% { box-shadow: 0 0 0 3px var(--button-color), var(--shadow-card); }
     }
-    .task-card--done .task-text,
-    .task-card--done .day-task-text {
+    .task-card--done .task-text {
       text-decoration: line-through;
       color: var(--hint-color);
     }
-    .task-card--done .task-time,
-    .task-card--done .day-task-time,
-    .task-card--done .day-task-when { color: var(--hint-color); }
+    .task-card--done .task-time { color: var(--hint-color); }
 
     .task-checkbox {
       width: 26px;
@@ -1093,193 +1070,6 @@
     }
     #empty-state svg { opacity: 0.35; }
     #empty-state p { margin: 0; }
-
-    /* === Detail view === */
-    #detail-weekday {
-      text-align: center;
-      font-size: var(--fs-base);
-      font-weight: 400;
-      color: var(--hint-color);
-      margin-bottom: var(--sp-1);
-    }
-
-    #detail-stats {
-      text-align: center;
-      font-size: var(--fs-sm);
-      font-weight: 500;
-      color: var(--hint-color);
-      margin-bottom: var(--sp-3);
-      min-height: 16px;
-      font-variant-numeric: tabular-nums;
-      letter-spacing: -0.1px;
-    }
-
-    .detail-focus {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 16px;
-      background: var(--secondary-bg-color);
-      border-radius: var(--r-pill);
-      margin-bottom: var(--sp-3);
-      font-size: var(--fs-sm);
-      font-weight: 500;
-      color: var(--text-color);
-      letter-spacing: -0.1px;
-      min-height: 38px;
-    }
-    .detail-focus--warn {
-      background: var(--danger-soft);
-      color: var(--danger-color);
-    }
-    .detail-focus-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-      background: var(--hint-color);
-    }
-    .detail-focus--warn .detail-focus-dot {
-      background: var(--danger-color);
-    }
-    .detail-focus-text {
-      flex: 1;
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    #detail-add-form {
-      margin-bottom: var(--sp-3);
-    }
-
-    .detail-group-toggle {
-      display: none;
-      gap: var(--sp-1);
-      padding: var(--sp-1);
-      background: var(--secondary-bg-color);
-      border-radius: var(--r-pill);
-      margin-bottom: var(--sp-4);
-    }
-    .detail-group-toggle button {
-      flex: 1;
-      height: 36px;
-      border: none;
-      border-radius: var(--r-pill);
-      background: transparent;
-      color: var(--hint-color);
-      font-family: inherit;
-      font-size: var(--fs-sm);
-      font-weight: 600;
-      letter-spacing: -0.1px;
-      cursor: pointer;
-      transition: background-color 0.2s, color 0.2s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .detail-group-toggle button.active {
-      background: var(--bg-color);
-      color: var(--text-color);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    }
-    body[data-theme="dark"] .detail-group-toggle button.active {
-      background: rgba(255,255,255,0.12);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-    }
-
-    #detail-tasks-grouped { margin-bottom: var(--sp-6); }
-    #detail-tasks-grouped > * { margin-bottom: 22px; }
-    #detail-tasks-grouped > *:last-child { margin-bottom: 0; }
-
-    .detail-project-group { display: flex; flex-direction: column; }
-    .detail-project-header {
-      display: flex;
-      align-items: center;
-      gap: var(--sp-2);
-      margin-bottom: 10px;
-      padding-left: var(--sp-1);
-    }
-    .detail-project-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .detail-project-name {
-      font-size: var(--fs-sm);
-      font-weight: 600;
-      letter-spacing: 0;
-      color: var(--hint-color);
-      flex-shrink: 0;
-    }
-
-    .day-task-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .day-task-content {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-    .day-task-text {
-      font-size: 16px;
-      font-weight: 500;
-      letter-spacing: -0.2px;
-      line-height: 1.3;
-      word-break: break-word;
-    }
-    .day-task-time {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--button-color);
-      font-variant-numeric: tabular-nums;
-      letter-spacing: 0.2px;
-      line-height: 1.2;
-    }
-    .day-task-when {
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--hint-color);
-      font-variant-numeric: tabular-nums;
-      letter-spacing: -0.1px;
-      flex-shrink: 0;
-      align-self: flex-start;
-      margin-top: 2px;
-      white-space: nowrap;
-      line-height: 1.2;
-    }
-    .task-card--overdue .day-task-when {
-      color: var(--danger-color);
-      font-weight: 600;
-    }
-    .task-card--done .day-task-when {
-      color: var(--button-color);
-      font-weight: 600;
-    }
-    .day-empty {
-      text-align: center;
-      color: var(--hint-color);
-      padding: var(--sp-5) var(--sp-4) var(--sp-6);
-      font-size: var(--fs-base);
-      letter-spacing: -0.1px;
-      margin-bottom: var(--sp-3);
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      gap: var(--sp-4);
-    }
-    .day-empty p { margin: 0; }
-    .day-empty .btn-ghost {
-      max-width: 280px;
-      width: 100%;
-      height: 44px;
-      flex: none;
-    }
 
     /* === Projects view === */
     #projects-list {
@@ -1462,44 +1252,6 @@
       flex-direction: column;
       align-items: center;
       gap: var(--sp-3);
-    }
-
-    /* === Progress ring === */
-    .ring-progress {
-      position: relative;
-      width: 180px;
-      height: 180px;
-      margin: 0 auto var(--sp-2);
-    }
-    .ring-progress svg { width: 100%; height: 100%; transform: rotate(-90deg); display: block; }
-    .ring-bg { fill: none; stroke: var(--secondary-bg-color); stroke-width: 10; }
-    .ring-fill {
-      fill: none;
-      stroke: var(--button-color);
-      stroke-width: 10;
-      stroke-linecap: round;
-      transition: stroke-dashoffset 0.6s ease;
-    }
-    .ring-center {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: var(--sp-1);
-    }
-    .ring-percent {
-      font-size: var(--fs-display);
-      font-weight: 700;
-      letter-spacing: -1.2px;
-      line-height: 1;
-      font-variant-numeric: tabular-nums;
-    }
-    .ring-label {
-      font-size: 14px;
-      color: var(--hint-color);
-      font-variant-numeric: tabular-nums;
     }
 
     /* === Tab bar === */
@@ -1908,54 +1660,6 @@
     </div>
   </div>
 
-  <div class="view" id="view-detail">
-    <div class="header-wrap header-wrap--with-nav">
-      <button class="icon-btn" id="detail-prev-btn" aria-label="Предыдущий день">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <div class="date-pill-wrapper">
-        <span class="pill" id="detail-date-pill">Загрузка... <span class="chevron">▼</span></span>
-        <input type="date" id="detail-date-input" class="date-input-overlay">
-      </div>
-      <button class="icon-btn" id="detail-next-btn" aria-label="Следующий день">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-    </div>
-    <p id="detail-weekday">воскресенье</p>
-    <p id="detail-stats"></p>
-
-    <div id="detail-focus" class="detail-focus" style="display: none;">
-      <span class="detail-focus-dot" id="detail-focus-dot"></span>
-      <span class="detail-focus-text" id="detail-focus-text"></span>
-    </div>
-
-    <div class="add-form" id="detail-add-form">
-      <input type="text" id="detail-task-input" placeholder="Добавить задачу на день" maxlength="100">
-    </div>
-
-    <div class="detail-group-toggle" id="detail-group-toggle">
-      <button data-mode="time" class="active">По времени</button>
-      <button data-mode="project">Проекты</button>
-    </div>
-
-    <div id="detail-tasks-grouped"></div>
-    <div id="detail-empty" class="day-empty">
-      <p id="detail-empty-text">День свободен</p>
-      <button class="btn-ghost" id="detail-empty-carry" style="display: none;"></button>
-    </div>
-
-    <div class="ring-progress">
-      <svg viewBox="0 0 120 120">
-        <circle class="ring-bg" cx="60" cy="60" r="52"/>
-        <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="52" stroke-dasharray="326.73" stroke-dashoffset="326.73"/>
-      </svg>
-      <div class="ring-center">
-        <span class="ring-percent" id="ring-percent">—</span>
-        <span class="ring-label" id="ring-label">нет задач</span>
-      </div>
-    </div>
-  </div>
-
   <div class="view" id="view-projects">
     <div class="header-wrap">
       <h1 class="pill" id="projects-title">Проекты</h1>
@@ -1986,13 +1690,6 @@
         <line x1="13" y1="20" x2="21" y2="20"/>
       </svg>
       <span>Задачи</span>
-    </button>
-    <button class="tab-item" data-view="detail">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="9"/>
-        <path d="M12 3 v9 h9"/>
-      </svg>
-      <span>День</span>
     </button>
     <button class="tab-item" data-view="projects">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
@@ -2089,7 +1786,6 @@
     const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
     const WEEKDAYS_FULL = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
     const MONTHS_GEN = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
-    const CIRCUMFERENCE = 2 * Math.PI * 52;
     const TL_START_H = 5;
     const TL_END_H = 24;
     const TL_RANGE_MIN = (TL_END_H - TL_START_H) * 60;
@@ -2326,7 +2022,6 @@
 
     const store = new TaskStore();
     let selectedDate = todayISO();
-    let detailDate = todayISO();
     let calendarDays = [];
     let suppressScrollSelect = false;
     let currentView = 'tasks';
@@ -2335,7 +2030,6 @@
     let editProjectId = 'personal';
     let projectSheetMode = 'filter';
     let pendingProjectColor = PALETTE[0];
-    let detailGroupMode = 'time';
     let pickerMonth = new Date().getMonth();
     let pickerYearValue = new Date().getFullYear();
     let editingIndex = -1;
@@ -2392,33 +2086,6 @@
       if (h >= 12 && h < 17) return 'Добрый день';
       if (h >= 17 && h < 23) return 'Добрый вечер';
       return 'Доброй ночи';
-    }
-    function formatRelativeTime(task) {
-      if (task.done) return '✓';
-      if (!task.time) return '';
-      const d = isoToDate(task.date);
-      const [h, m] = task.time.split(':').map(Number);
-      d.setHours(h, m, 0, 0);
-      const diffMin = Math.round((d - new Date()) / 60000);
-      if (diffMin === 0) return 'сейчас';
-      const ahead = diffMin > 0;
-      const abs = Math.abs(diffMin);
-      if (abs > 3 * 24 * 60) {
-        const days = Math.round(abs / (24 * 60));
-        return ahead ? 'через ' + days + ' д' : 'просрочено ' + days + ' д';
-      }
-      let text;
-      if (abs < 60) text = abs + ' мин';
-      else if (abs < 24 * 60) {
-        const hh = Math.floor(abs / 60);
-        const rm = abs % 60;
-        if (rm < 15) text = hh + ' ч';
-        else if (rm < 45) text = hh + ' ч ' + rm + ' мин';
-        else text = (hh + 1) + ' ч';
-      } else {
-        text = Math.round(abs / (24 * 60)) + ' д';
-      }
-      return ahead ? 'через ' + text : 'просрочено ' + text;
     }
     function escapeHtml(str) {
       const div = document.createElement('div');
@@ -2478,7 +2145,7 @@
     // === State ===
     function saveState() {
       try {
-        localStorage.setItem(UI_STATE_KEY, JSON.stringify({ view: currentView, currentFilter, addProjectId, detailGroupMode }));
+        localStorage.setItem(UI_STATE_KEY, JSON.stringify({ view: currentView, currentFilter, addProjectId }));
       } catch (e) {}
     }
     function restoreState() {
@@ -2486,10 +2153,9 @@
         const raw = localStorage.getItem(UI_STATE_KEY);
         if (!raw) return;
         const s = JSON.parse(raw);
-        if (s.view === 'tasks' || s.view === 'detail' || s.view === 'projects') currentView = s.view;
+        if (s.view === 'tasks' || s.view === 'projects') currentView = s.view;
         if (typeof s.currentFilter === 'string') currentFilter = s.currentFilter;
         if (typeof s.addProjectId === 'string') addProjectId = s.addProjectId;
-        if (s.detailGroupMode === 'time' || s.detailGroupMode === 'project') detailGroupMode = s.detailGroupMode;
       } catch (e) {}
     }
     function isWelcomeDone() {
@@ -2861,7 +2527,6 @@
         updateProjectToggleUI();
         updateCalendarDots();
         render();
-        if (currentView === 'detail') renderDetailView();
       } else if (projectSheetMode === 'add') {
         addProjectId = id;
         updateProjectToggleUI();
@@ -2945,7 +2610,6 @@
             renderProjectSheet();
             updateCalendarDots();
             render();
-            if (currentView === 'detail') renderDetailView();
             if (currentView === 'projects') renderProjectsView();
             try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
           } catch (e) { console.error('performDelete failed:', e); }
@@ -2997,7 +2661,6 @@
         dayBtn.addEventListener('click', (e) => {
           e.stopPropagation();
           selectedDate = iso;
-          detailDate = iso;
           currentFilter = project.id;
           addProjectId = project.id;
           saveState();
@@ -3302,23 +2965,23 @@
       wheel.addEventListener('scroll', update, { passive: true });
       wheel.addEventListener('touchend', () => setTimeout(update, 50), { passive: true });
     }
-    function openPicker() {
+    function open functionPicker() {
       const d = isoToDate(selectedDate);
       pickerMonth = d.getMonth();
       pickerYearValue = d.getFullYear();
-      document.getElementById('picker-overlay').classList.add('active');
+      document.getElementById('picker-overlay').classList.add('active apply');
       document.body.classList.add('picker-open');
       setTimeout(() => {
-        scrollWheelTo('wheel-month', pickerMonth);
+        scrollWheelTo('wheel-month', pickerMonthPicker);
         scrollWheelTo('wheel-year', pickerYearValue);
-      }, 80);
-    }
+      },() 80);
+ {
+         }
     function closePicker() {
       document.getElementById('picker-overlay').classList.remove('active');
       document.body.classList.remove('picker-open');
     }
-    function applyPicker() {
-      const m = getWheelValue('wheel-month');
+    const m = getWheelValue('wheel-month');
       const y = getWheelValue('wheel-year');
       if (m !== null) pickerMonth = m;
       if (y !== null) pickerYearValue = y;
@@ -3568,354 +3231,84 @@
       } catch (e) { console.error('render failed:', e); }
     }
 
-    // === Detail view ===
-    function buildDayTaskItem(task, { isNext = false } = {}) {
-      const li = document.createElement('li');
-      const overdue = isOverdue(task);
-      const classes = ['task-card', 'task-card--detail'];
-      if (task.done) classes.push('task-card--done');
-      if (overdue) classes.push('task-card--overdue');
-      if (isNext && !task.done) classes.push('task-card--next');
-      li.className = classes.join(' ');
-      li.style.borderLeftColor = overdue ? 'var(--danger-color)' : store.getProjectColor(task.projectId);
-      const rel = formatRelativeTime(task);
-      li.innerHTML = `
-        <div class="day-task-content">
-          <span class="day-task-text">${escapeHtml(task.text)}</span>
-          ${task.time ? `<span class="day-task-time">${escapeHtml(task.time)}</span>` : ''}
-        </div>
-        ${rel ? `<span class="day-task-when">${escapeHtml(rel)}</span>` : ''}
-      `;
-      return li;
-    }
-
-    function getNextUpcomingForDetail(dayTasks) {
-      if (detailDate !== todayISO()) return null;
-      const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
-      const upcoming = dayTasks
-        .filter(t => !t.done && t.time && timeToMinutes(t.time) > nowMin)
-        .map(t => ({ task: t, min: timeToMinutes(t.time) }))
-        .sort((a, b) => a.min - b.min)[0];
-      return upcoming ? upcoming.task : null;
-    }
-
-    // === Detail: stats line ===
-    function renderDetailStats(dayTasks) {
-      const el = document.getElementById('detail-stats');
-      if (!el) return;
-      const total = dayTasks.length;
-      if (total === 0) {
-        el.textContent = '';
-        return;
-      }
-      const done = dayTasks.filter(t => t.done).length;
-      const overdue = dayTasks.filter(t => !t.done && isOverdue(t)).length;
-      const parts = [total + ' ' + pluralForm(total, 'задача', 'задачи', 'задач')];
-      if (done === total) {
-        parts.push('все выполнены 🎉');
-      } else {
-        parts.push(done + ' сделано');
-        if (overdue > 0) parts.push('просрочено ' + overdue);
-      }
-      el.textContent = parts.join(' · ');
-    }
-
-    // === Detail: focus block ===
-    function getDetailFocus(dayTasks) {
-      if (dayTasks.length === 0) return null;
-      const today = todayISO();
-      const isToday = detailDate === today;
-      const isFuture = detailDate > today;
-
-      if (isToday) {
-        const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
-        const upcoming = dayTasks
-          .filter(t => !t.done && t.time && timeToMinutes(t.time) > nowMin)
-          .sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
-        if (upcoming.length > 0) {
-          const next = upcoming[0];
-          return {
-            type: 'next',
-            projectId: next.projectId,
-            text: 'Дальше: ' + next.text + ' · ' + formatRelativeTime(next)
-          };
-        }
-        const overdue = dayTasks.filter(t => !t.done && isOverdue(t));
-        if (overdue.length > 0) {
-          return {
-            type: 'warn',
-            text: 'Просрочено: ' + overdue.length + ' ' + pluralForm(overdue.length, 'задача', 'задачи', 'задач')
-          };
-        }
-        const pendingNoTime = dayTasks.filter(t => !t.done && !t.time);
-        if (pendingNoTime.length > 0) {
-          return {
-            type: 'plain',
-            text: 'Ещё ' + pendingNoTime.length + ' ' + pluralForm(pendingNoTime.length, 'задача', 'задачи', 'задач') + ' без времени'
-          };
-        }
-        return null;
-      }
-
-      if (isFuture) {
-        const pending = dayTasks.filter(t => !t.done);
-        if (pending.length === 0) return null;
-        const withTime = pending.filter(t => t.time).sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
-        if (withTime.length > 0) {
-          const first = withTime[0];
-          return {
-            type: 'next',
-            projectId: first.projectId,
-            text: 'Первая: ' + first.text + ' в ' + first.time
-          };
-        }
-        return {
-          type: 'plain',
-          text: pending.length + ' ' + pluralForm(pending.length, 'задача', 'задачи', 'задач') + ' без времени'
-        };
-      }
-
-      return null;
-    }
-
-    function renderDetailFocus(dayTasks) {
-      const el = document.getElementById('detail-focus');
-      const dotEl = document.getElementById('detail-focus-dot');
-      const textEl = document.getElementById('detail-focus-text');
-      if (!el || !dotEl || !textEl) return;
-
-      const focus = getDetailFocus(dayTasks);
-      if (!focus) {
-        el.style.display = 'none';
-        return;
-      }
-
-      el.style.display = 'flex';
-      el.classList.toggle('detail-focus--warn', focus.type === 'warn');
-      textEl.textContent = focus.text;
-
-      if (focus.type === 'warn') {
-        dotEl.style.background = '';
-      } else if (focus.projectId) {
-        dotEl.style.background = store.getProjectColor(focus.projectId);
-      } else {
-        dotEl.style.background = 'var(--hint-color)';
-      }
-    }
-
-    // === Detail: empty state + carry ===
-    function getCarryableTasks() {
-      const yesterday = isoToDate(detailDate);
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayISO = dateToISO(yesterday);
-      return store.tasks.filter(t =>
-        t.date === yesterdayISO &&
-        !t.done &&
-        (currentFilter === 'all' || t.projectId === currentFilter)
-      );
-    }
-
-    function renderDetailEmpty(dayTasks) {
-      const emptyEl = document.getElementById('detail-empty');
-      const textEl = document.getElementById('detail-empty-text');
-      const carryBtn = document.getElementById('detail-empty-carry');
-      if (!emptyEl) return;
-
-      if (dayTasks.length > 0) {
-        emptyEl.style.display = 'none';
-        return;
-      }
-
-      emptyEl.style.display = 'flex';
-      if (textEl) {
-        textEl.textContent = currentFilter === 'all' ? 'День свободен' : 'В этом проекте на день задач нет';
-      }
-
-      if (carryBtn) {
-        const carryable = getCarryableTasks();
-        if (carryable.length > 0) {
-          const word = pluralForm(carryable.length, 'задачу', 'задачи', 'задач');
-          carryBtn.textContent = 'Перенести ' + carryable.length + ' ' + word + ' со вчера';
-          carryBtn.style.display = 'block';
-        } else {
-          carryBtn.style.display = 'none';
-        }
-      }
-    }
-
-    function carryYesterdayTasks() {
+    // === Task actions ===
+    function addTask() {
       try {
-        const carryable = getCarryableTasks();
-        if (carryable.length === 0) return;
-
-        const doCarry = () => {
-          carryable.forEach(t => { t.date = detailDate; });
-          store.save();
-          renderDetailView();
-          render();
-          try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
-        };
-
-        const word = pluralForm(carryable.length, 'задачу', 'задачи', 'задач');
-        const message = 'Перенести ' + carryable.length + ' ' + word + ' со вчера на этот день?';
-        if (tg.showConfirm && typeof tg.showConfirm === 'function') {
-          try { tg.showConfirm(message, (ok) => { if (ok) doCarry(); }); return; } catch (e) {}
-        }
-        if (window.confirm(message)) doCarry();
-      } catch (e) { console.error('carryYesterdayTasks failed:', e); }
-    }
-
-    // === Detail: quick add ===
-    function addDetailTask() {
-      try {
-        const input = document.getElementById('detail-task-input');
-        if (!input) return;
+        const input = document.getElementById('task-input');
+        const timeInput = document.getElementById('task-time');
         const text = input.value.trim();
         if (!text) return;
-        const projectId = currentFilter !== 'all' ? currentFilter : addProjectId;
-        store.addTask({ text, date: detailDate, time: '', projectId });
+        store.addTask({ text, date: selectedDate, time: timeInput.value || '', projectId: addProjectId });
         store.save();
         input.value = '';
-        renderDetailView();
+        timeInput.value = '';
+        updateTimeBtn();
+        if (currentFilter !== 'all' && currentFilter !== addProjectId) {
+          currentFilter = addProjectId;
+          saveState();
+          updateProjectPillUI();
+        }
         render();
         try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
-      } catch (e) { console.error('addDetailTask failed:', e); }
+        input.blur();
+      } catch (e) { console.error('addTask failed:', e); }
     }
-
-    // === Detail: groups ===
-    function renderDetailTimeGroups(dayTasks, nowTask) {
-      const sections = { morning: [], day: [], evening: [], notime: [] };
-      dayTasks.forEach(t => {
-        if (!t.time) { sections.notime.push(t); return; }
-        const h = parseInt(t.time.split(':')[0], 10);
-        if (h >= 5 && h < 12) sections.morning.push(t);
-        else if (h >= 12 && h < 17) sections.day.push(t);
-        else sections.evening.push(t);
-      });
-      ['morning','day','evening'].forEach(k => {
-        sections[k].sort((a, b) => a.time.localeCompare(b.time));
-      });
-      const cfg = [
-        { key: 'morning', title: 'Утро' },
-        { key: 'day', title: 'День' },
-        { key: 'evening', title: 'Вечер' },
-        { key: 'notime', title: 'Без времени' }
-      ];
-      const fragment = document.createDocumentFragment();
-      cfg.forEach(c => {
-        const items = sections[c.key];
-        if (items.length === 0) return;
-        const sectionEl = document.createElement('div');
-        sectionEl.className = 'time-section';
-        const titleEl = document.createElement('div');
-        titleEl.className = 'time-section-title';
-        titleEl.textContent = c.title;
-        const listEl = document.createElement('ul');
-        listEl.className = 'day-task-list';
-        items.forEach(task => {
-          listEl.appendChild(buildDayTaskItem(task, { isNext: nowTask && task === nowTask }));
-        });
-        sectionEl.appendChild(titleEl);
-        sectionEl.appendChild(listEl);
-        fragment.appendChild(sectionEl);
-      });
-      return fragment;
-    }
-
-    function renderDetailProjectGroups(dayTasks, nowTask) {
-      const byProject = new Map();
-      dayTasks.forEach(t => {
-        if (!byProject.has(t.projectId)) byProject.set(t.projectId, []);
-        byProject.get(t.projectId).push(t);
-      });
-      const sortedProjects = [...byProject.keys()].sort((a, b) => {
-        const ai = store.projects.findIndex(p => p.id === a);
-        const bi = store.projects.findIndex(p => p.id === b);
-        return ai - bi;
-      });
-      const fragment = document.createDocumentFragment();
-      sortedProjects.forEach(pid => {
-        const items = byProject.get(pid);
-        items.sort((a, b) => {
-          if (!a.time && !b.time) return 0;
-          if (!a.time) return 1;
-          if (!b.time) return -1;
-          return a.time.localeCompare(b.time);
-        });
-        const project = store.getProject(pid);
-        const groupEl = document.createElement('div');
-        groupEl.className = 'detail-project-group';
-        const headerEl = document.createElement('div');
-        headerEl.className = 'detail-project-header';
-        headerEl.innerHTML = `
-          <span class="detail-project-dot" style="background: ${project.color};"></span>
-          <span class="detail-project-name">${escapeHtml(project.name)}</span>
-        `;
-        const listEl = document.createElement('ul');
-        listEl.className = 'day-task-list';
-        items.forEach(task => {
-          listEl.appendChild(buildDayTaskItem(task, { isNext: nowTask && task === nowTask }));
-        });
-        groupEl.appendChild(headerEl);
-        groupEl.appendChild(listEl);
-        fragment.appendChild(groupEl);
-      });
-      return fragment;
-    }
-
-    function renderDetailFooter(dayTasks) {
-      const doneCount = dayTasks.filter(t => t.done).length;
-      const total = dayTasks.length;
-      const ring = document.getElementById('ring-fill');
-      const percentEl = document.getElementById('ring-percent');
-      const labelEl = document.getElementById('ring-label');
-      if (total === 0) {
-        ring.style.strokeDashoffset = CIRCUMFERENCE;
-        percentEl.textContent = '—';
-        labelEl.textContent = 'нет задач';
-      } else {
-        const percent = Math.round((doneCount / total) * 100);
-        ring.style.strokeDashoffset = CIRCUMFERENCE - (percent / 100) * CIRCUMFERENCE;
-        percentEl.textContent = percent + '%';
-        labelEl.textContent = doneCount + ' из ' + total;
-      }
-    }
-
-    function renderDetailView() {
+    function toggleTask(index) {
       try {
-        const d = isoToDate(detailDate);
-        document.getElementById('detail-weekday').textContent = WEEKDAYS_FULL[d.getDay()];
-        document.getElementById('detail-date-pill').innerHTML =
-          d.getDate() + ' ' + MONTHS_GEN[d.getMonth()] + ' ' + d.getFullYear() + ' <span class="chevron">▼</span>';
-        document.getElementById('detail-date-input').value = detailDate;
-
-        const dayTasks = store.filterTasks(detailDate, currentFilter);
-        renderDetailStats(dayTasks);
-        renderDetailFocus(dayTasks);
-        renderDetailFooter(dayTasks);
-
-        document.querySelectorAll('#detail-group-toggle button').forEach(btn => {
-          btn.classList.toggle('active', btn.dataset.mode === detailGroupMode);
-        });
-        const projectsInDay = new Set(dayTasks.map(t => t.projectId));
-        document.getElementById('detail-group-toggle').style.display = projectsInDay.size >= 2 ? 'flex' : 'none';
-
-        const container = document.getElementById('detail-tasks-grouped');
-        container.innerHTML = '';
-
-        renderDetailEmpty(dayTasks);
-
-        if (dayTasks.length === 0) return;
-
-        const nowTask = getNextUpcomingForDetail(dayTasks.filter(t => t.time));
-        const effectiveMode = (detailGroupMode === 'project' && projectsInDay.size >= 2) ? 'project' : 'time';
-        if (effectiveMode === 'project') {
-          container.appendChild(renderDetailProjectGroups(dayTasks, nowTask));
-        } else {
-          container.appendChild(renderDetailTimeGroups(dayTasks, nowTask));
-        }
-      } catch (e) { console.error('renderDetailView failed:', e); }
+        store.toggleTask(index);
+        justCheckedIndex = store.tasks[index] && store.tasks[index].done ? index : -1;
+        render();
+        justCheckedIndex = -1;
+        store.save();
+        if (currentView === 'projects') renderProjectsView();
+        try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
+      } catch (e) { console.error('toggleTask failed:', e); }
     }
+    function deleteTask(index) {
+      try {
+        const taskToDelete = store.tasks[index];
+        if (!taskToDelete) return;
+        if (pendingUndo) {
+          clearTimeout(pendingUndo.timeoutId);
+          pendingUndo = null;
+          hideUndoToast();
+        }
+        const el = document.getElementById('task-card-' + index);
+        if (el) { el.classList.add('removing'); el.style.pointerEvents = 'none'; }
+        store.deleteTask(index);
+        store.save();
+        try { tg.HapticFeedback.impactOccurred('rigid'); } catch (e) {}
+        pendingUndo = { task: taskToDelete, originalIndex: index, timeoutId: null };
+        showUndoToast();
+        pendingUndo.timeoutId = setTimeout(() => {
+          if (pendingUndo) { pendingUndo = null; hideUndoToast(); }
+        }, UNDO_DURATION);
+        skipSlideIn = true;
+        setTimeout(() => {
+          render();
+          skipSlideIn = false;
+          if (currentView === 'projects') renderProjectsView();
+        }, 250);
+      } catch (e) { console.error('deleteTask failed:', e); }
+    }
+    function undoDelete() {
+      try {
+        if (!pendingUndo) return;
+        clearTimeout(pendingUndo.timeoutId);
+        const { task, originalIndex } = pendingUndo;
+        pendingUndo = null;
+        store.restoreTask(task, originalIndex);
+        store.save();
+        hideUndoToast();
+        skipSlideIn = true;
+        render();
+        skipSlideIn = false;
+        if (currentView === 'projects') renderProjectsView();
+        try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
+      } catch (e) { console.error('undoDelete failed:', e); }
+    }
+    function showUndoToast() { document.getElementById('undo-toast').classList.add('visible'); }
+    function hideUndoToast() { document.getElementById('undo-toast').classList.remove('visible'); }
 
     // === Edit modal ===
     function openEditModal(index) {
@@ -3946,11 +3339,9 @@
           projectId: editProjectId
         });
         store.save();
-        const wasDetail = currentView === 'detail';
         const wasProjects = currentView === 'projects';
         closeEditModal();
         render();
-        if (wasDetail) renderDetailView();
         if (wasProjects) renderProjectsView();
         try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
       } catch (e) { console.error('saveEdit failed:', e); }
@@ -3968,97 +3359,12 @@
       else { timeBtnText.textContent = 'Во сколько?'; timeBtnText.classList.remove('has-value'); }
     }
 
-    // === Task actions ===
-    function addTask() {
-      try {
-        const input = document.getElementById('task-input');
-        const timeInput = document.getElementById('task-time');
-        const text = input.value.trim();
-        if (!text) return;
-        store.addTask({ text, date: selectedDate, time: timeInput.value || '', projectId: addProjectId });
-        store.save();
-        input.value = '';
-        timeInput.value = '';
-        updateTimeBtn();
-        if (currentFilter !== 'all' && currentFilter !== addProjectId) {
-          currentFilter = addProjectId;
-          saveState();
-          updateProjectPillUI();
-        }
-        render();
-        if (currentView === 'detail') renderDetailView();
-        try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
-        input.blur();
-      } catch (e) { console.error('addTask failed:', e); }
-    }
-    function toggleTask(index) {
-      try {
-        store.toggleTask(index);
-        justCheckedIndex = store.tasks[index] && store.tasks[index].done ? index : -1;
-        render();
-        justCheckedIndex = -1;
-        store.save();
-        if (currentView === 'detail') renderDetailView();
-        if (currentView === 'projects') renderProjectsView();
-        try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
-      } catch (e) { console.error('toggleTask failed:', e); }
-    }
-    function deleteTask(index) {
-      try {
-        const taskToDelete = store.tasks[index];
-        if (!taskToDelete) return;
-        if (pendingUndo) {
-          clearTimeout(pendingUndo.timeoutId);
-          pendingUndo = null;
-          hideUndoToast();
-        }
-        const el = document.getElementById('task-card-' + index);
-        if (el) { el.classList.add('removing'); el.style.pointerEvents = 'none'; }
-        store.deleteTask(index);
-        store.save();
-        try { tg.HapticFeedback.impactOccurred('rigid'); } catch (e) {}
-        pendingUndo = { task: taskToDelete, originalIndex: index, timeoutId: null };
-        showUndoToast();
-        pendingUndo.timeoutId = setTimeout(() => {
-          if (pendingUndo) { pendingUndo = null; hideUndoToast(); }
-        }, UNDO_DURATION);
-        skipSlideIn = true;
-        setTimeout(() => {
-          render();
-          skipSlideIn = false;
-          if (currentView === 'detail') renderDetailView();
-          if (currentView === 'projects') renderProjectsView();
-        }, 250);
-      } catch (e) { console.error('deleteTask failed:', e); }
-    }
-    function undoDelete() {
-      try {
-        if (!pendingUndo) return;
-        clearTimeout(pendingUndo.timeoutId);
-        const { task, originalIndex } = pendingUndo;
-        pendingUndo = null;
-        store.restoreTask(task, originalIndex);
-        store.save();
-        hideUndoToast();
-        skipSlideIn = true;
-        render();
-        skipSlideIn = false;
-        if (currentView === 'detail') renderDetailView();
-        if (currentView === 'projects') renderProjectsView();
-        try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
-      } catch (e) { console.error('undoDelete failed:', e); }
-    }
-    function showUndoToast() { document.getElementById('undo-toast').classList.add('visible'); }
-    function hideUndoToast() { document.getElementById('undo-toast').classList.remove('visible'); }
-
     // === View switching ===
     function switchView(view) {
       if (view === currentView) return;
       currentView = view;
-      if (view === 'detail') detailDate = selectedDate;
       saveState();
       document.getElementById('view-tasks').classList.toggle('active', view === 'tasks');
-      document.getElementById('view-detail').classList.toggle('active', view === 'detail');
       document.getElementById('view-projects').classList.toggle('active', view === 'projects');
       document.querySelectorAll('.tab-item').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.view === view);
@@ -4070,24 +3376,8 @@
         activeBtn.classList.add('tab-bounce');
         setTimeout(() => activeBtn.classList.remove('tab-bounce'), 400);
       }
-      if (view === 'detail') renderDetailView();
       if (view === 'projects') renderProjectsView();
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
-    }
-
-    function shiftDetailDate(delta) {
-      try {
-        const d = isoToDate(detailDate);
-        d.setDate(d.getDate() + delta);
-        detailDate = dateToISO(d);
-        selectedDate = detailDate;
-        saveState();
-        buildCalendar();
-        staggerNextRender = true;
-        render();
-        renderDetailView();
-        try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
-      } catch (e) { console.error('shiftDetailDate failed:', e); }
     }
 
     // === Handlers ===
@@ -4108,12 +3398,6 @@
       const taskTimeEl = document.getElementById('task-time');
       taskTimeEl.addEventListener('input', updateTimeBtn);
       taskTimeEl.addEventListener('change', updateTimeBtn);
-
-      // Detail quick-add
-      document.getElementById('detail-task-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') addDetailTask();
-      });
-      document.getElementById('detail-empty-carry').addEventListener('click', carryYesterdayTasks);
 
       document.getElementById('month-label').addEventListener('click', openPicker);
       document.getElementById('picker-cancel').addEventListener('click', closePicker);
@@ -4157,28 +3441,6 @@
         scrollCalendarBy(1);
       });
 
-      document.getElementById('detail-date-input').addEventListener('change', (e) => {
-        if (!e.target.value) return;
-        detailDate = e.target.value;
-        selectedDate = e.target.value;
-        saveState();
-        buildCalendar();
-        staggerNextRender = true;
-        render();
-        renderDetailView();
-        try { tg.HapticFeedback.impactOccurred('light'); } catch (err) {}
-      });
-      document.getElementById('detail-prev-btn').addEventListener('click', () => shiftDetailDate(-1));
-      document.getElementById('detail-next-btn').addEventListener('click', () => shiftDetailDate(1));
-      document.getElementById('detail-group-toggle').addEventListener('click', (e) => {
-        const btn = e.target.closest('button[data-mode]');
-        if (!btn || btn.dataset.mode === detailGroupMode) return;
-        detailGroupMode = btn.dataset.mode;
-        saveState();
-        renderDetailView();
-        try { tg.HapticFeedback.selectionChanged(); } catch (err) {}
-      });
-
       document.getElementById('projects-add-btn').addEventListener('click', () => {
         projectSheetMode = 'filter';
         openNewProjectPopover();
@@ -4210,8 +3472,6 @@
           if (currentView === 'tasks') {
             updateNowMarker();
             updateDayFocus(store.filterTasks(selectedDate, currentFilter));
-          } else if (currentView === 'detail') {
-            renderDetailView();
           }
         } catch (e) {}
       }, 60000);
@@ -4220,7 +3480,6 @@
     // === Bootstrap ===
     function bootstrap() {
       try { restoreState(); } catch (e) { console.error('restoreState:', e); }
-      detailDate = selectedDate;
 
       try { buildWheels(); } catch (e) { console.error('buildWheels:', e); }
       try { buildCalendar(); } catch (e) { console.error('buildCalendar:', e); }
@@ -4229,15 +3488,7 @@
       try { updateEditProjectToggleUI(); } catch (e) { console.error('updateEditProjectToggleUI:', e); }
       try { initHandlers(); } catch (e) { console.error('initHandlers:', e); }
 
-      if (currentView === 'detail') {
-        try {
-          document.getElementById('view-tasks').classList.remove('active');
-          document.getElementById('view-detail').classList.add('active');
-          document.querySelectorAll('.tab-item').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.view === 'detail');
-          });
-        } catch (e) { console.error('view switch:', e); }
-      } else if (currentView === 'projects') {
+      if (currentView === 'projects') {
         try {
           document.getElementById('view-tasks').classList.remove('active');
           document.getElementById('view-projects').classList.add('active');
@@ -4256,13 +3507,11 @@
           try { updateEditProjectToggleUI(); } catch (e) {}
           try { updateCalendarDots(); } catch (e) {}
           try { render(); } catch (e) {}
-          try { renderDetailView(); } catch (e) {}
           try { renderProjectsView(); } catch (e) {}
         })
         .catch((e) => {
           console.error('store.init failed:', e);
           try { render(); } catch (e2) {}
-          try { renderDetailView(); } catch (e2) {}
           try { renderProjectsView(); } catch (e2) {}
         });
 
