@@ -1996,84 +1996,6 @@
         withTimeout(tg.CloudStorage.setItem(key, value), CLOUD_TIMEOUT_MS)
           .catch((e) => console.warn('cloudSet failed:', key, e && e.message));
       }
-
-      // --- helpers ---
-      _readLocal(key) {
-        try {
-          const raw = localStorage.getItem(key);
-          if (!raw) return null;
-          const data = JSON.parse(raw);
-          if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
-          return data;
-        } catch (e) {
-          console.warn('readLocal failed:', key, e && e.message);
-          return null;
-        }
-      }
-      async _readCloud(key) {
-        if (!this._hasCloud()) return null;
-        try {
-          const raw = await this._cloudGet(key);
-          if (!raw) return null;
-          const data = JSON.parse(raw);
-          if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
-          return data;
-        } catch (e) {
-          console.warn('readCloud failed:', key, e && e.message);
-          return null;
-        }
-      }
-      async _loadMigrations() {
-        // v2: { tasks: [...], projects: [...] }
-        try {
-          const saved = localStorage.getItem(this.OLD_FALLBACK_KEY);
-          if (saved) {
-            const data = JSON.parse(saved);
-            if (data && typeof data === 'object' && !Array.isArray(data)) {
-              return {
-                tasks: Array.isArray(data.tasks) ? data.tasks : [],
-                projects: Array.isArray(data.projects) && data.projects.length ? data.projects : this._defaults()
-              };
-            }
-          }
-        } catch (e) {}
-        try {
-          const saved = await this._cloudGet(this.OLD_STORAGE_KEY);
-          if (saved) {
-            const data = JSON.parse(saved);
-            if (data && typeof data === 'object' && !Array.isArray(data)) {
-              return {
-                tasks: Array.isArray(data.tasks) ? data.tasks : [],
-                projects: Array.isArray(data.projects) && data.projects.length ? data.projects : this._defaults()
-              };
-            }
-          }
-        } catch (e) {}
-
-        // v1: [tasks]
-        let oldTasks = null;
-        try {
-          const saved = localStorage.getItem(this.V1_FALLBACK_KEY);
-          if (saved) {
-            const parsed = JSON.parse(saved);
-            if (Array.isArray(parsed)) oldTasks = parsed;
-          }
-        } catch (e) {}
-        if (!oldTasks) {
-          try {
-            const saved = await this._cloudGet(this.V1_STORAGE_KEY);
-            if (saved) {
-              const parsed = JSON.parse(saved);
-              if (Array.isArray(parsed)) oldTasks = parsed;
-            }
-          } catch (e) {}
-        }
-        if (oldTasks) {
-          return { tasks: oldTasks, projects: this._defaults() };
-        }
-        return null;
-      }
-
       init() {
         if (!this._initPromise) {
           this._initPromise = this._load().catch((e) => {
@@ -2085,51 +2007,83 @@
         }
         return this._initPromise;
       }
-
       async _load() {
-        // 1. Read v3 from both sources
-        const localV3 = this._readLocal(this.FALLBACK_KEY);
-        const cloudV3 = await this._readCloud(this.STORAGE_KEY);
-
-        // 2. Pick the fresher one (by updatedAt)
-        let chosen = null;
-        let source = 'none';
-        if (localV3 && cloudV3) {
-          const localTs = localV3.updatedAt || 0;
-          const cloudTs = cloudV3.updatedAt || 0;
-          if (localTs >= cloudTs) { chosen = localV3; source = 'local'; }
-          else { chosen = cloudV3; source = 'cloud'; }
-        } else if (localV3) {
-          chosen = localV3; source = 'local';
-        } else if (cloudV3) {
-          chosen = cloudV3; source = 'cloud';
+        let loaded = false;
+        try {
+          const saved = localStorage.getItem(this.FALLBACK_KEY);
+          if (saved) {
+            const data = JSON.parse(saved);
+            if (data && typeof data === 'object' && !Array.isArray(data)) {
+              this.tasks = Array.isArray(data.tasks) ? data.tasks : [];
+              this.projects = Array.isArray(data.projects) && data.projects.length ? data.projects : this._defaults();
+              loaded = true;
+            }
+          }
+        } catch (e) { console.warn('local v3 load failed:', e && e.message); }
+        if (!loaded) {
+          try {
+            const saved = await this._cloudGet(this.STORAGE_KEY);
+            if (saved) {
+              const data = JSON.parse(saved);
+              if (data && typeof data === 'object' && !Array.isArray(data)) {
+                this.tasks = Array.isArray(data.tasks) ? data.tasks : [];
+                this.projects = Array.isArray(data.projects) && data.projects.length ? data.projects : this._defaults();
+                loaded = true;
+              }
+            }
+          } catch (e) { console.warn('cloud v3 load failed:', e && e.message); }
         }
-
-        // 3. Fallback to migrations v2 → v1
-        if (!chosen) {
-          chosen = await this._loadMigrations();
-          if (chosen) source = 'migration';
+        if (!loaded) {
+          try {
+            const saved = localStorage.getItem(this.OLD_FALLBACK_KEY);
+            if (saved) {
+              const data = JSON.parse(saved);
+              if (data && typeof data === 'object' && !Array.isArray(data)) {
+                this.tasks = Array.isArray(data.tasks) ? data.tasks : [];
+                this.projects = Array.isArray(data.projects) && data.projects.length ? data.projects : this._defaults();
+                loaded = true;
+              }
+            }
+          } catch (e) {}
         }
-
-        // 4. Apply
-        if (chosen) {
-          this.tasks = Array.isArray(chosen.tasks) ? chosen.tasks : [];
-          this.projects = Array.isArray(chosen.projects) && chosen.projects.length
-            ? chosen.projects
-            : this._defaults();
-        } else {
-          this.tasks = [];
+        if (!loaded) {
+          try {
+            const saved = await this._cloudGet(this.OLD_STORAGE_KEY);
+            if (saved) {
+              const data = JSON.parse(saved);
+              if (data && typeof data === 'object' && !Array.isArray(data)) {
+                this.tasks = Array.isArray(data.tasks) ? data.tasks : [];
+                this.projects = Array.isArray(data.projects) && data.projects.length ? data.projects : this._defaults();
+                loaded = true;
+              }
+            }
+          } catch (e) {}
+        }
+        if (!loaded) {
+          let oldTasks = null;
+          try {
+            const saved = localStorage.getItem(this.V1_FALLBACK_KEY);
+            if (saved) {
+              const parsed = JSON.parse(saved);
+              if (Array.isArray(parsed)) oldTasks = parsed;
+            }
+          } catch (e) {}
+          if (!oldTasks) {
+            try {
+              const saved = await this._cloudGet(this.V1_STORAGE_KEY);
+              if (saved) {
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed)) oldTasks = parsed;
+              }
+            } catch (e) {}
+          }
+          this.tasks = oldTasks || [];
           this.projects = this._defaults();
-          source = 'defaults';
         }
-
         this._migrate();
-        // Normalize: persist with a fresh updatedAt so future comparisons work
         this.save();
         this.ready = true;
-        console.info('[TaskStore] loaded from:', source, '· tasks:', this.tasks.length, '· projects:', this.projects.length);
       }
-
       _migrate() {
         try {
           if (!this.projects || this.projects.length === 0) this.projects = this._defaults();
@@ -2150,21 +2104,15 @@
           });
         } catch (e) { console.error('migrate failed:', e); }
       }
-
       save() {
         try {
-          const data = {
-            tasks: this.tasks,
-            projects: this.projects,
-            updatedAt: Date.now()
-          };
+          const data = { tasks: this.tasks, projects: this.projects };
           const json = JSON.stringify(data);
           try { localStorage.setItem(this.FALLBACK_KEY, json); }
           catch (e) { console.error('localStorage save failed:', e); }
           this._cloudSet(this.STORAGE_KEY, json);
         } catch (e) { console.error('save failed:', e); }
       }
-
       getProject(id) {
         return this.projects.find(p => p.id === id) || this.projects[0] || { id: 'personal', name: 'Личное', color: '#34c759' };
       }
@@ -2879,11 +2827,10 @@
 
         const fragment = document.createDocumentFragment();
         rows.forEach(({ project, total, done, todayTotal, todayDone }) => {
-          const percent = total > Calendar0 ? Math.round((done / total) * D100) :ots 0;
-          const card = document.createElement();
-('button');
-          card.type = '           button';
-          card.className = 'project-card render';
+          const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+          const card = document.createElement('button');
+          card.type = 'button';
+          card.className = 'project-card';
           card.style.borderLeftColor = project.color;
           card.dataset.projectId = project.id;
           const statsText = total === 0
@@ -2909,7 +2856,8 @@
             saveState();
             updateProjectPillUI();
             updateProjectToggleUI();
-            update();
+            updateCalendarDots();
+            render();
             if (currentView !== 'tasks') switchView('tasks');
             try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
           });
