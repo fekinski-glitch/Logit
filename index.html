@@ -859,6 +859,13 @@
       border-radius: var(--r-pill);
       overflow: hidden;
       min-width: 0;
+      transition: box-shadow 0.2s;
+    }
+    .time-btn-wrapper:focus-within {
+      box-shadow: 0 0 0 2px var(--button-color);
+    }
+    .time-btn-wrapper:focus-within .time-btn-display {
+      background-color: var(--bg-color);
     }
     .time-btn-display {
       position: absolute;
@@ -873,7 +880,7 @@
       letter-spacing: -0.2px;
       font-family: inherit;
       pointer-events: none;
-      transition: color 0.2s;
+      transition: color 0.2s, background-color 0.2s;
     }
     .time-btn-display.has-value {
       color: var(--text-color);
@@ -2123,17 +2130,40 @@
     function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
     function buildDaySummaryLine() {
+      const now = new Date();
+      const hours = now.getHours();
+      const isLateNight = hours >= 23;
+
+      if (isLateNight) {
+        const t = new Date(now);
+        t.setDate(t.getDate() + 1);
+        const targetISO = dateToISO(t);
+        const tasks = store.tasks.filter(x => x.date === targetISO);
+        if (tasks.length === 0) return 'Завтра свободно — можно отдохнуть';
+
+        const total = tasks.length;
+        const word = pluralForm(total, 'задача', 'задачи', 'задач');
+        const withTime = tasks
+          .filter(x => x.time)
+          .sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+
+        if (withTime.length > 0) {
+          return 'Завтра ' + total + ' ' + word + ' · первая в ' + withTime[0].time;
+        }
+        return 'Завтра ' + total + ' ' + word;
+      }
+
       const today = todayISO();
-      const tasks = store.tasks.filter(t => t.date === today);
+      const tasks = store.tasks.filter(x => x.date === today);
       if (tasks.length === 0) return 'Сегодня свободно — добавь первую';
 
       const total = tasks.length;
-      const done = tasks.filter(t => t.done).length;
+      const done = tasks.filter(x => x.done).length;
       if (done === total) return 'Все задачи на сегодня готовы 🎉';
 
-      const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+      const nowMin = now.getHours() * 60 + now.getMinutes();
       const upcoming = tasks
-        .filter(t => !t.done && t.time && timeToMinutes(t.time) > nowMin)
+        .filter(x => !x.done && x.time && timeToMinutes(x.time) > nowMin)
         .sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
 
       if (upcoming.length > 0) {
