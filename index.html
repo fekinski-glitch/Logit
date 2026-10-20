@@ -1242,11 +1242,17 @@
       box-shadow: var(--shadow-card);
       transition: transform 0.15s, box-shadow 0.2s;
       -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none;
+      user-select: none;
+      outline: none;
     }
     .project-card:last-child { margin-bottom: 0; }
     .project-card:active {
       transform: scale(0.98);
       box-shadow: 0 0 0 1px var(--separator), var(--shadow-card);
+    }
+    .project-card:focus-visible {
+      box-shadow: 0 0 0 2px var(--button-color), var(--shadow-card);
     }
     .project-card-header {
       display: flex;
@@ -1302,6 +1308,88 @@
       color: var(--hint-color);
       letter-spacing: -0.1px;
       font-variant-numeric: tabular-nums;
+    }
+
+    /* === Project week strip === */
+    .project-week {
+      display: flex;
+      gap: 2px;
+      margin-top: 2px;
+      padding-top: var(--sp-2);
+      border-top: 0.5px solid var(--separator);
+    }
+    .project-week-day {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 0 4px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background-color 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+      color: var(--text-color);
+    }
+    .project-week-day:active {
+      background: rgba(0,0,0,0.06);
+      transform: scale(0.94);
+    }
+    body[data-theme="dark"] .project-week-day:active {
+      background: rgba(255,255,255,0.08);
+    }
+    .project-week-day.pw-today {
+      background: var(--accent-soft);
+    }
+    .project-week-wd {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      color: var(--hint-color);
+      text-transform: uppercase;
+      line-height: 1;
+    }
+    .project-week-day.pw-today .project-week-wd {
+      color: var(--button-color);
+    }
+    .project-week-day.pw-weekend:not(.pw-today) .project-week-wd {
+      color: var(--danger-color);
+      opacity: 0.7;
+    }
+    .project-week-num {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-color);
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.2px;
+    }
+    .project-week-day.pw-today .project-week-num {
+      color: var(--button-color);
+    }
+    .project-week-day.pw-weekend:not(.pw-today) .project-week-num {
+      color: var(--danger-color);
+    }
+    .project-week-indicator {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: transparent;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .project-week-day.pw-has-pending .project-week-indicator {
+      background: var(--project-color, var(--button-color));
+    }
+    .project-week-day.pw-has-done .project-week-indicator {
+      background: var(--hint-color);
+      opacity: 0.5;
+    }
+    .project-week-day.pw-empty .project-week-indicator {
+      box-shadow: inset 0 0 0 1px rgba(128,128,128,0.28);
     }
     #projects-empty {
       text-align: center;
@@ -2796,6 +2884,63 @@
     }
 
     // === Projects view ===
+    function buildProjectWeekStrip(project) {
+      const todayDate = isoToDate(todayISO());
+      const weekdays = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+      const weekEl = document.createElement('div');
+      weekEl.className = 'project-week';
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(todayDate);
+        d.setDate(d.getDate() + i);
+        const iso = dateToISO(d);
+        let pending = 0, done = 0;
+        for (const t of store.tasks) {
+          if (t.date === iso && t.projectId === project.id) {
+            if (t.done) done++;
+            else pending++;
+          }
+        }
+        const dow = d.getDay();
+
+        const dayBtn = document.createElement('button');
+        dayBtn.type = 'button';
+        dayBtn.className = 'project-week-day';
+        dayBtn.dataset.date = iso;
+        if (i === 0) dayBtn.classList.add('pw-today');
+        if (dow === 0 || dow === 6) dayBtn.classList.add('pw-weekend');
+        if (pending > 0) dayBtn.classList.add('pw-has-pending');
+        else if (done > 0) dayBtn.classList.add('pw-has-done');
+        else dayBtn.classList.add('pw-empty');
+
+        dayBtn.innerHTML = `
+          <span class="project-week-wd">${weekdays[dow]}</span>
+          <span class="project-week-num">${d.getDate()}</span>
+          <span class="project-week-indicator"></span>
+        `;
+
+        dayBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectedDate = iso;
+          detailDate = iso;
+          currentFilter = project.id;
+          addProjectId = project.id;
+          saveState();
+          buildCalendar();
+          updateProjectPillUI();
+          updateProjectToggleUI();
+          staggerNextRender = true;
+          render();
+          switchView('tasks');
+          try { tg.HapticFeedback.selectionChanged(); } catch (err) {}
+        });
+
+        weekEl.appendChild(dayBtn);
+      }
+
+      return weekEl;
+    }
+
     function renderProjectsView() {
       try {
         const listEl = document.getElementById('projects-list');
@@ -2828,10 +2973,12 @@
         const fragment = document.createDocumentFragment();
         rows.forEach(({ project, total, done, todayTotal, todayDone }) => {
           const percent = total > 0 ? Math.round((done / total) * 100) : 0;
-          const card = document.createElement('button');
-          card.type = 'button';
+          const card = document.createElement('div');
           card.className = 'project-card';
+          card.setAttribute('role', 'button');
+          card.setAttribute('tabindex', '0');
           card.style.borderLeftColor = project.color;
+          card.style.setProperty('--project-color', project.color);
           card.dataset.projectId = project.id;
           const statsText = total === 0
             ? 'нет задач'
@@ -2850,7 +2997,10 @@
             </div>
             <div class="project-card-stats">${statsText}</div>
           `;
-          card.addEventListener('click', () => {
+
+          card.appendChild(buildProjectWeekStrip(project));
+
+          const handleCardClick = () => {
             currentFilter = project.id;
             addProjectId = project.id;
             saveState();
@@ -2860,7 +3010,15 @@
             render();
             if (currentView !== 'tasks') switchView('tasks');
             try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
+          };
+          card.addEventListener('click', handleCardClick);
+          card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleCardClick();
+            }
           });
+
           fragment.appendChild(card);
         });
         listEl.appendChild(fragment);
@@ -3367,9 +3525,9 @@
     }
 
     function renderDetailTimeGroups(dayTasks, nowTask) {
-      const sections = { morning: [], day: [], evening: [] };
+      const sections = { morning: [], day: [], evening: [], notime: [] };
       dayTasks.forEach(t => {
-        if (!t.time) return;
+        if (!t.time) { sections.notime.push(t); return; }
         const h = parseInt(t.time.split(':')[0], 10);
         if (h >= 5 && h < 12) sections.morning.push(t);
         else if (h >= 12 && h < 17) sections.day.push(t);
@@ -3381,7 +3539,8 @@
       const cfg = [
         { key: 'morning', title: 'Утро' },
         { key: 'day', title: 'День' },
-        { key: 'evening', title: 'Вечер' }
+        { key: 'evening', title: 'Вечер' },
+        { key: 'notime', title: 'Без времени' }
       ];
       const fragment = document.createDocumentFragment();
       cfg.forEach(c => {
@@ -3407,7 +3566,6 @@
     function renderDetailProjectGroups(dayTasks, nowTask) {
       const byProject = new Map();
       dayTasks.forEach(t => {
-        if (!t.time) return;
         if (!byProject.has(t.projectId)) byProject.set(t.projectId, []);
         byProject.get(t.projectId).push(t);
       });
@@ -3419,7 +3577,12 @@
       const fragment = document.createDocumentFragment();
       sortedProjects.forEach(pid => {
         const items = byProject.get(pid);
-        items.sort((a, b) => a.time.localeCompare(b.time));
+        items.sort((a, b) => {
+          if (!a.time && !b.time) return 0;
+          if (!a.time) return 1;
+          if (!b.time) return -1;
+          return a.time.localeCompare(b.time);
+        });
         const project = store.getProject(pid);
         const groupEl = document.createElement('div');
         groupEl.className = 'detail-project-group';
@@ -3473,21 +3636,22 @@
         document.querySelectorAll('#detail-group-toggle button').forEach(btn => {
           btn.classList.toggle('active', btn.dataset.mode === detailGroupMode);
         });
-        const projectsInDay = new Set(dayTasks.filter(t => t.time).map(t => t.projectId));
+        // Теперь учитываем ВСЕ проекты дня, а не только те, где есть задачи со временем
+        const projectsInDay = new Set(dayTasks.map(t => t.projectId));
         document.getElementById('detail-group-toggle').style.display = projectsInDay.size >= 2 ? 'flex' : 'none';
 
         const container = document.getElementById('detail-tasks-grouped');
         const emptyEl = document.getElementById('detail-empty');
         container.innerHTML = '';
 
-        const timedTasks = dayTasks.filter(t => t.time);
-        if (timedTasks.length === 0) {
+        // Пустое состояние — если вообще нет задач, а не только задач со временем
+        if (dayTasks.length === 0) {
           emptyEl.style.display = 'block';
           emptyEl.textContent = currentFilter === 'all' ? 'На этот день задач нет' : 'В этом проекте на день задач нет';
           return;
         }
         emptyEl.style.display = 'none';
-        const nowTask = getNextUpcomingForDetail(timedTasks);
+        const nowTask = getNextUpcomingForDetail(dayTasks.filter(t => t.time));
         const effectiveMode = (detailGroupMode === 'project' && projectsInDay.size >= 2) ? 'project' : 'time';
         if (effectiveMode === 'project') {
           container.appendChild(renderDetailProjectGroups(dayTasks, nowTask));
