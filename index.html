@@ -2168,11 +2168,26 @@
             };
           });
 
+          const hapticMilestones = [
+            { at: assembleDuration * 0.30, fired: false, type: 'soft' },
+            { at: assembleDuration * 0.65, fired: false, type: 'light' }
+          ];
+          let completionHapticFired = false;
+
           const phaseStart = performance.now();
           try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
 
           function loop(now) {
             const elapsed = now - phaseStart;
+
+            for (let i = 0; i < hapticMilestones.length; i++) {
+              const m = hapticMilestones[i];
+              if (!m.fired && elapsed >= m.at) {
+                m.fired = true;
+                try { tg.HapticFeedback.impactOccurred(m.type); } catch (e) {}
+              }
+            }
+
             ctx.clearRect(0, 0, w, h);
             ctx.fillStyle = accent;
             let allSettled = true;
@@ -2188,6 +2203,10 @@
             }
             ctx.globalAlpha = 1;
             if (allSettled) {
+              if (!completionHapticFired) {
+                completionHapticFired = true;
+                try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
+              }
               resolve({ w, h, fontSize, cy });
               return;
             }
@@ -2196,398 +2215,6 @@
           requestAnimationFrame(loop);
         } catch (e) {
           console.error('particle anim failed:', e);
-          resolve({ w: window.innerWidth, h: window.innerHeight, fontSize: 48, cy: window.innerHeight * 0.28 });
-        }
-      });
-    }
-
-    function runFallingLettersAnimation(canvas) {
-      return new Promise((resolve) => {
-        try {
-          const ctx = canvas.getContext('2d');
-          const dpr = Math.min(window.devicePixelRatio || 1, 2);
-          const w = window.innerWidth;
-          const h = window.innerHeight;
-          canvas.width = w * dpr;
-          canvas.height = h * dpr;
-          canvas.style.width = w + 'px';
-          canvas.style.height = h + 'px';
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-          const accent = getComputedStyle(document.documentElement).getPropertyValue('--button-color').trim() || '#2481cc';
-          const fontSize = Math.min(w * 0.16, 64);
-          const letterSpacing = fontSize * 0.15;
-          const word = 'LOGIT';
-          const cy = h * 0.28;
-
-          const fontSpec = `700 ${fontSize}px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif`;
-
-          ctx.font = fontSpec;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-
-          const letterWidths = [];
-          let totalW = 0;
-          for (let i = 0; i < word.length; i++) {
-            const lw = ctx.measureText(word[i]).width;
-            letterWidths.push(lw);
-            totalW += lw + (i < word.length - 1 ? letterSpacing : 0);
-          }
-
-          const positions = [];
-          let cx = w / 2 - totalW / 2;
-          for (let i = 0; i < word.length; i++) {
-            positions.push({ x: cx + letterWidths[i] / 2, y: cy });
-            cx += letterWidths[i] + letterSpacing;
-          }
-
-          const startY = -fontSize * 2.5;
-          const fallDuration = 420;
-          const bounceDuration = 180;
-          const stagger = 85;
-          const totalDur = stagger * (word.length - 1) + fallDuration + bounceDuration;
-
-          const landed = new Array(word.length).fill(false);
-          const phaseStart = performance.now();
-
-          function easeOutCubic(t) {
-            return 1 - Math.pow(1 - t, 3);
-          }
-
-          function loop(now) {
-            const elapsed = now - phaseStart;
-            ctx.clearRect(0, 0, w, h);
-
-            ctx.font = fontSpec;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillStyle = accent;
-            ctx.shadowBlur = 14;
-            ctx.shadowColor = accent;
-
-            for (let i = 0; i < word.length; i++) {
-              const p = positions[i];
-              const localStart = i * stagger;
-              const localElapsed = elapsed - localStart;
-
-              if (localElapsed < 0) continue;
-
-              if (localElapsed < fallDuration) {
-                const t = localElapsed / fallDuration;
-                const ease = easeOutCubic(t);
-                const y = startY + (p.y - startY) * ease;
-                ctx.globalAlpha = Math.min(1, t * 1.5);
-                ctx.fillText(word[i], p.x, y);
-              } else if (localElapsed < fallDuration + bounceDuration) {
-                if (!landed[i]) {
-                  landed[i] = true;
-                  try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
-                }
-                const t = (localElapsed - fallDuration) / bounceDuration;
-                const bounce = Math.sin(t * Math.PI) * fontSize * 0.08;
-                ctx.globalAlpha = 1;
-                ctx.fillText(word[i], p.x, p.y + bounce);
-              } else {
-                if (!landed[i]) {
-                  landed[i] = true;
-                  try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
-                }
-                ctx.globalAlpha = 1;
-                ctx.fillText(word[i], p.x, p.y);
-              }
-            }
-
-            ctx.globalAlpha = 1;
-            ctx.shadowBlur = 0;
-
-            if (elapsed >= totalDur) {
-              resolve({ w, h, fontSize, cy });
-              return;
-            }
-            requestAnimationFrame(loop);
-          }
-          requestAnimationFrame(loop);
-        } catch (e) {
-          console.error('falling letters failed:', e);
-          resolve({ w: window.innerWidth, h: window.innerHeight, fontSize: 48, cy: window.innerHeight * 0.28 });
-        }
-      });
-    }
-
-    function runNeonIgniteAnimation(canvas) {
-      return new Promise((resolve) => {
-        try {
-          const ctx = canvas.getContext('2d');
-          const dpr = Math.min(window.devicePixelRatio || 1, 2);
-          const w = window.innerWidth;
-          const h = window.innerHeight;
-          canvas.width = w * dpr;
-          canvas.height = h * dpr;
-          canvas.style.width = w + 'px';
-          canvas.style.height = h + 'px';
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-          const accent = getComputedStyle(document.documentElement).getPropertyValue('--button-color').trim() || '#2481cc';
-          const fontSize = Math.min(w * 0.16, 64);
-          const letterSpacing = fontSize * 0.15;
-          const word = 'LOGIT';
-          const cy = h * 0.28;
-          const fontSpec = `700 ${fontSize}px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif`;
-
-          ctx.font = fontSpec;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-
-          const letterWidths = [];
-          let totalW = 0;
-          for (let i = 0; i < word.length; i++) {
-            const lw = ctx.measureText(word[i]).width;
-            letterWidths.push(lw);
-            totalW += lw + (i < word.length - 1 ? letterSpacing : 0);
-          }
-          const positions = [];
-          let cx = w / 2 - totalW / 2;
-          for (let i = 0; i < word.length; i++) {
-            positions.push({ x: cx + letterWidths[i] / 2, y: cy });
-            cx += letterWidths[i] + letterSpacing;
-          }
-
-          // Предрендер глоу-букв в offscreen canvas — 3 слоя свечения.
-          // Это критично для фреймрейта: 5 букв × 3 слоя shadowBlur каждый кадр
-          // убили бы производительность на средних телефонах.
-          function buildGlowLetter(letter) {
-            const size = Math.ceil(fontSize * 3);
-            const off = document.createElement('canvas');
-            off.width = size;
-            off.height = size;
-            const octx = off.getContext('2d');
-            octx.font = fontSpec;
-            octx.textAlign = 'center';
-            octx.textBaseline = 'middle';
-            octx.fillStyle = accent;
-            octx.shadowColor = accent;
-
-            octx.globalAlpha = 0.42;
-            octx.shadowBlur = fontSize * 0.62;
-            octx.fillText(letter, size / 2, size / 2);
-
-            octx.globalAlpha = 0.78;
-            octx.shadowBlur = fontSize * 0.26;
-            octx.fillText(letter, size / 2, size / 2);
-
-            octx.globalAlpha = 1;
-            octx.shadowBlur = fontSize * 0.08;
-            octx.fillText(letter, size / 2, size / 2);
-
-            return off;
-          }
-          const glowCache = [];
-          for (let i = 0; i < word.length; i++) glowCache.push(buildGlowLetter(word[i]));
-
-          // Тлеющие угольки в фоне
-          const embers = [];
-          const emberCount = 18;
-          for (let i = 0; i < emberCount; i++) {
-            embers.push({
-              x: w / 2 + (Math.random() - 0.5) * totalW * 1.3,
-              y: cy + (Math.random() - 0.5) * fontSize * 2.2,
-              vy: -(0.12 + Math.random() * 0.32),
-              vx: (Math.random() - 0.5) * 0.16,
-              size: 0.9 + Math.random() * 1.4,
-              alpha: 0.15 + Math.random() * 0.3,
-              phase: Math.random() * Math.PI * 2
-            });
-          }
-
-          const sparks = [];
-
-          const stagger = 140;
-          const ignitionDur = 150;
-          const solidifyDur = 420;
-          const breatheDur = 720;
-          const letterTotalDur = ignitionDur + solidifyDur;
-          const allLettersDone = stagger * (word.length - 1) + letterTotalDur;
-          const shimmerDur = 520;
-          const totalDur = allLettersDone + shimmerDur + breatheDur * 0.3;
-
-          const phaseStart = performance.now();
-          const ignited = new Array(word.length).fill(false);
-
-          function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
-
-          function spawnSparks(px, py) {
-            const count = 9 + Math.floor(Math.random() * 6);
-            for (let k = 0; k < count; k++) {
-              const ang = Math.random() * Math.PI * 2;
-              const sp = 0.5 + Math.random() * 2.0;
-              sparks.push({
-                x: px + (Math.random() - 0.5) * 6,
-                y: py + (Math.random() - 0.5) * 6,
-                vx: Math.cos(ang) * sp,
-                vy: Math.sin(ang) * sp - 0.4,
-                life: 0,
-                maxLife: 480 + Math.random() * 480,
-                size: 1 + Math.random() * 1.7
-              });
-            }
-          }
-
-          function drawSoftCircle(x, y, r, alpha) {
-            ctx.globalAlpha = alpha * 0.16;
-            ctx.beginPath();
-            ctx.arc(x, y, r * 3.2, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.globalAlpha = alpha * 0.45;
-            ctx.beginPath();
-            ctx.arc(x, y, r * 1.7, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.globalAlpha = alpha;
-            ctx.beginPath();
-            ctx.arc(x, y, r, 0, Math.PI * 2);
-            ctx.fill();
-          }
-
-          function loop(now) {
-            const elapsed = now - phaseStart;
-            ctx.clearRect(0, 0, w, h);
-
-            // Embers
-            ctx.fillStyle = accent;
-            const emberFadeIn = Math.min(1, Math.max(0, (elapsed - 200) / 800));
-            for (let i = 0; i < embers.length; i++) {
-              const e = embers[i];
-              e.x += e.vx;
-              e.y += e.vy;
-              if (e.y < cy - fontSize * 2.2) {
-                e.y = cy + fontSize * 2.2;
-                e.x = w / 2 + (Math.random() - 0.5) * totalW * 1.3;
-              }
-              const flicker = 0.65 + Math.sin(now / 380 + e.phase) * 0.35;
-              drawSoftCircle(e.x, e.y, e.size, e.alpha * flicker * emberFadeIn);
-            }
-            ctx.globalAlpha = 1;
-
-            // Letters
-            for (let i = 0; i < word.length; i++) {
-              const p = positions[i];
-              const local = elapsed - i * stagger;
-              if (local < 0) continue;
-
-              if (!ignited[i]) {
-                ignited[i] = true;
-                spawnSparks(p.x, p.y);
-                try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
-              }
-
-              const solidT = Math.min(Math.max((local - ignitionDur) / solidifyDur, 0), 1);
-              const afterT = local - letterTotalDur;
-
-              ctx.save();
-              ctx.translate(p.x, p.y);
-              ctx.font = fontSpec;
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'middle';
-
-              // Расширяющееся глоу-кольцо при воспламенении
-              if (local < ignitionDur + 300) {
-                const rt = Math.min(local / (ignitionDur + 300), 1);
-                const ringR = easeOutCubic(rt) * fontSize * 1.45;
-                const ringA = (1 - rt) * (1 - rt) * 0.9;
-                if (ringA > 0.01 && ringR > 0.5) {
-                  ctx.globalAlpha = ringA;
-                  ctx.strokeStyle = accent;
-                  ctx.lineWidth = Math.max(0.5, (1 - rt) * 5);
-                  ctx.shadowBlur = 26;
-                  ctx.shadowColor = accent;
-                  ctx.beginPath();
-                  ctx.arc(0, 0, ringR, 0, Math.PI * 2);
-                  ctx.stroke();
-                  ctx.shadowBlur = 0;
-                }
-              }
-
-              // Центральная вспышка (белая)
-              if (local < 220) {
-                const ft = local / 220;
-                const flashR = easeOutCubic(ft) * fontSize * 0.65;
-                const flashA = (1 - ft) * (1 - ft);
-                if (flashA > 0.01 && flashR > 0.5) {
-                  ctx.globalAlpha = flashA;
-                  ctx.fillStyle = '#ffffff';
-                  ctx.shadowBlur = 40;
-                  ctx.shadowColor = accent;
-                  ctx.beginPath();
-                  ctx.arc(0, 0, flashR, 0, Math.PI * 2);
-                  ctx.fill();
-                  ctx.shadowBlur = 0;
-                }
-              }
-
-              // Сама буква — drawImage из предрендеренного глоу-кэша
-              const letterAlpha = easeOutCubic(solidT);
-              const letterScale = 0.55 + 0.45 * easeOutCubic(solidT);
-              let breatheScale = 1;
-              let breatheAlpha = 1;
-              if (afterT > 0) {
-                const bt = afterT / 1000;
-                breatheScale = 1 + Math.sin(bt * Math.PI * 1.6) * 0.018;
-                breatheAlpha = 0.88 + Math.sin(bt * Math.PI * 1.6) * 0.12;
-              }
-
-              if (letterAlpha > 0.01) {
-                const drawSize = fontSize * 3 * letterScale * breatheScale;
-                ctx.globalAlpha = letterAlpha * breatheAlpha;
-                ctx.drawImage(glowCache[i], -drawSize / 2, -drawSize / 2, drawSize, drawSize);
-              }
-
-              ctx.restore();
-            }
-            ctx.globalAlpha = 1;
-
-            // Shimmer sweep после сборки слова
-            if (elapsed > allLettersDone) {
-              const st = (elapsed - allLettersDone) / shimmerDur;
-              if (st < 1) {
-                const wordLeft = w / 2 - totalW / 2;
-                const wordRight = w / 2 + totalW / 2;
-                const shX = wordLeft + (wordRight - wordLeft) * easeOutCubic(st);
-                const grad = ctx.createLinearGradient(shX - 60, 0, shX + 60, 0);
-                grad.addColorStop(0, 'rgba(255,255,255,0)');
-                grad.addColorStop(0.5, 'rgba(255,255,255,0.55)');
-                grad.addColorStop(1, 'rgba(255,255,255,0)');
-                ctx.globalCompositeOperation = 'lighter';
-                ctx.fillStyle = grad;
-                ctx.fillRect(shX - 60, cy - fontSize * 0.85, 120, fontSize * 1.7);
-                ctx.globalCompositeOperation = 'source-over';
-                ctx.globalAlpha = 1;
-              }
-            }
-
-            // Sparks (поверх букв)
-            ctx.fillStyle = accent;
-            for (let s = sparks.length - 1; s >= 0; s--) {
-              const sp = sparks[s];
-              sp.life += 16;
-              if (sp.life > sp.maxLife) { sparks.splice(s, 1); continue; }
-              sp.x += sp.vx;
-              sp.y += sp.vy;
-              sp.vy += 0.022;
-              sp.vx *= 0.988;
-              const lt = sp.life / sp.maxLife;
-              const a = (1 - lt) * (1 - lt);
-              drawSoftCircle(sp.x, sp.y, sp.size * (1 - lt * 0.4), a);
-            }
-            ctx.globalAlpha = 1;
-
-            if (elapsed >= totalDur) {
-              resolve({ w, h, fontSize, cy });
-              return;
-            }
-            requestAnimationFrame(loop);
-          }
-          requestAnimationFrame(loop);
-        } catch (e) {
-          console.error('neon ignite failed:', e);
           resolve({ w: window.innerWidth, h: window.innerHeight, fontSize: 48, cy: window.innerHeight * 0.28 });
         }
       });
@@ -2638,13 +2265,7 @@
 
         await sleep(80);
 
-        const animations = [
-          runParticleAnimation,
-          runFallingLettersAnimation,
-          runNeonIgniteAnimation
-        ];
-        const chosen = animations[Math.floor(Math.random() * animations.length)];
-        const layout = await chosen(canvas);
+        const layout = await runParticleAnimation(canvas);
 
         await sleep(60);
 
