@@ -71,6 +71,11 @@
       justify-content: center;
       margin-bottom: 12px;
     }
+    #view-detail .header-wrap {
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
     #month-label, .pill-static, #detail-date-pill {
       font-size: 15px;
       font-weight: 600;
@@ -106,6 +111,32 @@
       opacity: 0.5;
       transform: translateY(1px);
     }
+
+    .detail-nav-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--glass-bg);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      backdrop-filter: blur(20px) saturate(180%);
+      border: 0.5px solid var(--glass-border);
+      color: var(--button-color);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: var(--glass-shadow);
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.15s, opacity 0.15s;
+      padding: 0;
+    }
+    body[data-theme="dark"] .detail-nav-btn {
+      background: var(--glass-bg-dark);
+      border-color: var(--glass-border-dark);
+    }
+    .detail-nav-btn:active { transform: scale(0.9); opacity: 0.7; }
+    .detail-nav-btn svg { width: 18px; height: 18px; stroke: currentColor; }
 
     .to-today-btn {
       position: absolute;
@@ -1040,23 +1071,176 @@
       font-size: 15px;
       font-weight: 400;
       color: var(--hint-color);
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
-    .day-section-title {
+
+    .detail-chips {
+      display: none;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .detail-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--secondary-bg-color);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: -0.1px;
+      color: var(--text-color);
+      font-variant-numeric: tabular-nums;
+    }
+    .detail-chip .detail-chip-num {
+      font-weight: 700;
+    }
+    .detail-chip.accent {
+      background: rgba(36,129,204,0.12);
+      color: var(--button-color);
+    }
+    .detail-chip.danger {
+      background: rgba(255,59,48,0.12);
+      color: var(--danger-color);
+    }
+
+    .detail-now-section {
+      display: none;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .detail-now-card {
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: var(--secondary-bg-color);
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-height: 74px;
+      min-width: 0;
+      transition: box-shadow 0.2s;
+    }
+    .detail-now-card.now {
+      animation: pulseNowCard 2.2s ease infinite;
+    }
+    @keyframes pulseNowCard {
+      0%, 100% { box-shadow: 0 0 0 1.5px var(--button-color); }
+      50% { box-shadow: 0 0 0 2.5px var(--button-color); }
+    }
+    .detail-now-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: var(--hint-color);
+    }
+    .detail-now-card.now .detail-now-label { color: var(--button-color); }
+    .detail-now-time {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-color);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.2px;
+    }
+    .detail-now-text {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-color);
+      letter-spacing: -0.1px;
+      line-height: 1.2;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      word-break: break-word;
+    }
+    .detail-now-empty {
+      font-size: 13px;
+      color: var(--hint-color);
+      font-weight: 400;
+      margin-top: auto;
+    }
+
+    .detail-group-toggle {
+      display: none;
+      gap: 4px;
+      padding: 4px;
+      background: var(--secondary-bg-color);
+      border-radius: 999px;
+      margin-bottom: 16px;
+    }
+    .detail-group-toggle button {
+      flex: 1;
+      height: 32px;
+      border: none;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--hint-color);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: -0.1px;
+      cursor: pointer;
+      transition: background-color 0.2s, color 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .detail-group-toggle button.active {
+      background: var(--bg-color);
+      color: var(--text-color);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    body[data-theme="dark"] .detail-group-toggle button.active {
+      background: rgba(255,255,255,0.12);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+
+    #detail-tasks-grouped { margin-bottom: 24px; }
+    #detail-tasks-grouped > * { margin-bottom: 22px; }
+    #detail-tasks-grouped > *:last-child { margin-bottom: 0; }
+
+    .detail-project-group {
+      display: flex;
+      flex-direction: column;
+    }
+    .detail-project-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      padding-left: 4px;
+    }
+    .detail-project-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .detail-project-name {
       font-size: 13px;
       font-weight: 600;
       letter-spacing: 0.5px;
       text-transform: uppercase;
       color: var(--hint-color);
-      margin-bottom: 10px;
-      padding-left: 4px;
+      flex-shrink: 0;
     }
+    .detail-project-count {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--hint-color);
+      opacity: 0.7;
+      font-variant-numeric: tabular-nums;
+      margin-left: auto;
+    }
+
     .day-task-list {
       list-style: none;
       display: flex;
       flex-direction: column;
       gap: 10px;
-      margin-bottom: 32px;
+      margin-bottom: 0;
     }
     .day-task-item {
       display: flex;
@@ -1067,6 +1251,10 @@
       border-radius: 22px;
       border-left: 3px solid transparent;
       box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+      transition: box-shadow 0.2s;
+    }
+    .day-task-item.next {
+      box-shadow: 0 0 0 1.5px var(--button-color), 0 1px 4px rgba(0,0,0,0.03);
     }
     .day-task-item.done { opacity: 0.55; }
     .day-task-item.done .day-task-text { text-decoration: line-through; color: var(--hint-color); }
@@ -1088,6 +1276,26 @@
     }
     .day-task-time.empty { color: var(--hint-color); font-weight: 500; }
     .day-task-item.done .day-task-time { color: var(--hint-color); }
+    .day-task-when {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--hint-color);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.1px;
+      flex-shrink: 0;
+      align-self: flex-start;
+      margin-top: 2px;
+      white-space: nowrap;
+      line-height: 1.2;
+    }
+    .day-task-item.overdue .day-task-when {
+      color: var(--danger-color);
+      font-weight: 600;
+    }
+    .day-task-item.done .day-task-when {
+      color: var(--button-color);
+      font-weight: 600;
+    }
     .day-empty {
       text-align: center;
       color: var(--hint-color);
@@ -1553,15 +1761,31 @@
 
   <div class="view" id="view-detail">
     <div class="header-wrap">
+      <button class="detail-nav-btn" id="detail-prev-btn" aria-label="Предыдущий день">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
       <div class="date-pill-wrapper">
         <span class="pill-static" id="detail-date-pill">Загрузка... <span class="chevron">▼</span></span>
         <input type="date" id="detail-date-input" class="date-input-overlay">
       </div>
+      <button class="detail-nav-btn" id="detail-next-btn" aria-label="Следующий день">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
     </div>
     <p id="detail-weekday">воскресенье</p>
-    <h3 class="day-section-title">Задачи</h3>
-    <ul id="detail-task-list" class="day-task-list"></ul>
+
+    <div class="detail-chips" id="detail-chips"></div>
+
+    <div class="detail-now-section" id="detail-now-section"></div>
+
+    <div class="detail-group-toggle" id="detail-group-toggle">
+      <button data-mode="time" class="active">По времени</button>
+      <button data-mode="project">Проекты</button>
+    </div>
+
+    <div id="detail-tasks-grouped"></div>
     <div id="detail-empty" class="day-empty">На этот день задач нет</div>
+
     <div class="ring-progress">
       <svg viewBox="0 0 120 120">
         <circle class="ring-bg" cx="60" cy="60" r="52"/>
@@ -1990,6 +2214,7 @@
     let editProjectId = 'personal';
     let projectSheetMode = 'filter';
     let pendingProjectColor = PALETTE[0];
+    let detailGroupMode = 'time';
 
     let pickerMonth = new Date().getMonth();
     let pickerYearValue = new Date().getFullYear();
@@ -2042,6 +2267,36 @@
       if (h >= 12 && h < 17) return 'Добрый день';
       if (h >= 17 && h < 23) return 'Добрый вечер';
       return 'Доброй ночи';
+    }
+
+    function formatRelativeTime(task) {
+      if (task.done) return '✓';
+      if (!task.time) return '';
+      const d = isoToDate(task.date);
+      const [h, m] = task.time.split(':').map(Number);
+      d.setHours(h, m, 0, 0);
+      const now = new Date();
+      const diffMin = Math.round((d - now) / 60000);
+      if (diffMin === 0) return 'сейчас';
+      const ahead = diffMin > 0;
+      const abs = Math.abs(diffMin);
+      if (abs > 3 * 24 * 60) {
+        const days = Math.round(abs / (24 * 60));
+        return ahead ? 'через ' + days + ' д' : 'просрочено ' + days + ' д';
+      }
+      let text;
+      if (abs < 60) {
+        text = abs + ' мин';
+      } else if (abs < 24 * 60) {
+        const hh = Math.floor(abs / 60);
+        const rm = abs % 60;
+        if (rm < 15) text = hh + ' ч';
+        else if (rm < 45) text = hh + ' ч ' + rm + ' мин';
+        else text = (hh + 1) + ' ч';
+      } else {
+        text = Math.round(abs / (24 * 60)) + ' д';
+      }
+      return ahead ? 'через ' + text : 'просрочено ' + text;
     }
 
     (function setupKeyboardHandling() {
@@ -2106,9 +2361,6 @@
 
           const accent = getComputedStyle(document.documentElement).getPropertyValue('--button-color').trim() || '#2481cc';
 
-          // Glow-спрайт (radial gradient) — рендерится один раз,
-          // затем для каждой частицы просто drawImage. Даёт мягкое
-          // свечение без per-frame shadowBlur.
           const glowSize = 64;
           const glowSprite = document.createElement('canvas');
           glowSprite.width = glowSize;
@@ -2204,13 +2456,11 @@
               p.y = p.startY + (p.ty - p.startY) * ease;
               if (localT < 1) allSettled = false;
 
-              // Мягкое гало вокруг частицы
               const drawSize = Math.max(12, p.size * 8);
-              ctx.globalAlpha = 0.25;
+              ctx.globalAlpha = 0.39;
               ctx.drawImage(glowSprite, p.x - drawSize / 2, p.y - drawSize / 2, drawSize, drawSize);
 
-              // Яркое ядро
-              ctx.globalAlpha = 0.45;
+              ctx.globalAlpha = 0.62;
               ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
             }
 
@@ -2317,7 +2567,8 @@
         localStorage.setItem(UI_STATE_KEY, JSON.stringify({
           view: currentView,
           currentFilter,
-          addProjectId
+          addProjectId,
+          detailGroupMode
         }));
       } catch (e) {}
     }
@@ -2329,6 +2580,7 @@
         if (s.view === 'tasks' || s.view === 'detail') currentView = s.view;
         if (typeof s.currentFilter === 'string') currentFilter = s.currentFilter;
         if (typeof s.addProjectId === 'string') addProjectId = s.addProjectId;
+        if (s.detailGroupMode === 'time' || s.detailGroupMode === 'project') detailGroupMode = s.detailGroupMode;
       } catch (e) {}
     }
 
@@ -3106,6 +3358,128 @@
       btn.style.display = selectedDate === todayISO() ? 'none' : 'flex';
     }
 
+    function getNextUpcomingForDetail(dayTasks) {
+      if (detailDate !== todayISO()) return null;
+      const now = new Date();
+      const nowMin = now.getHours() * 60 + now.getMinutes();
+      const upcoming = dayTasks
+        .filter(t => !t.done && t.time && timeToMinutes(t.time) > nowMin)
+        .map(t => ({ task: t, min: timeToMinutes(t.time) }))
+        .sort((a, b) => a.min - b.min)[0];
+      return upcoming ? upcoming.task : null;
+    }
+
+    function buildDayTaskItem(task, opts) {
+      opts = opts || {};
+      const li = document.createElement('li');
+      const overdue = isOverdue(task);
+      li.className = 'day-task-item';
+      if (task.done) li.classList.add('done');
+      if (overdue) li.classList.add('overdue');
+      if (opts.isNext && !task.done) li.classList.add('next');
+      li.style.borderLeftColor = overdue ? 'var(--danger-color)' : store.getProjectColor(task.projectId);
+      const rel = formatRelativeTime(task);
+      li.innerHTML = `
+        <div class="day-task-content">
+          <span class="day-task-text">${escapeHtml(task.text)}</span>
+          ${task.time
+            ? `<span class="day-task-time">${escapeHtml(task.time)}</span>`
+            : `<span class="day-task-time empty">Без времени</span>`}
+        </div>
+        ${rel ? `<span class="day-task-when">${escapeHtml(rel)}</span>` : ''}
+      `;
+      return li;
+    }
+
+    function renderDetailChips(dayTasks) {
+      try {
+        const container = document.getElementById('detail-chips');
+        if (!container) return;
+        if (dayTasks.length === 0) {
+          container.innerHTML = '';
+          container.style.display = 'none';
+          return;
+        }
+        container.style.display = 'flex';
+        const total = dayTasks.length;
+        const done = dayTasks.filter(t => t.done).length;
+        const noTime = dayTasks.filter(t => !t.time).length;
+        const overdue = dayTasks.filter(t => isOverdue(t)).length;
+        let html = `<span class="detail-chip">Всего <span class="detail-chip-num">${total}</span></span>`;
+        if (done > 0) {
+          html += `<span class="detail-chip accent">Готово <span class="detail-chip-num">${done}</span></span>`;
+        }
+        if (noTime > 0) {
+          html += `<span class="detail-chip">Без времени <span class="detail-chip-num">${noTime}</span></span>`;
+        }
+        if (overdue > 0) {
+          html += `<span class="detail-chip danger">Просрочено <span class="detail-chip-num">${overdue}</span></span>`;
+        }
+        container.innerHTML = html;
+      } catch (e) {
+        console.error('renderDetailChips failed:', e);
+      }
+    }
+
+    function renderDetailNowSection(dayTasks) {
+      try {
+        const container = document.getElementById('detail-now-section');
+        if (!container) return;
+        if (detailDate !== todayISO()) {
+          container.style.display = 'none';
+          container.innerHTML = '';
+          return;
+        }
+        const now = new Date();
+        const nowMin = now.getHours() * 60 + now.getMinutes();
+        const pending = dayTasks
+          .filter(t => !t.done && t.time)
+          .map(t => ({ task: t, min: timeToMinutes(t.time) }))
+          .sort((a, b) => a.min - b.min);
+        if (pending.length === 0) {
+          container.style.display = 'none';
+          container.innerHTML = '';
+          return;
+        }
+        container.style.display = 'grid';
+        let nowSlot = null, nextSlot = null, afterSlot = null;
+        const overdueToday = pending.filter(x => x.min <= nowMin);
+        const future = pending.filter(x => x.min > nowMin);
+        if (overdueToday.length > 0) {
+          nowSlot = overdueToday[overdueToday.length - 1];
+          nextSlot = future[0] || null;
+          afterSlot = future[1] || null;
+        } else {
+          nowSlot = future[0] || null;
+          nextSlot = future[1] || null;
+          afterSlot = future[2] || null;
+        }
+        function cardHtml(label, slot, isNow) {
+          if (!slot) {
+            return `
+              <div class="detail-now-card">
+                <span class="detail-now-label">${label}</span>
+                <span class="detail-now-empty">свободно</span>
+              </div>
+            `;
+          }
+          return `
+            <div class="detail-now-card${isNow ? ' now' : ''}">
+              <span class="detail-now-label">${label}</span>
+              <span class="detail-now-time">${escapeHtml(slot.task.time)}</span>
+              <span class="detail-now-text">${escapeHtml(slot.task.text)}</span>
+            </div>
+          `;
+        }
+        container.innerHTML =
+          cardHtml('Сейчас', nowSlot, true) +
+          cardHtml('Дальше', nextSlot, false) +
+          cardHtml('Потом', afterSlot, false);
+      } catch (e) {
+        console.error('renderDetailNowSection failed:', e);
+      }
+    }
+
     function renderDetailView() {
       try {
         const d = isoToDate(detailDate);
@@ -3133,35 +3507,113 @@
           labelEl.textContent = doneCount + ' из ' + total;
         }
 
-        const list = document.getElementById('detail-task-list');
+        renderDetailChips(dayTasks);
+        renderDetailNowSection(dayTasks);
+
+        document.querySelectorAll('#detail-group-toggle button').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.mode === detailGroupMode);
+        });
+
+        const projectsInDay = new Set(dayTasks.map(t => t.projectId));
+        const toggleEl = document.getElementById('detail-group-toggle');
+        toggleEl.style.display = projectsInDay.size >= 2 ? 'flex' : 'none';
+
+        const container = document.getElementById('detail-tasks-grouped');
         const emptyEl = document.getElementById('detail-empty');
-        list.innerHTML = '';
+        container.innerHTML = '';
+
         if (dayTasks.length === 0) {
           emptyEl.style.display = 'block';
           if (currentFilter === 'all') emptyEl.textContent = 'На этот день задач нет';
           else emptyEl.textContent = 'В этом проекте на день задач нет';
         } else {
           emptyEl.style.display = 'none';
-          const sorted = [...dayTasks].sort((a, b) => {
-            if (a.time && b.time) return a.time.localeCompare(b.time);
-            if (a.time) return -1;
-            if (b.time) return 1;
-            return 0;
-          });
-          sorted.forEach(task => {
-            const li = document.createElement('li');
-            li.className = 'day-task-item' + (task.done ? ' done' : '');
-            li.style.borderLeftColor = store.getProjectColor(task.projectId);
-            li.innerHTML = `
-              <div class="day-task-content">
-                <span class="day-task-text">${escapeHtml(task.text)}</span>
-                ${task.time
-                  ? `<span class="day-task-time">${escapeHtml(task.time)}</span>`
-                  : `<span class="day-task-time empty">Без времени</span>`}
-              </div>
-            `;
-            list.appendChild(li);
-          });
+          const nowTask = getNextUpcomingForDetail(dayTasks);
+
+          const effectiveMode = (detailGroupMode === 'project' && projectsInDay.size >= 2)
+            ? 'project' : 'time';
+
+          if (effectiveMode === 'time') {
+            const sections = { morning: [], day: [], evening: [], notime: [] };
+            dayTasks.forEach(t => {
+              if (!t.time) { sections.notime.push(t); return; }
+              const h = parseInt(t.time.split(':')[0], 10);
+              if (h >= 5 && h < 12) sections.morning.push(t);
+              else if (h >= 12 && h < 17) sections.day.push(t);
+              else sections.evening.push(t);
+            });
+            ['morning','day','evening','notime'].forEach(k => {
+              sections[k].sort((a, b) => {
+                if (!a.time && !b.time) return 0;
+                if (!a.time) return 1;
+                if (!b.time) return -1;
+                return a.time.localeCompare(b.time);
+              });
+            });
+            const cfg = [
+              { key: 'morning', title: 'Утро' },
+              { key: 'day', title: 'День' },
+              { key: 'evening', title: 'Вечер' },
+              { key: 'notime', title: 'Без времени' }
+            ];
+            cfg.forEach(c => {
+              const items = sections[c.key];
+              if (items.length === 0) return;
+              const sectionEl = document.createElement('div');
+              sectionEl.className = 'time-section';
+              const titleEl = document.createElement('div');
+              titleEl.className = 'time-section-title';
+              const doneInSection = items.filter(t => t.done).length;
+              titleEl.innerHTML = `${c.title} <span class="time-section-count">${doneInSection}/${items.length}</span>`;
+              const listEl = document.createElement('ul');
+              listEl.className = 'day-task-list';
+              items.forEach(task => {
+                listEl.appendChild(buildDayTaskItem(task, { isNext: nowTask && task === nowTask }));
+              });
+              sectionEl.appendChild(titleEl);
+              sectionEl.appendChild(listEl);
+              container.appendChild(sectionEl);
+            });
+          } else {
+            const byProject = new Map();
+            dayTasks.forEach(t => {
+              if (!byProject.has(t.projectId)) byProject.set(t.projectId, []);
+              byProject.get(t.projectId).push(t);
+            });
+            const sortedProjects = [...byProject.keys()].sort((a, b) => {
+              const ai = store.projects.findIndex(p => p.id === a);
+              const bi = store.projects.findIndex(p => p.id === b);
+              return ai - bi;
+            });
+            sortedProjects.forEach(pid => {
+              const items = byProject.get(pid);
+              items.sort((a, b) => {
+                if (!a.time && !b.time) return 0;
+                if (!a.time) return 1;
+                if (!b.time) return -1;
+                return a.time.localeCompare(b.time);
+              });
+              const project = store.getProject(pid);
+              const doneInProj = items.filter(t => t.done).length;
+              const groupEl = document.createElement('div');
+              groupEl.className = 'detail-project-group';
+              const headerEl = document.createElement('div');
+              headerEl.className = 'detail-project-header';
+              headerEl.innerHTML = `
+                <span class="detail-project-dot" style="background: ${project.color};"></span>
+                <span class="detail-project-name">${escapeHtml(project.name)}</span>
+                <span class="detail-project-count">${doneInProj}/${items.length}</span>
+              `;
+              const listEl = document.createElement('ul');
+              listEl.className = 'day-task-list';
+              items.forEach(task => {
+                listEl.appendChild(buildDayTaskItem(task, { isNext: nowTask && task === nowTask }));
+              });
+              groupEl.appendChild(headerEl);
+              groupEl.appendChild(listEl);
+              container.appendChild(groupEl);
+            });
+          }
         }
       } catch (e) {
         console.error('renderDetailView failed:', e);
@@ -3468,6 +3920,42 @@
       }
     });
 
+    function shiftDetailDate(delta) {
+      try {
+        const d = isoToDate(detailDate);
+        d.setDate(d.getDate() + delta);
+        detailDate = dateToISO(d);
+        selectedDate = detailDate;
+        saveState();
+        buildCalendar();
+        staggerNextRender = true;
+        render();
+        renderDetailView();
+        try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
+      } catch (e) {
+        console.error('shiftDetailDate failed:', e);
+      }
+    }
+
+    const detailPrevBtnEl = document.getElementById('detail-prev-btn');
+    if (detailPrevBtnEl) detailPrevBtnEl.addEventListener('click', () => shiftDetailDate(-1));
+
+    const detailNextBtnEl = document.getElementById('detail-next-btn');
+    if (detailNextBtnEl) detailNextBtnEl.addEventListener('click', () => shiftDetailDate(1));
+
+    const detailGroupToggleEl = document.getElementById('detail-group-toggle');
+    if (detailGroupToggleEl) {
+      detailGroupToggleEl.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-mode]');
+        if (!btn) return;
+        if (btn.dataset.mode === detailGroupMode) return;
+        detailGroupMode = btn.dataset.mode;
+        saveState();
+        renderDetailView();
+        try { tg.HapticFeedback.selectionChanged(); } catch (err) {}
+      });
+    }
+
     document.querySelectorAll('.tab-item').forEach(btn => {
       btn.addEventListener('click', () => switchView(btn.dataset.view));
     });
@@ -3501,6 +3989,10 @@
           updateNowMarker();
           const dayTasks = store.filterTasks(selectedDate, currentFilter);
           updateDayFocus(dayTasks);
+        } catch (e) {}
+      } else if (currentView === 'detail') {
+        try {
+          renderDetailView();
         } catch (e) {}
       }
     }, 60000);
