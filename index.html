@@ -178,25 +178,6 @@
       transition: background 0.2s;
     }
 
-    #projcal-header-pill {
-      padding: 9px 14px;
-      max-width: 60%;
-      overflow: hidden;
-    }
-    #projcal-header-pill .cat-pill-dot {
-      width: var(--sp-2);
-      height: var(--sp-2);
-      border-radius: 50%;
-      background: var(--hint-color);
-      flex-shrink: 0;
-      transition: background 0.2s;
-    }
-    #projcal-title-text {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
     /* === Icon-only nav button === */
     .icon-btn {
       width: 40px;
@@ -932,8 +913,7 @@
       -webkit-appearance: none;
       appearance: none;
     }
-    #add-btn,
-    #projcal-add-btn {
+    #add-btn {
       width: 52px;
       height: 52px;
       border-radius: 50%;
@@ -950,8 +930,7 @@
       padding-bottom: 2px;
       box-shadow: var(--accent-shadow);
     }
-    #add-btn:active,
-    #projcal-add-btn:active { transform: scale(0.92); opacity: 0.8; }
+    #add-btn:active { transform: scale(0.92); opacity: 0.8; }
 
     /* === Unified task card === */
     .task-item-wrapper {
@@ -1333,135 +1312,6 @@
       flex-direction: column;
       align-items: center;
       gap: var(--sp-3);
-    }
-
-    /* === Project calendar view === */
-    .month-nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--sp-2);
-      margin-bottom: var(--sp-3);
-    }
-    .month-nav-center {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      min-width: 0;
-    }
-    .month-nav-label {
-      font-size: var(--fs-md);
-      font-weight: 600;
-      letter-spacing: -0.3px;
-      color: var(--text-color);
-      font-variant-numeric: tabular-nums;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-    }
-    .month-nav-today {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.2px;
-      color: var(--button-color);
-      background: none;
-      border: none;
-      padding: 2px 6px;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      border-radius: var(--r-sm);
-      font-family: inherit;
-    }
-    .month-nav-today:active { opacity: 0.6; }
-
-    .project-cal-weekdays {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 4px;
-      margin-bottom: var(--sp-1);
-    }
-    .project-cal-weekdays span {
-      text-align: center;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      color: var(--hint-color);
-      padding: 4px 0;
-    }
-
-    .project-cal-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 2px;
-      margin-bottom: var(--sp-3);
-    }
-    .cal-cell {
-      aspect-ratio: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-      background: transparent;
-      border: none;
-      border-radius: var(--r-chip);
-      cursor: pointer;
-      font-family: inherit;
-      -webkit-tap-highlight-color: transparent;
-      transition: background-color 0.15s;
-      padding: 0;
-    }
-    .cal-cell:active { background: var(--secondary-bg-color); }
-    .cal-num {
-      font-size: var(--fs-base);
-      font-weight: 500;
-      color: var(--text-color);
-      width: 30px;
-      height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      font-variant-numeric: tabular-nums;
-      transition: all 0.15s;
-      letter-spacing: -0.2px;
-    }
-    .cal-cell--muted .cal-num { color: var(--hint-color); opacity: 0.4; }
-    .cal-cell--today:not(.cal-cell--selected) .cal-num {
-      color: var(--button-color);
-      box-shadow: inset 0 0 0 1.5px var(--button-color);
-      font-weight: 600;
-    }
-    .cal-cell--selected .cal-num {
-      background: var(--button-color);
-      color: var(--button-text-color);
-      font-weight: 600;
-    }
-    .cal-dot {
-      width: 4px;
-      height: 4px;
-      border-radius: 50%;
-      background: var(--button-color);
-      opacity: 0;
-      transition: opacity 0.15s;
-    }
-    .cal-cell--has-tasks .cal-dot { opacity: 1; }
-    .cal-cell--overdue .cal-dot { background: var(--danger-color); }
-    .cal-cell--selected .cal-dot { opacity: 0; }
-    .cal-cell--muted .cal-dot { opacity: 0 !important; }
-
-    .projcal-selected-date {
-      font-size: var(--fs-md);
-      font-weight: 600;
-      letter-spacing: -0.3px;
-      color: var(--text-color);
-      margin-bottom: var(--sp-3);
-      margin-top: var(--sp-2);
     }
 
     /* === Progress ring === */
@@ -1962,53 +1812,6 @@
     </div>
   </div>
 
-  <div class="view" id="view-project-calendar">
-    <div class="header-wrap header-wrap--with-nav">
-      <button class="icon-btn" id="projcal-back" aria-label="Назад">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="15 18 9 12 15 6"/>
-        </svg>
-      </button>
-      <div class="pill" id="projcal-header-pill">
-        <span class="cat-pill-dot" id="projcal-dot"></span>
-        <span id="projcal-title-text">Проект</span>
-      </div>
-      <div style="width: 40px; flex-shrink: 0;"></div>
-    </div>
-
-    <div class="month-nav">
-      <button class="icon-btn" id="projcal-prev" aria-label="Предыдущий месяц">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <div class="month-nav-center">
-        <span class="month-nav-label" id="projcal-month-label">Месяц</span>
-        <button class="month-nav-today" id="projcal-today">сегодня</button>
-      </div>
-      <button class="icon-btn" id="projcal-next" aria-label="Следующий месяц">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-    </div>
-
-    <div class="project-cal-weekdays" id="projcal-weekdays"></div>
-    <div class="project-cal-grid" id="projcal-grid"></div>
-
-    <p class="projcal-selected-date" id="projcal-selected-date-label"></p>
-
-    <div class="add-form">
-      <input type="text" id="projcal-task-input" placeholder="Что нужно сделать?" maxlength="100">
-    </div>
-    <div class="add-form-2">
-      <div class="time-btn-wrapper">
-        <div class="time-btn-display" id="projcal-time-btn-text">Во сколько?</div>
-        <input type="time" id="projcal-task-time" class="time-input-overlay">
-      </div>
-      <button id="projcal-add-btn">+</button>
-    </div>
-
-    <ul id="projcal-task-list" class="section-task-list"></ul>
-    <div id="projcal-empty" class="day-empty">На этот день задач нет</div>
-  </div>
-
   <nav class="tab-bar" id="tab-bar">
     <button class="tab-item active" data-view="tasks">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
@@ -2319,13 +2122,13 @@
         this.tasks.push(task);
         return task;
       }
-      deleteTask(index(p) {
-        if (index < 0 || => index >= this.tasks.length) return null;
-        p return this.tasks.splice(index, .id1)[0];
+      deleteTask(index) {
+        if (index < 0 || index >= this.tasks.length) return null;
+        return this.tasks.splice(index, 1)[0];
       }
-      restoreTask(task !==, index) {
+      restoreTask(task, index) {
         if (!task) return;
-        id const at = Math.max(0, Math.min(index, this.tasks.length));
+        const at = Math.max(0, Math.min(index, this.tasks.length));
         this.tasks.splice(at, 0, task);
       }
       toggleTask(index) {
@@ -2347,7 +2150,7 @@
         if (this.projects.length <= 1) return null;
         const project = this.projects.find(p => p.id === id);
         if (!project) return null;
-        const fallback = this.projects.find);
+        const fallback = this.projects.find(p => p.id !== id);
         if (!fallback) return null;
         this.tasks.forEach(t => { if (t.projectId === id) t.projectId = fallback.id; });
         this.projects = this.projects.filter(p => p.id !== id);
@@ -2377,10 +2180,6 @@
     let staggerNextRender = false;
     let skipSlideIn = false;
     let pendingUndo = null;
-
-    let currentProjectCalendarId = null;
-    let projectCalMonth = { year: new Date().getFullYear(), month: new Date().getMonth() };
-    let projectCalSelectedDate = todayISO();
 
     // === Utils ===
     function pluralForm(n, one, few, many) {
@@ -2457,20 +2256,6 @@
         text = Math.round(abs / (24 * 60)) + ' д';
       }
       return ahead ? 'через ' + text : 'просрочено ' + text;
-    }
-    function formatProjectCalDate(iso) {
-      if (!iso) return '';
-      const d = isoToDate(iso);
-      const today = todayISO();
-      const tomorrowDate = new Date(); tomorrowDate.setDate(tomorrowDate.getDate() + 1);
-      const tomorrow = dateToISO(tomorrowDate);
-      const yesterdayDate = new Date(); yesterdayDate.setDate(yesterdayDate.getDate() - 1);
-      const yesterday = dateToISO(yesterdayDate);
-      if (iso === today) return 'Сегодня, ' + d.getDate() + ' ' + MONTHS_GEN[d.getMonth()];
-      if (iso === tomorrow) return 'Завтра, ' + d.getDate() + ' ' + MONTHS_GEN[d.getMonth()];
-      if (iso === yesterday) return 'Вчера, ' + d.getDate() + ' ' + MONTHS_GEN[d.getMonth()];
-      const wd = WEEKDAYS_FULL[d.getDay()];
-      return wd.charAt(0).toUpperCase() + wd.slice(1) + ', ' + d.getDate() + ' ' + MONTHS_GEN[d.getMonth()];
     }
     function escapeHtml(str) {
       const div = document.createElement('div');
@@ -2863,7 +2648,7 @@
                 <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
               </svg>
             `;
-            deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); handleDeleteProject(p function.id); });
+            deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); handleDeleteProject(p.id); });
             row.appendChild(deleteBtn);
           }
           list.appendChild(row);
@@ -2871,7 +2656,7 @@
       } catch (e) { console.error('renderProjectSheet failed:', e); }
     }
 
-    renderPopoverPalette() {
+    function renderPopoverPalette() {
       try {
         const palette = document.getElementById('project-popover-palette');
         if (!palette) return;
@@ -3066,236 +2851,20 @@
             <div class="project-card-stats">${statsText}</div>
           `;
           card.addEventListener('click', () => {
-            openProjectCalendar(project.id);
+            currentFilter = project.id;
+            addProjectId = project.id;
+            saveState();
+            updateProjectPillUI();
+            updateProjectToggleUI();
+            updateCalendarDots();
+            render();
+            if (currentView !== 'tasks') switchView('tasks');
+            try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
           });
           fragment.appendChild(card);
         });
         listEl.appendChild(fragment);
       } catch (e) { console.error('renderProjectsView failed:', e); }
-    }
-
-    // === Project calendar view ===
-    function openProjectCalendar(projectId) {
-      try {
-        const project = store.getProject(projectId);
-        if (!project) return;
-        currentProjectCalendarId = projectId;
-        const now = new Date();
-        projectCalMonth = { year: now.getFullYear(), month: now.getMonth() };
-        projectCalSelectedDate = todayISO();
-        const input = document.getElementById('projcal-task-input');
-        if (input) input.value = '';
-        const timeInput = document.getElementById('projcal-task-time');
-        if (timeInput) timeInput.value = '';
-        updateProjCalTimeBtn();
-        renderProjectCalendar();
-        switchView('project-calendar');
-      } catch (e) { console.error('openProjectCalendar failed:', e); }
-    }
-
-    function renderProjectCalendar() {
-      try {
-        if (!currentProjectCalendarId) return;
-        const project = store.getProject(currentProjectCalendarId);
-
-        const dotEl = document.getElementById('projcal-dot');
-        const titleEl = document.getElementById('projcal-title-text');
-        if (dotEl) dotEl.style.background = project.color;
-        if (titleEl) titleEl.textContent = project.name;
-
-        const monthLabelEl = document.getElementById('projcal-month-label');
-        if (monthLabelEl) {
-          monthLabelEl.textContent = MONTHS[projectCalMonth.month] + ' ' + projectCalMonth.year;
-        }
-
-        const dateLabelEl = document.getElementById('projcal-selected-date-label');
-        if (dateLabelEl) {
-          dateLabelEl.textContent = formatProjectCalDate(projectCalSelectedDate);
-        }
-
-        renderProjectCalendarGrid();
-        renderProjectCalendarTasks();
-      } catch (e) { console.error('renderProjectCalendar failed:', e); }
-    }
-
-    function renderProjectCalendarGrid() {
-      try {
-        const gridEl = document.getElementById('projcal-grid');
-        const weekdaysEl = document.getElementById('projcal-weekdays');
-        if (!gridEl) return;
-
-        if (weekdaysEl && !weekdaysEl.dataset.built) {
-          weekdaysEl.innerHTML = '';
-          ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].forEach(w => {
-            const span = document.createElement('span');
-            span.textContent = w;
-            weekdaysEl.appendChild(span);
-          });
-          weekdaysEl.dataset.built = '1';
-        }
-
-        gridEl.innerHTML = '';
-
-        const { year, month } = projectCalMonth;
-        const firstDay = new Date(year, month, 1);
-        const startOffset = (firstDay.getDay() + 6) % 7;
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
-
-        const firstISO = dateToISO(new Date(year, month, 1));
-        const lastISO = dateToISO(new Date(year, month, daysInMonth));
-        const monthMap = new Map();
-        store.tasks.forEach(t => {
-          if (t.projectId !== currentProjectCalendarId) return;
-          if (!t.date) return;
-          if (t.date < firstISO || t.date > lastISO) return;
-          if (!monthMap.has(t.date)) monthMap.set(t.date, { total: 0, undone: 0 });
-          const s = monthMap.get(t.date);
-          s.total++;
-          if (!t.done) s.undone++;
-        });
-
-        const todayStr = todayISO();
-        const nowDate = new Date(); nowDate.setHours(0,0,0,0);
-
-        for (let i = 0; i < totalCells; i++) {
-          const dayNumber = i - startOffset + 1;
-          const cellDate = new Date(year, month, dayNumber);
-          const cellISO = dateToISO(cellDate);
-          const inMonth = dayNumber >= 1 && dayNumber <= daysInMonth;
-
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'cal-cell';
-          btn.dataset.date = cellISO;
-
-          if (!inMonth) btn.classList.add('cal-cell--muted');
-          if (cellISO === todayStr) btn.classList.add('cal-cell--today');
-          if (cellISO === projectCalSelectedDate) btn.classList.add('cal-cell--selected');
-
-          if (inMonth && monthMap.has(cellISO)) {
-            const s = monthMap.get(cellISO);
-            if (s.undone > 0) btn.classList.add('cal-cell--has-tasks');
-            if (s.undone > 0 && cellDate < nowDate) btn.classList.add('cal-cell--overdue');
-          }
-
-          btn.innerHTML = `<span class="cal-num">${cellDate.getDate()}</span><span class="cal-dot"></span>`;
-          btn.addEventListener('click', () => onProjectCalDayClick(cellISO, inMonth, cellDate.getFullYear(), cellDate.getMonth()));
-          gridEl.appendChild(btn);
-        }
-      } catch (e) { console.error('renderProjectCalendarGrid failed:', e); }
-    }
-
-    function onProjectCalDayClick(iso, inMonth, year, month) {
-      try {
-        if (!inMonth) {
-          projectCalMonth = { year, month };
-        }
-        projectCalSelectedDate = iso;
-        renderProjectCalendar();
-        try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
-      } catch (e) { console.error('onProjectCalDayClick failed:', e); }
-    }
-
-    function renderProjectCalendarTasks() {
-      try {
-        const listEl = document.getElementById('projcal-task-list');
-        const emptyEl = document.getElementById('projcal-empty');
-        if (!listEl) return;
-        listEl.innerHTML = '';
-
-        if (!currentProjectCalendarId || !projectCalSelectedDate) {
-          if (emptyEl) emptyEl.style.display = 'block';
-          return;
-        }
-
-        const tasks = store.tasks.filter(t =>
-          t.date === projectCalSelectedDate &&
-          t.projectId === currentProjectCalendarId
-        );
-
-        if (tasks.length === 0) {
-          if (emptyEl) emptyEl.style.display = 'block';
-          return;
-        }
-        if (emptyEl) emptyEl.style.display = 'none';
-
-        tasks.sort((a, b) => {
-          if (!a.time && !b.time) return 0;
-          if (!a.time) return 1;
-          if (!b.time) return -1;
-          return a.time.localeCompare(b.time);
-        });
-
-        tasks.forEach(task => {
-          listEl.appendChild(buildTaskCard(task, false, 0, false, 'projcal-task-'));
-        });
-      } catch (e) { console.error('renderProjectCalendarTasks failed:', e); }
-    }
-
-    function changeProjectCalMonth(delta) {
-      try {
-        let { year, month } = projectCalMonth;
-        month += delta;
-        if (month < 0) { month = 11; year--; }
-        else if (month > 11) { month = 0; year++; }
-        projectCalMonth = { year, month };
-        const selDate = isoToDate(projectCalSelectedDate);
-        if (selDate.getFullYear() !== year || selDate.getMonth() !== month) {
-          projectCalSelectedDate = dateToISO(new Date(year, month, 1));
-        }
-        renderProjectCalendar();
-        try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
-      } catch (e) { console.error('changeProjectCalMonth failed:', e); }
-    }
-
-    function goProjectCalToday() {
-      try {
-        const now = new Date();
-        projectCalMonth = { year: now.getFullYear(), month: now.getMonth() };
-        projectCalSelectedDate = todayISO();
-        renderProjectCalendar();
-        try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
-      } catch (e) { console.error('goProjectCalToday failed:', e); }
-    }
-
-    function updateProjCalTimeBtn() {
-      const timeInput = document.getElementById('projcal-task-time');
-      const timeBtnText = document.getElementById('projcal-time-btn-text');
-      if (!timeInput || !timeBtnText) return;
-      if (timeInput.value) {
-        timeBtnText.textContent = timeInput.value;
-        timeBtnText.classList.add('has-value');
-      } else {
-        timeBtnText.textContent = 'Во сколько?';
-        timeBtnText.classList.remove('has-value');
-      }
-    }
-
-    function addProjectCalTask() {
-      try {
-        if (!currentProjectCalendarId || !projectCalSelectedDate) return;
-        const input = document.getElementById('projcal-task-input');
-        const timeInput = document.getElementById('projcal-task-time');
-        const text = input.value.trim();
-        if (!text) return;
-        store.addTask({
-          text,
-          date: projectCalSelectedDate,
-          time: timeInput.value || '',
-          projectId: currentProjectCalendarId
-        });
-        store.save();
-        input.value = '';
-        timeInput.value = '';
-        updateProjCalTimeBtn();
-        renderProjectCalendar();
-        updateCalendarDots();
-        renderProjectsView();
-        render();
-        try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
-        input.blur();
-      } catch (e) { console.error('addProjectCalTask failed:', e); }
     }
 
     // === Calendar ===
@@ -3650,14 +3219,14 @@
     }
 
     // === Tasks view: build card ===
-    function buildTaskCard(task, isNext, position, doStagger, idPrefix = 'task-card-') {
+    function buildTaskCard(task, isNext, position, doStagger) {
       const globalIndex = store.tasks.indexOf(task);
       const overdue = isOverdue(task);
       const isJustChecked = justCheckedIndex === globalIndex;
       const borderColor = overdue ? 'var(--danger-color)' : store.getProjectColor(task.projectId);
       const wrapper = document.createElement('li');
       wrapper.className = 'task-item-wrapper';
-      wrapper.id = idPrefix + globalIndex;
+      wrapper.id = 'task-card-' + globalIndex;
       if (skipSlideIn) wrapper.classList.add('no-slide');
       else if (doStagger) wrapper.style.animationDelay = (Math.min(position, 8) * 35) + 'ms';
       const badge = isNext ? '<span class="next-badge">дальше</span>' : '';
@@ -3959,12 +3528,10 @@
         store.save();
         const wasDetail = currentView === 'detail';
         const wasProjects = currentView === 'projects';
-        const wasProjCal = currentView === 'project-calendar';
         closeEditModal();
         render();
         if (wasDetail) renderDetailView();
         if (wasProjects) renderProjectsView();
-        if (wasProjCal) renderProjectCalendar();
         try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
       } catch (e) { console.error('saveEdit failed:', e); }
     }
@@ -4012,7 +3579,6 @@
         store.save();
         if (currentView === 'detail') renderDetailView();
         if (currentView === 'projects') renderProjectsView();
-        if (currentView === 'project-calendar') renderProjectCalendar();
         try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
       } catch (e) { console.error('toggleTask failed:', e); }
     }
@@ -4025,7 +3591,7 @@
           pendingUndo = null;
           hideUndoToast();
         }
-        const el = document.getElementById('task-card-' + index) || document.getElementById('projcal-task-' + index);
+        const el = document.getElementById('task-card-' + index);
         if (el) { el.classList.add('removing'); el.style.pointerEvents = 'none'; }
         store.deleteTask(index);
         store.save();
@@ -4041,7 +3607,6 @@
           skipSlideIn = false;
           if (currentView === 'detail') renderDetailView();
           if (currentView === 'projects') renderProjectsView();
-          if (currentView === 'project-calendar') renderProjectCalendar();
         }, 250);
       } catch (e) { console.error('deleteTask failed:', e); }
     }
@@ -4059,7 +3624,6 @@
         skipSlideIn = false;
         if (currentView === 'detail') renderDetailView();
         if (currentView === 'projects') renderProjectsView();
-        if (currentView === 'project-calendar') renderProjectCalendar();
         try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
       } catch (e) { console.error('undoDelete failed:', e); }
     }
@@ -4069,22 +3633,16 @@
     // === View switching ===
     function switchView(view) {
       if (view === currentView) return;
-      const prevView = currentView;
       currentView = view;
-      if (prevView === 'project-calendar' && view !== 'project-calendar') {
-        currentProjectCalendarId = null;
-      }
       if (view === 'detail') detailDate = selectedDate;
       saveState();
-      ['tasks', 'detail', 'projects', 'project-calendar'].forEach(v => {
-        const el = document.getElementById('view-' + v);
-        if (el) el.classList.toggle('active', v === view);
-      });
-      const effectiveTab = view === 'project-calendar' ? 'projects' : view;
+      document.getElementById('view-tasks').classList.toggle('active', view === 'tasks');
+      document.getElementById('view-detail').classList.toggle('active', view === 'detail');
+      document.getElementById('view-projects').classList.toggle('active', view === 'projects');
       document.querySelectorAll('.tab-item').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.view === effectiveTab);
+        btn.classList.toggle('active', btn.dataset.view === view);
       });
-      const activeBtn = document.querySelector('.tab-item[data-view="' + effectiveTab + '"]');
+      const activeBtn = document.querySelector('.tab-item[data-view="' + view + '"]');
       if (activeBtn) {
         activeBtn.classList.remove('tab-bounce');
         void activeBtn.offsetWidth;
@@ -4199,20 +3757,6 @@
         openNewProjectPopover();
       });
 
-      document.getElementById('projcal-back').addEventListener('click', () => {
-        switchView('projects');
-      });
-      document.getElementById('projcal-prev').addEventListener('click', () => changeProjectCalMonth(-1));
-      document.getElementById('projcal-next').addEventListener('click', () => changeProjectCalMonth(1));
-      document.getElementById('projcal-today').addEventListener('click', goProjectCalToday);
-      document.getElementById('projcal-add-btn').addEventListener('click', addProjectCalTask);
-      document.getElementById('projcal-task-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') addProjectCalTask();
-      });
-      const projCalTimeEl = document.getElementById('projcal-task-time');
-      projCalTimeEl.addEventListener('input', updateProjCalTimeBtn);
-      projCalTimeEl.addEventListener('change', updateProjCalTimeBtn);
-
       document.querySelectorAll('.tab-item').forEach(btn => {
         btn.addEventListener('click', () => switchView(btn.dataset.view));
       });
@@ -4254,7 +3798,6 @@
       try { buildWheels(); } catch (e) { console.error('buildWheels:', e); }
       try { buildCalendar(); } catch (e) { console.error('buildCalendar:', e); }
       try { updateTimeBtn(); } catch (e) { console.error('updateTimeBtn:', e); }
-      try { updateProjCalTimeBtn(); } catch (e) { console.error('updateProjCalTimeBtn:', e); }
       try { updateProjectUI(); } catch (e) { console.error('updateProjectUI:', e); }
       try { updateEditProjectToggleUI(); } catch (e) { console.error('updateEditProjectToggleUI:', e); }
       try { initHandlers(); } catch (e) { console.error('initHandlers:', e); }
