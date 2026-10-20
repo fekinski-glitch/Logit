@@ -117,7 +117,6 @@
     .view.active { display: block; }
     body.kb-open .view { padding-bottom: var(--sp-7); }
 
-    /* === Header === */
     .header-wrap {
       position: relative;
       display: flex;
@@ -130,7 +129,6 @@
       gap: var(--sp-2);
     }
 
-    /* === Pill (glass) === */
     .pill {
       font-size: var(--fs-base);
       font-weight: 600;
@@ -178,7 +176,6 @@
       transition: background 0.2s;
     }
 
-    /* === Icon-only nav button === */
     .icon-btn {
       width: 40px;
       height: 40px;
@@ -227,7 +224,6 @@
       to { opacity: 1; }
     }
 
-    /* === Bottom sheet (unified) === */
     .sheet-overlay {
       position: fixed;
       inset: 0;
@@ -299,7 +295,6 @@
     .sheet-header-spacer { min-width: 60px; }
     .sheet-header .strong { font-weight: 600; }
 
-    /* === Project picker sheet body === */
     .cat-filter-list {
       padding: var(--sp-2) 0;
       overflow-y: auto;
@@ -418,7 +413,6 @@
     }
     .project-new-btn:active { opacity: 0.6; }
 
-    /* === New project popover === */
     .project-popover-overlay {
       position: fixed;
       inset: 0;
@@ -527,7 +521,6 @@
       margin-top: var(--sp-1);
     }
 
-    /* === Buttons === */
     .btn-accent,
     .btn-ghost {
       flex: 1;
@@ -556,7 +549,6 @@
       color: var(--text-color);
     }
 
-    /* === Calendar strip === */
     .calendar-strip-wrap {
       position: relative;
       margin-bottom: var(--sp-3);
@@ -691,7 +683,6 @@
       line-height: 1.4;
     }
 
-    /* === Mini timeline === */
     .mini-timeline {
       position: relative;
       height: 48px;
@@ -770,7 +761,6 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* === Task sections (tasks view) === */
     #task-sections { display: flex; flex-direction: column; gap: 18px; }
     .time-section { display: flex; flex-direction: column; }
     .time-section-title {
@@ -796,7 +786,6 @@
     }
     .section-task-list { list-style: none; display: flex; flex-direction: column; }
 
-    /* === Forms === */
     .add-form { margin-bottom: var(--sp-2); }
     .add-form input {
       width: 100%;
@@ -912,7 +901,6 @@
     }
     #add-btn:active { transform: scale(0.92); opacity: 0.8; }
 
-    /* === Unified task card === */
     .task-item-wrapper {
       animation: slideIn 0.22s var(--ease-out) backwards;
       margin-bottom: 10px;
@@ -1071,7 +1059,6 @@
     #empty-state svg { opacity: 0.35; }
     #empty-state p { margin: 0; }
 
-    /* === Projects view === */
     #projects-list {
       display: flex;
       flex-direction: column;
@@ -1162,7 +1149,6 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* === Project week strip === */
     .project-week {
       display: flex;
       gap: 2px;
@@ -1254,7 +1240,6 @@
       gap: var(--sp-3);
     }
 
-    /* === Tab bar === */
     .tab-bar {
       position: fixed;
       bottom: calc(14px + env(safe-area-inset-bottom));
@@ -1330,7 +1315,6 @@
       min-width: 0;
     }
 
-    /* === Wheel picker === */
     .wheel-container {
       position: relative;
       height: 216px;
@@ -1381,7 +1365,6 @@
     }
     .wheel-item.active { color: var(--text-color); font-weight: 600; }
 
-    /* === Edit sheet === */
     .edit-body {
       padding: var(--sp-4);
       display: flex;
@@ -1406,7 +1389,6 @@
     .edit-input:focus { box-shadow: 0 0 0 2px var(--button-color); }
     .edit-row { display: flex; gap: var(--sp-2); }
 
-    /* === Undo toast === */
     .undo-toast {
       position: fixed;
       left: var(--sp-4);
@@ -1464,7 +1446,6 @@
     }
     .undo-toast-btn:active { opacity: 0.6; }
 
-    /* === Welcome === */
     .welcome-screen {
       position: fixed;
       inset: 0;
@@ -2038,7 +2019,6 @@
     let skipSlideIn = false;
     let pendingUndo = null;
 
-    // === Utils ===
     function pluralForm(n, one, few, many) {
       const mod10 = n % 10;
       const mod100 = n % 100;
@@ -2142,7 +2122,6 @@
       return 'Сегодня ' + total + ' ' + pluralForm(total, 'задача', 'задачи', 'задач');
     }
 
-    // === State ===
     function saveState() {
       try {
         localStorage.setItem(UI_STATE_KEY, JSON.stringify({ view: currentView, currentFilter, addProjectId }));
@@ -2165,7 +2144,6 @@
       try { localStorage.setItem(WELCOME_DONE_KEY, '1'); } catch (e) {}
     }
 
-    // === Keyboard ===
     (function setupKeyboardHandling() {
       const tabBar = document.getElementById('tab-bar');
       if (!tabBar) return;
@@ -2204,7 +2182,6 @@
       }
     })();
 
-    // === Welcome animation ===
     function runParticleAnimation(canvas) {
       return new Promise((resolve) => {
         try {
@@ -2389,7 +2366,6 @@
       }
     }
 
-    // === Project UI ===
     function updateProjectPillUI() {
       const dot = document.getElementById('category-pill-dot');
       const label = document.getElementById('category-pill-label');
@@ -2427,7 +2403,6 @@
       } catch (e) { console.error('updateProjectUI failed:', e); }
     }
 
-    // === Project sheet ===
     function renderProjectSheet() {
       try {
         const list = document.getElementById('cat-filter-list');
@@ -2622,7 +2597,6 @@
       } catch (e) { console.error('handleDeleteProject failed:', e); }
     }
 
-    // === Projects view ===
     function buildProjectWeekStrip(project) {
       const todayDate = isoToDate(todayISO());
       const weekdays = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
@@ -2763,7 +2737,6 @@
       } catch (e) { console.error('renderProjectsView failed:', e); }
     }
 
-    // === Calendar ===
     function buildCalendar() {
       try {
         const base = isoToDate(selectedDate);
@@ -2891,7 +2864,6 @@
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
 
-    // === Wheel picker ===
     function buildWheels() {
       try {
         const currentYear = new Date().getFullYear();
@@ -2965,23 +2937,23 @@
       wheel.addEventListener('scroll', update, { passive: true });
       wheel.addEventListener('touchend', () => setTimeout(update, 50), { passive: true });
     }
-    function open functionPicker() {
+    function openPicker() {
       const d = isoToDate(selectedDate);
       pickerMonth = d.getMonth();
       pickerYearValue = d.getFullYear();
-      document.getElementById('picker-overlay').classList.add('active apply');
+      document.getElementById('picker-overlay').classList.add('active');
       document.body.classList.add('picker-open');
       setTimeout(() => {
-        scrollWheelTo('wheel-month', pickerMonthPicker);
+        scrollWheelTo('wheel-month', pickerMonth);
         scrollWheelTo('wheel-year', pickerYearValue);
-      },() 80);
- {
-         }
+      }, 80);
+    }
     function closePicker() {
       document.getElementById('picker-overlay').classList.remove('active');
       document.body.classList.remove('picker-open');
     }
-    const m = getWheelValue('wheel-month');
+    function applyPicker() {
+      const m = getWheelValue('wheel-month');
       const y = getWheelValue('wheel-year');
       if (m !== null) pickerMonth = m;
       if (y !== null) pickerYearValue = y;
@@ -3000,7 +2972,6 @@
       try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
     }
 
-    // === Long press ===
     function attachLongPress(card, index) {
       let startX = 0, startY = 0, moved = false, timer = null;
       card.addEventListener('touchstart', (e) => {
@@ -3024,7 +2995,6 @@
       card.addEventListener('touchcancel', () => clearTimeout(timer));
     }
 
-    // === Timeline ===
     function renderTimeline(dayTasks) {
       try {
         const timeline = document.getElementById('mini-timeline');
@@ -3114,7 +3084,6 @@
       } catch (e) {}
     }
 
-    // === Tasks view: build card ===
     function buildTaskCard(task, isNext, position, doStagger) {
       const globalIndex = store.tasks.indexOf(task);
       const overdue = isOverdue(task);
@@ -3153,7 +3122,6 @@
       return wrapper;
     }
 
-    // === Tasks view: sections ===
     function renderTasksList(dayTasks, nextTask, doStagger) {
       const sectionsEl = document.getElementById('task-sections');
       const emptyState = document.getElementById('empty-state');
@@ -3231,7 +3199,6 @@
       } catch (e) { console.error('render failed:', e); }
     }
 
-    // === Task actions ===
     function addTask() {
       try {
         const input = document.getElementById('task-input');
@@ -3310,7 +3277,6 @@
     function showUndoToast() { document.getElementById('undo-toast').classList.add('visible'); }
     function hideUndoToast() { document.getElementById('undo-toast').classList.remove('visible'); }
 
-    // === Edit modal ===
     function openEditModal(index) {
       editingIndex = index;
       const task = store.tasks[index];
@@ -3359,7 +3325,6 @@
       else { timeBtnText.textContent = 'Во сколько?'; timeBtnText.classList.remove('has-value'); }
     }
 
-    // === View switching ===
     function switchView(view) {
       if (view === currentView) return;
       currentView = view;
@@ -3380,7 +3345,6 @@
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
 
-    // === Handlers ===
     function initHandlers() {
       document.getElementById('welcome-start').addEventListener('click', () => {
         const screen = document.getElementById('welcome-screen');
@@ -3465,7 +3429,6 @@
       document.getElementById('undo-toast-btn').addEventListener('click', undoDelete);
     }
 
-    // === Clock tick ===
     function startTick() {
       setInterval(() => {
         try {
@@ -3477,7 +3440,6 @@
       }, 60000);
     }
 
-    // === Bootstrap ===
     function bootstrap() {
       try { restoreState(); } catch (e) { console.error('restoreState:', e); }
 
