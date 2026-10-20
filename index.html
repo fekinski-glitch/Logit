@@ -199,6 +199,19 @@
     .icon-btn:active { transform: scale(0.9); opacity: 0.7; }
     .icon-btn svg { width: 18px; height: 18px; stroke: currentColor; }
 
+    .header-icon-btn {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      animation: fadeIn 0.22s var(--ease-out);
+    }
+    .header-icon-btn:active {
+      transform: translateY(-50%) scale(0.9);
+      opacity: 0.7;
+    }
+
     .to-today-btn {
       position: absolute;
       right: 0;
@@ -1206,6 +1219,101 @@
       margin-bottom: var(--sp-3);
     }
 
+    /* === Projects view === */
+    #projects-list {
+      display: flex;
+      flex-direction: column;
+    }
+    .project-card {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-2);
+      padding: var(--sp-4);
+      background: var(--secondary-bg-color);
+      border-radius: var(--r-card);
+      border: none;
+      border-left: 3px solid transparent;
+      cursor: pointer;
+      text-align: left;
+      color: var(--text-color);
+      font-family: inherit;
+      width: 100%;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow-card);
+      transition: transform 0.15s, box-shadow 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .project-card:last-child { margin-bottom: 0; }
+    .project-card:active {
+      transform: scale(0.98);
+      box-shadow: 0 0 0 1px var(--separator), var(--shadow-card);
+    }
+    .project-card-header {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+    }
+    .project-card-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .project-card-name {
+      font-size: var(--fs-md);
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .project-card-today {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      color: var(--button-color);
+      font-variant-numeric: tabular-nums;
+      padding: 2px 8px;
+      background: var(--accent-soft);
+      border-radius: var(--r-pill);
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .project-card-bar {
+      height: 4px;
+      background: rgba(0,0,0,0.06);
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+    }
+    body[data-theme="dark"] .project-card-bar {
+      background: rgba(255,255,255,0.08);
+    }
+    .project-card-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.4s var(--ease-out);
+    }
+    .project-card-stats {
+      font-size: var(--fs-sm);
+      font-weight: 500;
+      color: var(--hint-color);
+      letter-spacing: -0.1px;
+      font-variant-numeric: tabular-nums;
+    }
+    #projects-empty {
+      text-align: center;
+      color: var(--hint-color);
+      padding: 40px var(--sp-5);
+      font-size: var(--fs-base);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--sp-3);
+    }
+
     /* === Progress ring === */
     .ring-progress {
       position: relative;
@@ -1273,21 +1381,22 @@
     }
     .tab-item {
       flex: 1;
+      min-width: 0;
       display: flex;
       flex-direction: row;
       align-items: center;
       justify-content: center;
-      gap: 7px;
+      gap: 6px;
       background: none;
       border: none;
       color: var(--hint-color);
       font-family: inherit;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       letter-spacing: -0.2px;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
-      padding: 0 10px;
+      padding: 0 6px;
       border-radius: var(--r-pill);
       transition: background-color 0.25s ease, color 0.2s ease, transform 0.1s;
       height: 100%;
@@ -1299,8 +1408,8 @@
     }
     .tab-item:not(.active):active { background: var(--secondary-bg-color); }
     .tab-item svg {
-      width: 22px;
-      height: 22px;
+      width: 20px;
+      height: 20px;
       stroke-width: 2;
       flex-shrink: 0;
       transition: stroke-width 0.2s;
@@ -1316,6 +1425,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      min-width: 0;
     }
 
     /* === Wheel picker === */
@@ -1683,6 +1793,25 @@
     </div>
   </div>
 
+  <div class="view" id="view-projects">
+    <div class="header-wrap">
+      <h1 class="pill" id="projects-title">Проекты</h1>
+      <button class="icon-btn header-icon-btn" id="projects-add-btn" aria-label="Новый проект">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
+    </div>
+    <div id="projects-list"></div>
+    <div id="projects-empty">
+      <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      </svg>
+      <p>Нет проектов</p>
+    </div>
+  </div>
+
   <nav class="tab-bar" id="tab-bar">
     <button class="tab-item active" data-view="tasks">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
@@ -1701,6 +1830,12 @@
         <path d="M12 3 v9 h9"/>
       </svg>
       <span>Детали</span>
+    </button>
+    <button class="tab-item" data-view="projects">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      </svg>
+      <span>Проекты</span>
     </button>
   </nav>
 
@@ -2188,7 +2323,7 @@
         const raw = localStorage.getItem(UI_STATE_KEY);
         if (!raw) return;
         const s = JSON.parse(raw);
-        if (s.view === 'tasks' || s.view === 'detail') currentView = s.view;
+        if (s.view === 'tasks' || s.view === 'detail' || s.view === 'projects') currentView = s.view;
         if (typeof s.currentFilter === 'string') currentFilter = s.currentFilter;
         if (typeof s.addProjectId === 'string') addProjectId = s.addProjectId;
         if (s.detailGroupMode === 'time' || s.detailGroupMode === 'project') detailGroupMode = s.detailGroupMode;
@@ -2620,6 +2755,9 @@
         } else if (projectSheetMode === 'filter') {
           renderProjectSheet();
         }
+        if (currentView === 'projects') {
+          try { renderProjectsView(); } catch (e) { console.error(e); }
+        }
         try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
       } catch (e) { console.error('createNewProject failed:', e); }
     }
@@ -2645,6 +2783,7 @@
             updateCalendarDots();
             render();
             if (currentView === 'detail') renderDetailView();
+            if (currentView === 'projects') renderProjectsView();
             try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
           } catch (e) { console.error('performDelete failed:', e); }
         };
@@ -2654,6 +2793,78 @@
         }
         if (window.confirm && window.confirm(message)) performDelete();
       } catch (e) { console.error('handleDeleteProject failed:', e); }
+    }
+
+    // === Projects view ===
+    function renderProjectsView() {
+      try {
+        const listEl = document.getElementById('projects-list');
+        const emptyEl = document.getElementById('projects-empty');
+        if (!listEl) return;
+        listEl.innerHTML = '';
+
+        if (!store.projects || store.projects.length === 0) {
+          if (emptyEl) emptyEl.style.display = 'flex';
+          return;
+        }
+        if (emptyEl) emptyEl.style.display = 'none';
+
+        const today = todayISO();
+        const rows = store.projects.map(p => {
+          const allTasks = store.tasks.filter(t => t.projectId === p.id);
+          const total = allTasks.length;
+          const done = allTasks.filter(t => t.done).length;
+          const todayTasks = allTasks.filter(t => t.date === today);
+          const todayTotal = todayTasks.length;
+          const todayDone = todayTasks.filter(t => t.done).length;
+          return { project: p, total, done, todayTotal, todayDone };
+        });
+
+        rows.sort((a, b) => {
+          if (b.todayTotal !== a.todayTotal) return b.todayTotal - a.todayTotal;
+          return b.total - a.total;
+        });
+
+        const fragment = document.createDocumentFragment();
+        rows.forEach(({ project, total, done, todayTotal, todayDone }) => {
+          const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+          const card = document.createElement('button');
+          card.type = 'button';
+          card.className = 'project-card';
+          card.style.borderLeftColor = project.color;
+          card.dataset.projectId = project.id;
+          const statsText = total === 0
+            ? 'нет задач'
+            : done + ' из ' + total + ' · ' + percent + '%';
+          const todayBadge = todayTotal > 0
+            ? `<span class="project-card-today">${todayDone}/${todayTotal} сегодня</span>`
+            : '';
+          card.innerHTML = `
+            <div class="project-card-header">
+              <span class="project-card-dot" style="background: ${project.color};"></span>
+              <span class="project-card-name">${escapeHtml(project.name)}</span>
+              ${todayBadge}
+            </div>
+            <div class="project-card-bar">
+              <div class="project-card-bar-fill" style="width: ${percent}%; background: ${project.color};"></div>
+            </div>
+            <div class="project-card-stats">${statsText}</div>
+          `;
+          card.addEventListener('click', () => {
+            currentFilter = project.id;
+            addProjectId = project.id;
+            saveState();
+            updateProjectPillUI();
+            updateProjectToggleUI();
+            updateCalendarDots();
+            render();
+            if (currentView !== 'tasks') switchView('tasks');
+            try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
+          });
+          fragment.appendChild(card);
+        });
+        listEl.appendChild(fragment);
+      } catch (e) { console.error('renderProjectsView failed:', e); }
     }
 
     // === Calendar ===
@@ -3316,9 +3527,11 @@
         });
         store.save();
         const wasDetail = currentView === 'detail';
+        const wasProjects = currentView === 'projects';
         closeEditModal();
         render();
         if (wasDetail) renderDetailView();
+        if (wasProjects) renderProjectsView();
         try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
       } catch (e) { console.error('saveEdit failed:', e); }
     }
@@ -3365,6 +3578,7 @@
         justCheckedIndex = -1;
         store.save();
         if (currentView === 'detail') renderDetailView();
+        if (currentView === 'projects') renderProjectsView();
         try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
       } catch (e) { console.error('toggleTask failed:', e); }
     }
@@ -3392,6 +3606,7 @@
           render();
           skipSlideIn = false;
           if (currentView === 'detail') renderDetailView();
+          if (currentView === 'projects') renderProjectsView();
         }, 250);
       } catch (e) { console.error('deleteTask failed:', e); }
     }
@@ -3408,6 +3623,7 @@
         render();
         skipSlideIn = false;
         if (currentView === 'detail') renderDetailView();
+        if (currentView === 'projects') renderProjectsView();
         try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
       } catch (e) { console.error('undoDelete failed:', e); }
     }
@@ -3422,6 +3638,7 @@
       saveState();
       document.getElementById('view-tasks').classList.toggle('active', view === 'tasks');
       document.getElementById('view-detail').classList.toggle('active', view === 'detail');
+      document.getElementById('view-projects').classList.toggle('active', view === 'projects');
       document.querySelectorAll('.tab-item').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.view === view);
       });
@@ -3433,6 +3650,7 @@
         setTimeout(() => activeBtn.classList.remove('tab-bounce'), 400);
       }
       if (view === 'detail') renderDetailView();
+      if (view === 'projects') renderProjectsView();
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
 
@@ -3534,6 +3752,11 @@
         try { tg.HapticFeedback.selectionChanged(); } catch (err) {}
       });
 
+      document.getElementById('projects-add-btn').addEventListener('click', () => {
+        projectSheetMode = 'filter';
+        openNewProjectPopover();
+      });
+
       document.querySelectorAll('.tab-item').forEach(btn => {
         btn.addEventListener('click', () => switchView(btn.dataset.view));
       });
@@ -3587,6 +3810,14 @@
             btn.classList.toggle('active', btn.dataset.view === 'detail');
           });
         } catch (e) { console.error('view switch:', e); }
+      } else if (currentView === 'projects') {
+        try {
+          document.getElementById('view-tasks').classList.remove('active');
+          document.getElementById('view-projects').classList.add('active');
+          document.querySelectorAll('.tab-item').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.view === 'projects');
+          });
+        } catch (e) { console.error('view switch:', e); }
       }
 
       setTimeout(playWelcome, 40);
@@ -3599,11 +3830,13 @@
           try { updateCalendarDots(); } catch (e) {}
           try { render(); } catch (e) {}
           try { renderDetailView(); } catch (e) {}
+          try { renderProjectsView(); } catch (e) {}
         })
         .catch((e) => {
           console.error('store.init failed:', e);
           try { render(); } catch (e2) {}
           try { renderDetailView(); } catch (e2) {}
+          try { renderProjectsView(); } catch (e2) {}
         });
 
       setTimeout(() => {
