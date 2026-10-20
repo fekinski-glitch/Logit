@@ -2107,8 +2107,8 @@
           const accent = getComputedStyle(document.documentElement).getPropertyValue('--button-color').trim() || '#2481cc';
 
           // Glow-спрайт (radial gradient) — рендерится один раз,
-          // затем для каждой частицы просто drawImage. Даёт неоновое
-          // свечение без per-frame shadowBlur (иначе фреймрейт просядет).
+          // затем для каждой частицы просто drawImage. Даёт мягкое
+          // свечение без per-frame shadowBlur.
           const glowSize = 64;
           const glowSprite = document.createElement('canvas');
           glowSprite.width = glowSize;
@@ -2206,11 +2206,11 @@
 
               // Мягкое гало вокруг частицы
               const drawSize = Math.max(12, p.size * 8);
-              ctx.globalAlpha = 0.6;
+              ctx.globalAlpha = 0.39;
               ctx.drawImage(glowSprite, p.x - drawSize / 2, p.y - drawSize / 2, drawSize, drawSize);
 
               // Яркое ядро
-              ctx.globalAlpha = 0.95;
+              ctx.globalAlpha = 0.62;
               ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
             }
 
