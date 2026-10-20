@@ -1150,10 +1150,6 @@
       white-space: nowrap;
     }
 
-    #detail-add-form {
-      margin-bottom: var(--sp-3);
-    }
-
     .detail-group-toggle {
       display: none;
       gap: var(--sp-1);
@@ -1929,8 +1925,15 @@
       <span class="detail-focus-text" id="detail-focus-text"></span>
     </div>
 
-    <div class="add-form" id="detail-add-form">
-      <input type="text" id="detail-task-input" placeholder="Добавить задачу на день" maxlength="100">
+    <div class="ring-progress">
+      <svg viewBox="0 0 120 120">
+        <circle class="ring-bg" cx="60" cy="60" r="52"/>
+        <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="52" stroke-dasharray="326.73" stroke-dashoffset="326.73"/>
+      </svg>
+      <div class="ring-center">
+        <span class="ring-percent" id="ring-percent">—</span>
+        <span class="ring-label" id="ring-label">нет задач</span>
+      </div>
     </div>
 
     <div class="detail-group-toggle" id="detail-group-toggle">
@@ -1942,17 +1945,6 @@
     <div id="detail-empty" class="day-empty">
       <p id="detail-empty-text">День свободен</p>
       <button class="btn-ghost" id="detail-empty-carry" style="display: none;"></button>
-    </div>
-
-    <div class="ring-progress">
-      <svg viewBox="0 0 120 120">
-        <circle class="ring-bg" cx="60" cy="60" r="52"/>
-        <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="52" stroke-dasharray="326.73" stroke-dashoffset="326.73"/>
-      </svg>
-      <div class="ring-center">
-        <span class="ring-percent" id="ring-percent">—</span>
-        <span class="ring-label" id="ring-label">нет задач</span>
-      </div>
     </div>
   </div>
 
@@ -3757,29 +3749,12 @@
         };
 
         const word = pluralForm(carryable.length, 'задачу', 'задачи', 'задач');
-        const message = 'Перенести ' + carryable.length + ' ' + word + ' со вчера на этот день?';
+        const message = 'Перенести ' + carryable.length + ' ' sections + word + ' со вчера на этот день?';
         if (tg.showConfirm && typeof tg.showConfirm === 'function') {
           try { tg.showConfirm(message, (ok) => { if (ok) doCarry(); }); return; } catch (e) {}
         }
         if (window.confirm(message)) doCarry();
       } catch (e) { console.error('carryYesterdayTasks failed:', e); }
-    }
-
-    // === Detail: quick add ===
-    function addDetailTask() {
-      try {
-        const input = document.getElementById('detail-task-input');
-        if (!input) return;
-        const text = input.value.trim();
-        if (!text) return;
-        const projectId = currentFilter !== 'all' ? currentFilter : addProjectId;
-        store.addTask({ text, date: detailDate, time: '', projectId });
-        store.save();
-        input.value = '';
-        renderDetailView();
-        render();
-        try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
-      } catch (e) { console.error('addDetailTask failed:', e); }
     }
 
     // === Detail: groups ===
@@ -3789,7 +3764,7 @@
         if (!t.time) { sections.notime.push(t); return; }
         const h = parseInt(t.time.split(':')[0], 10);
         if (h >= 5 && h < 12) sections.morning.push(t);
-        else if (h >= 12 && h < 17) sections.day.push(t);
+        else if (h >= 12 && h < 17).day.push(t);
         else sections.evening.push(t);
       });
       ['morning','day','evening'].forEach(k => {
@@ -4109,10 +4084,6 @@
       taskTimeEl.addEventListener('input', updateTimeBtn);
       taskTimeEl.addEventListener('change', updateTimeBtn);
 
-      // Detail quick-add
-      document.getElementById('detail-task-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') addDetailTask();
-      });
       document.getElementById('detail-empty-carry').addEventListener('click', carryYesterdayTasks);
 
       document.getElementById('month-label').addEventListener('click', openPicker);
