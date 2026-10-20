@@ -1790,6 +1790,7 @@
     const TL_RANGE_MIN = (TL_END_H - TL_START_H) * 60;
     const UNDO_DURATION = 4000;
     const UI_STATE_KEY = 'logit_ui_state';
+    const WELCOME_DONE_KEY = 'logit_welcome_done';
     const CLOUD_TIMEOUT_MS = 3000;
 
     const PARTICLE_GLOW_ALPHA = 0.28;
@@ -2039,6 +2040,14 @@
     let pendingUndo = null;
 
     // === Utils ===
+    function pluralForm(n, one, few, many) {
+      const mod10 = n % 10;
+      const mod100 = n % 100;
+      if (mod100 >= 11 && mod100 <= 14) return many;
+      if (mod10 === 1) return one;
+      if (mod10 >= 2 && mod10 <= 4) return few;
+      return many;
+    }
     function formatDateLabel(iso) {
       const d = isoToDate(iso);
       const today = new Date(); today.setHours(0,0,0,0);
@@ -2113,6 +2122,31 @@
     }
     function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+    function buildDaySummaryLine() {
+      const today = todayISO();
+      const tasks = store.tasks.filter(t => t.date === today);
+      if (tasks.length === 0) return 'Сегодня свободно — добавь первую';
+
+      const total = tasks.length;
+      const done = tasks.filter(t => t.done).length;
+      if (done === total) return 'Все задачи на сегодня готовы 🎉';
+
+      const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+      const upcoming = tasks
+        .filter(t => !t.done && t.time && timeToMinutes(t.time) > nowMin)
+        .sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+
+      if (upcoming.length > 0) {
+        const remaining = total - done;
+        const word = pluralForm(remaining, 'задача', 'задачи', 'задач');
+        return 'Сегодня ' + remaining + ' ' + word + ' · ближайшая в ' + upcoming[0].time;
+      }
+
+      if (done > 0) return 'Сделано ' + done + ' из ' + total + ' — продолжай';
+
+      return 'Сегодня ' + total + ' ' + pluralForm(total, 'задача', 'задачи', 'задач');
+    }
+
     // === State ===
     function saveState() {
       try {
@@ -2129,6 +2163,12 @@
         if (typeof s.addProjectId === 'string') addProjectId = s.addProjectId;
         if (s.detailGroupMode === 'time' || s.detailGroupMode === 'project') detailGroupMode = s.detailGroupMode;
       } catch (e) {}
+    }
+    function isWelcomeDone() {
+      try { return localStorage.getItem(WELCOME_DONE_KEY) === '1'; } catch (e) { return false; }
+    }
+    function markWelcomeDone() {
+      try { localStorage.setItem(WELCOME_DONE_KEY, '1'); } catch (e) {}
     }
 
     // === Keyboard ===
@@ -2302,6 +2342,8 @@
       const startBtn = document.getElementById('welcome-start');
       const greeting = document.getElementById('welcome-greeting');
       const subtitle = document.getElementById('welcome-subtitle');
+      const isFirstVisit = !isWelcomeDone();
+
       try {
         startBtn.classList.remove('visible');
         greeting.textContent = '';
@@ -2323,16 +2365,24 @@
         const layout = await runParticleAnimation(canvas);
         await sleep(60);
         showCheckmark(layout);
-        await sleep(280);
+        await sleep(isFirstVisit ? 280 : 200);
 
         greeting.textContent = getTimeGreeting() + ', ' + userName + '!';
         greeting.classList.add('shown');
         try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
-        await sleep(400);
 
-        subtitle.textContent = 'Твой день начинается здесь';
-        subtitle.classList.add('shown');
-        await sleep(350);
+        if (isFirstVisit) {
+          await sleep(400);
+          subtitle.textContent = 'Твой день начинается здесь';
+          subtitle.classList.add('shown');
+          await sleep(350);
+        } else {
+          try { await store.init(); } catch (e) {}
+          await sleep(220);
+          subtitle.textContent = buildDaySummaryLine();
+          subtitle.classList.add('shown');
+          await sleep(220);
+        }
 
         startBtn.classList.add('visible');
         try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
@@ -3377,6 +3427,7 @@
         const screen = document.getElementById('welcome-screen');
         screen.classList.add('closing');
         document.body.classList.remove('welcome-open');
+        if (isWelcomeDone() === false) markWelcomeDone();
         try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
         setTimeout(() => { screen.style.display = 'none'; }, 320);
       });
