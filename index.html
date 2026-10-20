@@ -2106,6 +2106,24 @@
 
           const accent = getComputedStyle(document.documentElement).getPropertyValue('--button-color').trim() || '#2481cc';
 
+          // Glow-спрайт (radial gradient) — рендерится один раз,
+          // затем для каждой частицы просто drawImage. Даёт неоновое
+          // свечение без per-frame shadowBlur (иначе фреймрейт просядет).
+          const glowSize = 64;
+          const glowSprite = document.createElement('canvas');
+          glowSprite.width = glowSize;
+          glowSprite.height = glowSize;
+          const gctx = glowSprite.getContext('2d');
+          const grd = gctx.createRadialGradient(
+            glowSize / 2, glowSize / 2, 0,
+            glowSize / 2, glowSize / 2, glowSize / 2
+          );
+          grd.addColorStop(0, accent);
+          grd.addColorStop(0.18, accent);
+          grd.addColorStop(1, 'rgba(0,0,0,0)');
+          gctx.fillStyle = grd;
+          gctx.fillRect(0, 0, glowSize, glowSize);
+
           const off = document.createElement('canvas');
           off.width = w;
           off.height = h;
@@ -2168,28 +2186,15 @@
             };
           });
 
-          const hapticMilestones = [
-            { at: assembleDuration * 0.30, fired: false, type: 'soft' },
-            { at: assembleDuration * 0.65, fired: false, type: 'light' }
-          ];
-          let completionHapticFired = false;
-
           const phaseStart = performance.now();
-          try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
 
           function loop(now) {
             const elapsed = now - phaseStart;
-
-            for (let i = 0; i < hapticMilestones.length; i++) {
-              const m = hapticMilestones[i];
-              if (!m.fired && elapsed >= m.at) {
-                m.fired = true;
-                try { tg.HapticFeedback.impactOccurred(m.type); } catch (e) {}
-              }
-            }
-
             ctx.clearRect(0, 0, w, h);
+
+            ctx.globalCompositeOperation = 'lighter';
             ctx.fillStyle = accent;
+
             let allSettled = true;
             for (let i = 0; i < particles.length; i++) {
               const p = particles[i];
@@ -2198,15 +2203,21 @@
               p.x = p.startX + (p.tx - p.startX) * ease;
               p.y = p.startY + (p.ty - p.startY) * ease;
               if (localT < 1) allSettled = false;
-              ctx.globalAlpha = 0.85;
+
+              // Мягкое гало вокруг частицы
+              const drawSize = Math.max(12, p.size * 8);
+              ctx.globalAlpha = 0.6;
+              ctx.drawImage(glowSprite, p.x - drawSize / 2, p.y - drawSize / 2, drawSize, drawSize);
+
+              // Яркое ядро
+              ctx.globalAlpha = 0.95;
               ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
             }
+
             ctx.globalAlpha = 1;
+            ctx.globalCompositeOperation = 'source-over';
+
             if (allSettled) {
-              if (!completionHapticFired) {
-                completionHapticFired = true;
-                try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
-              }
               resolve({ w, h, fontSize, cy });
               return;
             }
