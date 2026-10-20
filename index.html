@@ -2843,16 +2843,12 @@
         const timeline = document.getElementById('mini-timeline');
         const dotsEl = document.getElementById('mini-timeline-dots');
         const labelsEl = document.getElementById('mini-timeline-labels');
-        const nowEl = document.getElementById('mini-timeline-now');
         const timedTasks = dayTasks.filter(t => t.time);
-        if (timedTasks.length === 0) {
-          timeline.classList.remove('visible');
-          nowEl.style.display = 'none';
-          return;
-        }
+
         timeline.classList.add('visible');
         dotsEl.innerHTML = '';
         labelsEl.innerHTML = '';
+
         [6, 9, 12, 15, 18, 21].forEach(h => {
           const pct = ((h - TL_START_H) * 60) / TL_RANGE_MIN * 100;
           if (pct < 0 || pct > 100) return;
@@ -2861,21 +2857,25 @@
           span.style.left = pct + '%';
           labelsEl.appendChild(span);
         });
-        const nextTask = getNextUpcoming(timedTasks);
-        timedTasks.forEach(task => {
-          const pct = minutesToPct(timeToMinutes(task.time));
-          const dot = document.createElement('button');
-          dot.type = 'button';
-          dot.className = 'mini-timeline-dot';
-          dot.style.left = pct + '%';
-          dot.dataset.taskId = store.tasks.indexOf(task);
-          dot.style.background = isOverdue(task) ? 'var(--danger-color)' : store.getProjectColor(task.projectId);
-          if (task.done) dot.classList.add('done');
-          if (nextTask && store.tasks.indexOf(task) === store.tasks.indexOf(nextTask)) dot.classList.add('next');
-          dot.title = task.time + ' — ' + task.text;
-          dot.addEventListener('click', () => scrollToTask(dot.dataset.taskId));
-          dotsEl.appendChild(dot);
-        });
+
+        if (timedTasks.length > 0) {
+          const nextTask = getNextUpcoming(timedTasks);
+          timedTasks.forEach(task => {
+            const pct = minutesToPct(timeToMinutes(task.time));
+            const dot = document.createElement('button');
+            dot.type = 'button';
+            dot.className = 'mini-timeline-dot';
+            dot.style.left = pct + '%';
+            dot.dataset.taskId = store.tasks.indexOf(task);
+            dot.style.background = isOverdue(task) ? 'var(--danger-color)' : store.getProjectColor(task.projectId);
+            if (task.done) dot.classList.add('done');
+            if (nextTask && store.tasks.indexOf(task) === store.tasks.indexOf(nextTask)) dot.classList.add('next');
+            dot.title = task.time + ' — ' + task.text;
+            dot.addEventListener('click', () => scrollToTask(dot.dataset.taskId));
+            dotsEl.appendChild(dot);
+          });
+        }
+
         updateNowMarker();
       } catch (e) { console.error('renderTimeline failed:', e); }
     }
