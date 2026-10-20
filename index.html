@@ -686,13 +686,6 @@
       border-color: var(--button-color);
     }
 
-    #date-label {
-      text-align: center;
-      font-size: var(--fs-md);
-      font-weight: 600;
-      letter-spacing: -0.3px;
-      margin-bottom: var(--sp-1);
-    }
     #progress {
       text-align: center;
       font-size: var(--fs-sm);
@@ -1601,7 +1594,6 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
     </div>
-    <p id="date-label">Загрузка...</p>
 
     <div class="mini-timeline" id="mini-timeline">
       <div class="mini-timeline-track"></div>
@@ -3040,7 +3032,6 @@
         const btn = document.getElementById('to-today-btn');
         btn.style.display = selectedDate === todayISO() ? 'none' : 'flex';
 
-        document.getElementById('date-label').textContent = formatDateLabel(selectedDate);
         const dayTasks = store.filterTasks(selectedDate, currentFilter);
         const nextTask = getNextUpcoming(dayTasks.filter(t => t.time));
         const doStagger = staggerNextRender;
