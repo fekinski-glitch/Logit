@@ -2206,11 +2206,11 @@
 
               // Мягкое гало вокруг частицы
               const drawSize = Math.max(12, p.size * 8);
-              ctx.globalAlpha = 0.28;
+              ctx.globalAlpha = 0.25;
               ctx.drawImage(glowSprite, p.x - drawSize / 2, p.y - drawSize / 2, drawSize, drawSize);
 
               // Яркое ядро
-              ctx.globalAlpha = 0.51;
+              ctx.globalAlpha = 0.45;
               ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
             }
 
