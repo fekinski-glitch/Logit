@@ -10,19 +10,20 @@
   <style>
     /* ═══ 1. Variables ═══ */
     :root {
-      --bg-color: #ffffff;
+      --bg-color: #F4F4F4; /* Светло-серый editorial фон */
       --text-color: #000000;
-      --hint-color: #666666;
+      --hint-color: #888888;
       --button-color: #000000;
       --button-text-color: #ffffff;
-      --secondary-bg-color: #f5f5f5;
-      --accent-red: #e53935;
-      --danger-color: #e53935;
+      --secondary-bg-color: #E8E8E8;
+      
+      --accent: #FF2E00; /* Красный акцент как в Zajno */
+      --danger-color: #FF2E00;
 
-      --border-main: 2px solid #000;
-      --border-thin: 1px solid #000;
-      --border-red: 2.5px solid #e53935;
+      --border-thin: 1px solid rgba(0,0,0,0.2);
+      --border-dark: 1.5px solid #000000;
 
+      --font-main: 'Helvetica Neue', Helvetica, Arial, sans-serif;
       --font-mono: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', 'Courier New', monospace;
 
       --sp-1: 4px;
@@ -34,124 +35,106 @@
       --sp-7: 32px;
       --sp-8: 48px;
 
-      --fs-xs: 11px;
-      --fs-sm: 13px;
-      --fs-base: 15px;
-      --fs-md: 17px;
-      --fs-lg: 21px;
-      --fs-xl: 28px;
-
-      --r-block: 0;
-      --r-sheet: 0;
-      --r-chip: 0;
-      --r-sm: 0;
-
       --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
-      --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     body[data-theme="dark"] {
-      --bg-color: #000000;
-      --text-color: #ffffff;
-      --hint-color: #999999;
-      --button-color: #ffffff;
+      --bg-color: #111111;
+      --text-color: #FFFFFF;
+      --hint-color: #777777;
+      --button-color: #FFFFFF;
       --button-text-color: #000000;
-      --secondary-bg-color: #1a1a1a;
-      --border-main: 2px solid #ffffff;
-      --border-thin: 1px solid #ffffff;
+      --secondary-bg-color: #222222;
+      --border-thin: 1px solid rgba(255,255,255,0.2);
+      --border-dark: 1.5px solid #FFFFFF;
     }
 
     /* ═══ 2. Reset ═══ */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
 
-    /* ═══ 3. Body ═══ */
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      font-family: var(--font-main);
       -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
       font-size: var(--fs-md);
-      line-height: 1.4;
+      line-height: 1.3;
       background-color: var(--bg-color);
       color: var(--text-color);
       transition: background-color 0.3s, color 0.3s;
+      overflow-x: hidden;
     }
     body.picker-open, body.welcome-open { overflow: hidden; }
     body.booting .view, body.booting .tab-bar { visibility: hidden; }
 
     ::placeholder { color: var(--hint-color); opacity: 1; }
-    :focus-visible { outline: 2px solid var(--accent-red); outline-offset: 2px; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-    /* ═══ 4. View ═══ */
+    /* ═══ 3. Views & Layout ═══ */
     .view {
       display: none;
-      padding: 20px 16px calc(100px + env(safe-area-inset-bottom));
+      padding: 24px 20px 120px;
       min-height: 100vh;
       position: relative;
     }
     .view.active { display: block; }
     body.kb-open .view { padding-bottom: 20px; }
 
-    /* ═══ 5. Header ═══ */
+    /* ═══ 4. Header (Pine style) ═══ */
     .header-wrap {
       position: relative;
       display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      margin-bottom: 20px;
-      min-height: 40px;
-      border-bottom: var(--border-thin);
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 32px;
       padding-bottom: 12px;
+      border-bottom: var(--border-dark);
     }
     .pill {
-      font-family: var(--font-mono);
-      font-size: 18px;
-      font-weight: 700;
+      font-size: clamp(48px, 14vw, 84px);
+      font-weight: 800;
+      line-height: 0.9;
+      letter-spacing: -0.04em;
       text-transform: uppercase;
-      letter-spacing: 1px;
       color: var(--text-color);
       background: none;
       border: none;
       padding: 0;
       display: inline-flex;
-      align-items: center;
+      align-items: baseline;
       gap: 8px;
       cursor: default;
     }
     .pill--interactive { cursor: pointer; transition: opacity 0.15s; }
     .pill--interactive:active { opacity: 0.5; }
-    .pill .chevron { font-size: 10px; font-weight: normal; }
+    .pill .chevron { font-size: 24px; font-weight: 400; }
 
     .icon-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 0;
-      background: transparent;
+      width: 44px;
+      height: 44px;
       border: var(--border-thin);
+      background: transparent;
       color: var(--text-color);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      -webkit-tap-highlight-color: transparent;
-      transition: background-color 0.15s, color 0.15s;
-      padding: 0;
+      transition: background 0.15s, color 0.15s;
+      border-radius: 50%;
     }
     .icon-btn:active { background: var(--text-color); color: var(--bg-color); }
-    .icon-btn svg { width: 18px; height: 18px; stroke: currentColor; }
+    .icon-btn svg { width: 20px; height: 20px; stroke: currentColor; }
 
     .header-icon-btn, .to-today-btn {
-      position: absolute;
-      right: 0;
-      top: 50%;
-      transform: translateY(-50%);
+      margin-top: 12px;
     }
     .header-icon-btn { display: flex; }
     .to-today-btn { display: none; }
 
-    /* ═══ 6. Sheets ═══ */
+    /* ═══ 5. Sheets & Modals ═══ */
     .sheet-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      position: fixed; inset: 0; background: rgba(0,0,0,0.4);
       visibility: hidden; opacity: 0; z-index: 1000;
       transition: opacity 0.2s, visibility 0.2s;
       display: flex; align-items: flex-end; justify-content: center;
@@ -161,814 +144,444 @@
 
     .sheet {
       background: var(--bg-color);
-      border-top: var(--border-main);
-      border-left: var(--border-main);
-      border-right: var(--border-main);
-      width: 100%; max-width: 500px;
+      width: 100%; max-width: 600px;
       transform: translateY(100%);
       transition: transform 0.3s var(--ease-out);
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      border-top: var(--border-dark);
     }
     .sheet-overlay.active .sheet { transform: translateY(0); }
-    .sheet--tall { max-height: 85vh; padding-bottom: env(safe-area-inset-bottom); }
-    .sheet--bottom-pad { padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+    .sheet--tall { max-height: 90vh; padding-bottom: env(safe-area-inset-bottom); }
+    .sheet--bottom-pad { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
     .picker-sheet--safe { padding-bottom: env(safe-area-inset-bottom); }
 
     .sheet-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 16px; border-bottom: var(--border-main); flex-shrink: 0;
+      padding: 20px; border-bottom: var(--border-thin); flex-shrink: 0;
     }
     .sheet-header button {
-      background: none; border: none; font-family: inherit; font-size: 15px;
-      font-weight: 600; cursor: pointer; color: var(--text-color);
-      padding: 2px 0; -webkit-tap-highlight-color: transparent;
+      background: none; border: none; font-family: inherit; font-size: 14px;
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+      cursor: pointer; color: var(--text-color); padding: 4px 0;
       min-width: 60px; text-align: left;
     }
     .sheet-header button:active { opacity: 0.5; }
-    .sheet-header .strong { text-align: right; font-weight: 700; }
+    .sheet-header .strong { text-align: right; font-weight: 800; }
     .sheet-title {
-      font-family: var(--font-mono); font-size: 12px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 1px; color: var(--hint-color);
+      font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.1em; color: var(--hint-color);
     }
     .sheet-header-spacer { min-width: 60px; }
 
-    /* ═══ 7. Category list ═══ */
+    /* ═══ 6. Category List ═══ */
     .cat-filter-list { padding: 0; overflow-y: auto; flex: 1; min-height: 0; }
-    .cat-filter-item {
-      width: 100%; display: flex; align-items: center; gap: 12px;
-      padding: 16px; background: none; border: none;
+    .cat-filter-item, .cat-filter-main {
+      width: 100%; display: flex; align-items: center; gap: 16px;
+      padding: 20px; background: none; border: none;
       border-bottom: var(--border-thin);
-      font-family: inherit; font-size: 16px; font-weight: 500;
+      font-family: inherit; font-size: 18px; font-weight: 500;
       cursor: pointer; color: var(--text-color); text-align: left;
-      -webkit-tap-highlight-color: transparent;
     }
-    .cat-filter-item:active { background: var(--secondary-bg-color); }
+    .cat-filter-item:active, .cat-filter-main:active { background: var(--secondary-bg-color); }
     .cat-filter-dot {
-      width: 12px; height: 12px; border-radius: 0;
-      border: 1px solid var(--text-color); flex-shrink: 0;
+      width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
     }
     .cat-filter-label { flex: 1; }
     .cat-filter-item.active .cat-filter-label,
     .cat-filter-row.active .cat-filter-label { font-weight: 800; }
     .cat-filter-check {
-      width: 20px; height: 20px; opacity: 0; color: var(--text-color);
-      flex-shrink: 0;
+      width: 20px; height: 20px; opacity: 0; color: var(--accent); flex-shrink: 0;
     }
     .cat-filter-item.active .cat-filter-check,
     .cat-filter-row.active .cat-filter-check { opacity: 1; }
 
-    .cat-filter-row {
-      display: flex; align-items: center; border-bottom: var(--border-thin);
-    }
-    .cat-filter-main {
-      flex: 1; display: flex; align-items: center; gap: 12px;
-      padding: 16px; background: none; border: none;
-      font-family: inherit; font-size: 16px; font-weight: 500;
-      cursor: pointer; color: var(--text-color); text-align: left;
-      min-width: 0; -webkit-tap-highlight-color: transparent;
-    }
-    .cat-filter-main:active { background: var(--secondary-bg-color); }
+    .cat-filter-row { display: flex; align-items: center; border-bottom: var(--border-thin); }
+    .cat-filter-main { border-bottom: none; }
     .cat-filter-delete {
-      padding: 16px; background: none; border: none; color: var(--hint-color);
+      padding: 20px; background: none; border: none; color: var(--hint-color);
       cursor: pointer; display: flex; align-items: center;
-      -webkit-tap-highlight-color: transparent;
     }
-    .cat-filter-delete:active { color: var(--accent-red); }
-    .cat-filter-delete svg { width: 18px; height: 18px; stroke: currentColor; }
+    .cat-filter-delete:active { color: var(--accent); }
 
-    .project-new-wrap { padding: 16px; border-top: var(--border-main); }
+    .project-new-wrap { padding: 20px; border-top: var(--border-dark); }
     .project-new-btn {
-      width: 100%; padding: 16px; border: 2px dashed var(--text-color);
-      background: none; color: var(--text-color); font-family: inherit;
-      font-size: 14px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 1px; cursor: pointer;
-      display: flex; justify-content: center;
-      -webkit-tap-highlight-color: transparent;
+      width: 100%; padding: 20px; border: var(--border-dark); border-radius: 50px;
+      background: transparent; color: var(--text-color); font-family: inherit;
+      font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+      cursor: pointer; display: flex; justify-content: center;
     }
-    .project-new-btn:active { background: var(--secondary-bg-color); }
+    .project-new-btn:active { background: var(--text-color); color: var(--bg-color); }
 
-    /* ═══ 8. Project popover ═══ */
+    /* ═══ 7. Popover ═══ */
     .project-popover-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      position: fixed; inset: 0; background: rgba(0,0,0,0.4);
       visibility: hidden; opacity: 0; z-index: 1100;
-      display: flex; align-items: center; justify-content: center; padding: 24px;
+      display: flex; align-items: center; justify-content: center; padding: 20px;
       transition: opacity 0.2s;
     }
     .project-popover-overlay.active { visibility: visible; opacity: 1; }
     .project-popover {
-      background: var(--bg-color); border: var(--border-main);
-      width: 100%; max-width: 340px; padding: 20px;
-      display: flex; flex-direction: column; gap: 16px;
+      background: var(--bg-color); border: var(--border-dark);
+      width: 100%; max-width: 400px; padding: 24px;
+      display: flex; flex-direction: column; gap: 20px;
     }
-    .project-popover-header {
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .project-popover-title {
-      font-family: var(--font-mono); font-weight: 700;
-      text-transform: uppercase; font-size: 12px; letter-spacing: 1px;
-    }
-    .project-popover-close {
-      background: none; border: none; font-size: 20px; cursor: pointer;
-      color: var(--text-color); line-height: 1; padding: 4px;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .project-popover-close:active { opacity: 0.5; }
+    .project-popover-header { display: flex; align-items: center; justify-content: space-between; }
+    .project-popover-title { font-size: 20px; font-weight: 800; text-transform: uppercase; }
+    .project-popover-close { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-color); }
     .project-popover-input, .edit-input {
-      width: 100%; padding: 14px 16px; border: var(--border-main);
-      background: var(--bg-color); color: var(--text-color);
-      font-family: inherit; font-size: 16px; font-weight: 500;
-      outline: none; -webkit-appearance: none; appearance: none;
+      width: 100%; padding: 16px 0; border: none; border-bottom: var(--border-dark);
+      background: transparent; color: var(--text-color);
+      font-family: inherit; font-size: 20px; font-weight: 500; outline: none; border-radius: 0;
     }
-    .project-popover-input:focus, .edit-input:focus {
-      border-color: var(--accent-red);
-    }
-    .project-palette {
-      display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
-    }
+    .project-popover-input:focus, .edit-input:focus { border-bottom-color: var(--accent); }
+    
+    .project-palette { display: flex; gap: 12px; flex-wrap: wrap; }
     .project-color-dot {
-      width: 32px; height: 32px; border-radius: 0;
-      border: 2px solid transparent;
-      cursor: pointer; padding: 0;
-      -webkit-tap-highlight-color: transparent;
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 2px solid transparent; cursor: pointer; padding: 0;
     }
     .project-color-dot.selected { border-color: var(--text-color); }
-    .project-popover-actions { display: flex; gap: 8px; margin-top: 8px; }
-
+    
+    .project-popover-actions { display: flex; gap: 12px; margin-top: 8px; }
     .btn-accent, .btn-ghost {
-      flex: 1; padding: 14px; border: var(--border-main);
-      font-family: inherit; font-size: 14px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
+      flex: 1; padding: 16px; border-radius: 50px; border: var(--border-dark);
+      font-family: inherit; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer;
     }
     .btn-accent { background: var(--text-color); color: var(--bg-color); }
     .btn-ghost { background: transparent; color: var(--text-color); }
     .btn-accent:active, .btn-ghost:active { opacity: 0.7; }
 
-    /* ═══ 9. Calendar strip ═══ */
+    /* ═══ 8. Calendar (Swiss Style) ═══ */
     .calendar-strip-wrap {
       position: relative;
-      border-top: var(--border-main);
-      border-bottom: var(--border-main);
+      border-bottom: var(--border-thin);
       margin-bottom: 24px;
-      margin-left: -16px; margin-right: -16px;
-      background: var(--bg-color);
+      margin-left: -20px; margin-right: -20px;
     }
     .calendar-strip {
-      display: flex; gap: 0; overflow-x: auto;
-      scrollbar-width: none; scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch;
-      padding: 0 calc(50% - 36px);
+      display: flex; gap: 0; overflow-x: auto; scrollbar-width: none;
+      scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+      padding: 0 calc(50% - 32px);
     }
     .calendar-strip::-webkit-scrollbar { display: none; }
 
     .calendar-arrow {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 32px; height: 32px;
-      opacity: 0;
-      pointer-events: none;
-      z-index: 3;
-      transition: opacity 0.2s;
-      background: var(--bg-color);
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 32px; height: 32px; border: none; background: var(--bg-color);
+      opacity: 0; pointer-events: none; z-index: 3;
+      transition: opacity 0.2s; color: var(--text-color);
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
     }
-    .calendar-arrow-left { left: 4px; }
-    .calendar-arrow-right { right: 4px; }
+    .calendar-arrow-left { left: 0; }
+    .calendar-arrow-right { right: 0; }
     .calendar-strip-wrap.has-more-left .calendar-arrow-left,
-    .calendar-strip-wrap.has-more-right .calendar-arrow-right {
-      opacity: 1; pointer-events: auto;
-    }
-    .calendar-arrow svg { width: 16px; height: 16px; stroke: currentColor; }
+    .calendar-strip-wrap.has-more-right .calendar-arrow-right { opacity: 1; pointer-events: auto; }
+    .calendar-arrow svg { width: 20px; height: 20px; stroke: currentColor; }
 
     .day-cell {
-      flex-shrink: 0; width: 72px; padding: 12px 0;
-      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      flex-shrink: 0; width: 64px; padding: 12px 0;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
       background: transparent; border: none; cursor: pointer;
       scroll-snap-align: center; color: var(--text-color);
       font-family: inherit;
-      -webkit-tap-highlight-color: transparent;
     }
-    .day-cell:active { opacity: 0.6; }
+    .day-cell:active { opacity: 0.5; }
     .day-cell .weekday {
-      font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+      font-family: var(--font-mono); font-size: 10px; font-weight: 600;
       text-transform: uppercase; color: var(--hint-color);
-      letter-spacing: 0.5px;
     }
-    .day-cell.weekend:not(.selected) .weekday { color: var(--accent-red); }
     .day-cell .date-num {
-      font-family: var(--font-mono); font-size: 28px; font-weight: 700;
-      width: 44px; height: 44px;
+      font-size: 24px; font-weight: 700; width: 44px; height: 44px;
       display: flex; align-items: center; justify-content: center;
-      border: 2.5px solid transparent;
-      transition: border-color 0.2s, color 0.2s;
-      color: var(--text-color);
+      border-radius: 50%; transition: all 0.2s;
     }
+    
+    /* Выбранный день - красный фон, белый текст (Zajno style) */
     .day-cell.selected .date-num {
-      border-color: var(--accent-red);
+      background: var(--accent); color: #FFFFFF;
     }
-    .day-cell.selected .weekday {
-      color: var(--text-color); font-weight: 800;
-    }
-    .day-cell.today:not(.selected) .date-num { color: var(--accent-red); }
+    .day-cell.selected .weekday { color: var(--text-color); font-weight: 800; }
+    .day-cell.today:not(.selected) .date-num { color: var(--accent); }
     .day-dot { display: none; }
 
-    /* ═══ 10. Progress ═══ */
-    #progress {
-      text-align: left; font-family: var(--font-mono); font-size: 12px;
-      font-weight: 600; color: var(--hint-color); margin-bottom: 16px;
-      min-height: 16px; line-height: 1.4;
-      letter-spacing: 0.3px; padding: 0 2px;
+    /* ═══ 9. Progress & Filter ═══ */
+    .meta-row {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 16px; font-family: var(--font-mono); font-size: 11px;
+      text-transform: uppercase; color: var(--hint-color); letter-spacing: 0.05em;
     }
-
-    /* ═══ 11. Mini timeline ═══ */
-    .mini-timeline {
-      position: relative; height: 40px; margin: 0 2px 20px;
-      display: none;
-    }
-    .mini-timeline.visible { display: block; }
-    .mini-timeline-track {
-      position: absolute; left: 0; right: 0; top: 20px;
-      height: 1px; background: var(--text-color);
-    }
-    .mini-timeline-now {
-      position: absolute; top: 14px;
-      width: 2px; height: 13px;
-      background: var(--accent-red);
-      transform: translateX(-50%);
-      z-index: 2; pointer-events: none;
-      transition: left 0.5s ease;
-    }
-    .mini-timeline-dot {
-      position: absolute; top: 16px;
-      width: 9px; height: 9px; border-radius: 50%;
-      transform: translateX(-50%);
-      cursor: pointer; z-index: 1;
-      border: 2px solid var(--bg-color);
-      -webkit-tap-highlight-color: transparent;
-      padding: 0;
-      background: var(--text-color);
-    }
-    .mini-timeline-dot:active { transform: translateX(-50%) scale(1.4); }
-    .mini-timeline-dot.done { opacity: 0.3; }
-    .mini-timeline-dot.overdue { background: var(--accent-red); }
-    .mini-timeline-dot.next {
-      width: 13px; height: 13px; top: 14px;
-      box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.2);
-      z-index: 2;
-    }
-    .mini-timeline-labels {
-      position: absolute; left: 0; right: 0; top: 28px; height: 12px;
-      pointer-events: none;
-    }
-    .mini-timeline-labels span {
-      position: absolute;
-      font-family: var(--font-mono); font-size: 9px; font-weight: 600;
-      color: var(--hint-color);
-      transform: translateX(-50%);
-    }
-
-    /* ═══ 12. Category filter chip ═══ */
+    #progress { font-weight: 600; }
+    
     #category-pill {
-      display: flex; align-items: center; gap: 8px;
-      padding: 10px 14px;
-      border: var(--border-thin);
-      background: transparent;
-      font-family: var(--font-mono); font-size: 12px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.5px;
-      color: var(--text-color); cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      border-radius: 0;
+      display: flex; align-items: center; gap: 6px;
+      font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+      text-transform: uppercase; color: var(--text-color);
+      background: none; border: none; cursor: pointer; letter-spacing: 0.05em;
     }
-    #category-pill:active { opacity: 0.6; }
-    #category-pill .cat-pill-dot {
-      width: 10px; height: 10px;
-      border: 1px solid var(--text-color);
-      background: var(--hint-color);
-      flex-shrink: 0;
-    }
-    #category-pill .chevron { font-size: 8px; }
+    #category-pill .cat-pill-dot { width: 8px; height: 8px; border-radius: 50%; }
+    #category-pill .chevron { font-size: 9px; opacity: 0.5; }
 
-    /* ═══ 13. Add form ═══ */
-    .add-form { margin-bottom: 8px; }
-    .add-form input {
-      width: 100%; height: 56px;
-      padding: 0 16px;
-      border: var(--border-main);
-      background: transparent;
-      color: var(--text-color);
-      font-family: inherit; font-size: 16px;
-      outline: none;
-      -webkit-appearance: none; appearance: none;
+    /* ═══ 10. Mini timeline ═══ */
+    .mini-timeline { position: relative; height: 30px; margin: 0 0 24px; display: none; }
+    .mini-timeline.visible { display: block; }
+    .mini-timeline-track { position: absolute; left: 0; right: 0; top: 14px; height: 1px; background: var(--text-color); }
+    .mini-timeline-now { position: absolute; top: 8px; width: 2px; height: 13px; background: var(--accent); transform: translateX(-50%); z-index: 2; }
+    .mini-timeline-dot {
+      position: absolute; top: 10px; width: 9px; height: 9px; border-radius: 50%;
+      transform: translateX(-50%); cursor: pointer; z-index: 1;
+      border: 2px solid var(--bg-color); padding: 0;
     }
-    .add-form input:focus { border-color: var(--accent-red); }
-    .add-form-2 { display: flex; gap: 8px; margin-bottom: 28px; }
+    .mini-timeline-dot.done { opacity: 0.3; }
+    .mini-timeline-dot.overdue { background: var(--accent); }
+    .mini-timeline-dot.next { width: 13px; height: 13px; top: 8px; box-shadow: 0 0 0 3px var(--accent); z-index: 2; }
+    .mini-timeline-labels { position: absolute; left: 0; right: 0; top: 22px; pointer-events: none; }
+    .mini-timeline-labels span { position: absolute; font-family: var(--font-mono); font-size: 9px; color: var(--hint-color); transform: translateX(-50%); }
 
+    /* ═══ 11. Add Form (Editorial Style) ═══ */
+    .add-form { margin-bottom: 24px; display: flex; flex-direction: column; gap: 16px; }
+    
+    /* Верхняя строка - ввод текста */
+    .add-form input[type="text"] {
+      width: 100%; padding: 8px 0; border: none; border-bottom: var(--border-dark);
+      background: transparent; color: var(--text-color);
+      font-family: inherit; font-size: 32px; font-weight: 500; letter-spacing: -0.02em;
+      outline: none; border-radius: 0;
+    }
+    .add-form input[type="text"]:focus { border-bottom-color: var(--accent); }
+    .add-form input[type="text"]::placeholder { color: var(--hint-color); font-weight: 400; }
+
+    /* Нижняя строка - настройки */
+    .add-form-2 { display: flex; align-items: center; gap: 12px; }
+    
     .cat-toggle {
-      height: 56px; padding: 0 16px;
-      border: var(--border-main);
-      background: transparent;
-      color: var(--text-color);
-      font-family: inherit; font-size: 14px; font-weight: 600;
-      display: flex; align-items: center; gap: 8px;
-      cursor: pointer; flex-shrink: 0;
-      -webkit-tap-highlight-color: transparent;
+      padding: 8px 16px; border: var(--border-thin); border-radius: 50px;
+      background: transparent; color: var(--text-color);
+      font-family: var(--font-mono); font-size: 11px; font-weight: 600; text-transform: uppercase;
+      display: flex; align-items: center; gap: 8px; cursor: pointer; flex-shrink: 0;
     }
-    .cat-toggle:active { opacity: 0.7; }
-    .cat-dot {
-      width: 12px; height: 12px;
-      border: 1px solid var(--text-color);
-      background: var(--hint-color);
-      flex-shrink: 0;
-    }
+    .cat-toggle:active { background: var(--secondary-bg-color); }
+    .cat-dot { width: 8px; height: 8px; border-radius: 50%; }
 
     .time-btn-wrapper {
-      flex: 1; height: 56px; position: relative;
-      border: var(--border-main);
-      display: flex; align-items: center;
-      min-width: 0;
+      flex: 1; position: relative; display: flex; align-items: center;
+      border-bottom: var(--border-thin); height: 40px;
     }
     .time-btn-display {
-      width: 100%; padding: 0 16px;
-      font-family: var(--font-mono); font-size: 16px; font-weight: 600;
-      color: var(--text-color);
-      pointer-events: none;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      font-family: var(--font-mono); font-size: 14px; font-weight: 500;
+      color: var(--text-color); pointer-events: none;
     }
-    .time-input-overlay {
-      position: absolute; inset: 0;
-      width: 100%; height: 100%;
-      opacity: 0; border: none; cursor: pointer;
-      font-size: 16px; font-family: inherit;
-      -webkit-appearance: none; appearance: none;
-    }
+    .time-btn-display:not(.has-value) { color: var(--hint-color); }
+    .time-input-overlay { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+
     #add-btn {
-      width: 56px; height: 56px;
-      border: var(--border-main);
-      background: var(--text-color);
-      color: var(--bg-color);
-      font-size: 28px; font-weight: 300;
-      cursor: pointer; flex-shrink: 0;
+      width: 48px; height: 48px; border-radius: 50%;
+      border: none; background: var(--text-color); color: var(--bg-color);
+      font-size: 24px; cursor: pointer; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      font-family: inherit;
-      -webkit-tap-highlight-color: transparent;
-      line-height: 1;
       padding-bottom: 2px;
     }
-    #add-btn:active { opacity: 0.7; }
+    #add-btn:active { transform: scale(0.92); }
 
-    /* ═══ 14. Task list ═══ */
-    #task-sections { display: flex; flex-direction: column; gap: 24px; }
-    .time-section { display: flex; flex-direction: column; }
+    /* ═══ 12. Task List (Zajno Table Style) ═══ */
+    #task-sections { display: flex; flex-direction: column; }
+    .time-section { display: flex; flex-direction: column; margin-bottom: 24px; }
+    
     .time-section-title {
-      font-family: var(--font-mono); font-size: 11px; font-weight: 800;
-      text-transform: uppercase; letter-spacing: 1.2px;
-      margin-bottom: 12px; padding: 0 2px;
-      display: flex; gap: 8px; align-items: baseline;
-      color: var(--hint-color);
+      font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.1em; color: var(--hint-color);
+      margin-bottom: 8px; padding-bottom: 4px;
     }
-    .time-section-count {
-      font-size: 10px; font-weight: 500;
-      letter-spacing: 0; color: var(--hint-color);
-      opacity: 0.6;
-    }
-    .section-task-list {
-      list-style: none;
-      display: flex; flex-direction: column; gap: 12px;
-    }
+    
+    .section-task-list { list-style: none; display: flex; flex-direction: column; }
 
     .task-item-wrapper {
       display: block;
-      animation: slideIn 0.22s var(--ease-out) backwards;
+      animation: slideIn 0.3s var(--ease-out) backwards;
+      border-bottom: var(--border-thin);
     }
     .task-item-wrapper.no-slide { animation: none; }
-    .task-item-wrapper.removing {
-      animation: collapseOut 0.28s ease forwards;
-      pointer-events: none; overflow: hidden;
-    }
 
     .task-card {
-      display: flex; align-items: flex-start; gap: 16px;
-      padding: 20px; border: var(--border-main);
+      display: grid;
+      grid-template-columns: 60px 1fr auto;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 8px;
       background: transparent;
-      transition: background-color 0.15s, border-color 0.2s;
-      -webkit-user-select: none; user-select: none;
+      transition: background 0.15s;
+      cursor: pointer;
+      margin: 0 -8px; /* Чтобы фон выходил за края */
     }
     .task-card:active { background: var(--secondary-bg-color); }
-    .task-card.flash { animation: flashHighlight 1s ease; }
-    .task-card--done .task-text {
-      text-decoration: line-through;
-      text-decoration-thickness: 1.5px;
-      color: var(--hint-color);
-    }
 
+    /* Красный акцент для "следующей" задачи (Zajno) */
+    .task-card--next {
+      background: var(--accent);
+      color: #ffffff;
+      padding: 16px;
+      margin: 0 -16px;
+      border-bottom-color: transparent;
+    }
+    .task-card--next .task-time, .task-card--next .task-project { color: #ffffff; }
+    .task-card--next .task-checkbox { border-color: #ffffff; }
+    .task-card--next .task-checkbox.checked { background: #ffffff; }
+    .task-card--next .task-checkbox.checked::after { color: var(--accent); }
+    
+    .task-card--done .task-text { text-decoration: line-through; color: var(--hint-color); }
+
+    /* Чекбокс - кружок без рамки */
     .task-checkbox {
-      width: 24px; height: 24px;
-      border-radius: 0;
-      border: 2px solid var(--text-color);
-      background: transparent;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; margin-top: 2px;
-      transition: background-color 0.15s;
+      width: 24px; height: 24px; border-radius: 50%;
+      border: 2px solid var(--text-color); background: transparent;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
       padding: 0;
-      -webkit-tap-highlight-color: transparent;
     }
     .task-checkbox.checked { background: var(--text-color); }
-    .task-checkbox.checked::after {
-      content: "✕";
-      color: var(--bg-color);
-      font-size: 14px; font-weight: 800;
-      line-height: 1;
-    }
-    .task-checkbox.just-checked { animation: checkboxPop 0.4s var(--ease-bounce); }
+    .task-checkbox.checked::after { content: "✓"; color: var(--bg-color); font-size: 14px; font-weight: 700; }
 
-    .task-content {
-      flex: 1; min-width: 0;
-      display: flex; flex-direction: column; gap: 6px;
-    }
-    .task-text {
-      font-size: 17px; font-weight: 600;
-      line-height: 1.3; word-break: break-word;
-      color: var(--text-color);
-    }
-    .task-time {
-      font-family: var(--font-mono);
-      font-size: 12px; font-weight: 700;
-      letter-spacing: 0.3px;
-      display: flex; align-items: center; gap: 8px;
-      color: var(--hint-color);
-    }
-    .task-card--overdue .task-time { color: var(--accent-red); }
+    .task-content { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .task-text { font-size: 18px; font-weight: 600; line-height: 1.2; letter-spacing: -0.01em; }
+    .task-time { font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--hint-color); }
 
-    .next-badge {
-      display: inline-flex; align-items: center;
-      padding: 2px 6px;
-      background: var(--text-color);
-      color: var(--bg-color);
-      font-family: var(--font-mono);
-      font-size: 9px; font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+    .task-project {
+      font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+      text-transform: uppercase; color: var(--hint-color);
+      text-align: right; white-space: nowrap;
     }
 
-    .delete-btn {
-      background: none; border: none;
-      color: var(--hint-color);
-      font-size: 18px; font-weight: 700;
-      cursor: pointer; padding: 2px 4px;
-      font-family: inherit;
-      flex-shrink: 0; align-self: center;
-      -webkit-tap-highlight-color: transparent;
-      line-height: 1;
-    }
-    .delete-btn:active { color: var(--accent-red); }
+    .delete-btn { display: none; } /* Убираем крестик, удаление через свайп или редактирование */
 
-    /* ═══ 15. Empty state ═══ */
+    /* ═══ 13. Empty State ═══ */
     #empty-state, #projects-empty {
-      font-family: var(--font-mono);
-      font-weight: 600;
-      text-align: center;
-      padding: 40px 20px;
-      border: 2px dashed var(--hint-color);
-      color: var(--hint-color);
-      font-size: 13px;
-      letter-spacing: 0.3px;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
+      font-family: var(--font-mono); text-align: center; padding: 40px 0;
+      color: var(--hint-color); font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em;
+      display: none; flex-direction: column; align-items: center; gap: 12px;
     }
     #empty-state svg, #projects-empty svg { display: none; }
-    #empty-state p, #projects-empty p { margin: 0; }
 
-    /* ═══ 16. Projects ═══ */
-    #projects-list { display: flex; flex-direction: column; gap: 12px; }
+    /* ═══ 14. Projects View ═══ */
+    #projects-list { display: flex; flex-direction: column; }
     .project-card {
-      display: flex; flex-direction: column; gap: 12px;
-      padding: 20px; border: var(--border-main);
-      background: transparent;
-      cursor: pointer; text-align: left;
-      color: var(--text-color);
-      font-family: inherit;
-      width: 100%;
-      -webkit-tap-highlight-color: transparent;
-      -webkit-user-select: none; user-select: none;
-      outline: none;
+      display: flex; flex-direction: column; gap: 16px;
+      padding: 24px 0; border-bottom: var(--border-thin);
+      cursor: pointer; text-align: left; background: transparent; border-left: none; border-right: none; border-top: none;
+      color: var(--text-color); width: 100%;
     }
-    .project-card:active { background: var(--secondary-bg-color); }
-    .project-card-header {
-      display: flex; align-items: center; gap: 12px;
-    }
-    .project-card-dot {
-      width: 14px; height: 14px;
-      border: 1px solid var(--text-color);
-      background: var(--hint-color);
-      flex-shrink: 0;
-    }
-    .project-card-name {
-      font-size: 17px; font-weight: 700;
-      flex: 1; min-width: 0;
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-    .project-card-today {
-      font-family: var(--font-mono);
-      font-size: 11px; font-weight: 700;
-      border: 1px solid var(--text-color);
-      padding: 2px 6px;
-      flex-shrink: 0; white-space: nowrap;
-    }
-    .project-card-bar {
-      height: 6px;
-      border: 1px solid var(--text-color);
-      overflow: hidden;
-    }
-    .project-card-bar-fill {
-      height: 100%;
-      background: var(--text-color);
-      transition: width 0.4s var(--ease-out);
-    }
-    .project-card-stats {
-      font-family: var(--font-mono);
-      font-size: 11px; font-weight: 600;
-      color: var(--hint-color);
-    }
-    .project-week {
-      display: flex; gap: 4px;
-      border-top: var(--border-thin);
-      padding-top: 12px;
-    }
+    .project-card:active { opacity: 0.7; }
+    .project-card-header { display: flex; align-items: center; gap: 12px; }
+    .project-card-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .project-card-name { font-size: 24px; font-weight: 700; flex: 1; letter-spacing: -0.02em; }
+    .project-card-today { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--accent); }
+    
+    .project-card-bar { height: 2px; background: var(--border-thin); border: none; overflow: hidden; margin: 8px 0; }
+    .project-card-bar-fill { height: 100%; background: var(--text-color); }
+    .project-card-stats { font-family: var(--font-mono); font-size: 11px; color: var(--hint-color); text-transform: uppercase; }
+    
+    .project-week { display: flex; gap: 8px; margin-top: 8px; }
     .project-week-day {
-      flex: 1; min-width: 0;
-      display: flex; flex-direction: column; align-items: center; gap: 4px;
-      padding: 6px 0; border: none; background: transparent;
-      cursor: pointer; font-family: inherit; color: var(--text-color);
-      -webkit-tap-highlight-color: transparent;
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 8px 0; border: none; background: transparent; cursor: pointer;
     }
-    .project-week-day:active { background: var(--secondary-bg-color); }
-    .project-week-wd {
-      font-family: var(--font-mono); font-size: 9px; font-weight: 600;
-      color: var(--hint-color);
-    }
-    .project-week-num {
-      font-family: var(--font-mono); font-size: 14px; font-weight: 700;
-      line-height: 1;
-    }
-    .project-week-day.pw-today { border: 1px solid var(--text-color); }
-    .project-week-day.pw-weekend:not(.pw-today) .project-week-num {
-      color: var(--accent-red);
-    }
-    .project-week-indicator {
-      width: 6px; height: 6px;
-      background: transparent;
-    }
-    .project-week-day.pw-has-pending .project-week-indicator {
-      background: var(--text-color);
-    }
-    .project-week-day.pw-has-done .project-week-indicator {
-      border: 1px solid var(--text-color);
-    }
+    .project-week-wd { font-family: var(--font-mono); font-size: 9px; color: var(--hint-color); text-transform: uppercase; }
+    .project-week-num { font-size: 16px; font-weight: 600; }
+    .project-week-day.pw-today { background: var(--accent); color: #fff; border-radius: 4px; }
+    .project-week-day.pw-today .project-week-wd { color: #fff; }
+    .project-week-indicator { width: 4px; height: 4px; border-radius: 50%; background: transparent; }
+    .project-week-day.pw-has-pending .project-week-indicator { background: var(--text-color); }
+    .project-week-day.pw-today.pw-has-pending .project-week-indicator { background: #fff; }
 
-    /* ═══ 17. Tab bar ═══ */
+    /* ═══ 15. Tab Bar (Editorial Footer) ═══ */
     .tab-bar {
       position: fixed; bottom: 0; left: 0; right: 0;
-      background: var(--bg-color);
-      border-top: var(--border-main);
-      display: flex; z-index: 100;
-      padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
-      transition: transform 0.3s var(--ease-out), opacity 0.2s, visibility 0.2s;
+      background: var(--bg-color); border-top: var(--border-dark);
+      display: flex; justify-content: space-between; z-index: 100;
+      padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+      transition: transform 0.3s var(--ease-out);
     }
-    .tab-bar.kb-hidden {
-      transform: translateY(calc(100% + 20px));
-      opacity: 0; visibility: hidden;
-    }
+    .tab-bar.kb-hidden { transform: translateY(100%); }
+    
     .tab-item {
-      flex: 1; min-width: 0;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 4px; padding: 8px 4px;
-      background: none; border: none;
-      color: var(--hint-color);
-      font-family: var(--font-mono); font-size: 10px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.8px;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
+      display: flex; align-items: center; gap: 8px; padding: 0;
+      background: none; border: none; color: var(--hint-color);
+      font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer;
     }
     .tab-item.active { color: var(--text-color); }
-    .tab-item svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1.8; flex-shrink: 0; }
-    .tab-item.active svg { stroke-width: 2.2; }
-    .tab-item span {
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      min-width: 0;
+    .tab-item svg { width: 16px; height: 16px; stroke: currentColor; }
+    
+    /* Индикатор активного таба - красная точка */
+    .tab-item.active::before {
+      content: ''; width: 6px; height: 6px; background: var(--accent); border-radius: 50%;
     }
-    .tab-item.tab-bounce svg { animation: tabBounce 0.35s var(--ease-bounce); }
 
-    /* ═══ 18. Wheel picker ═══ */
+    /* ═══ 16. Wheel Picker ═══ */
     .wheel-container {
-      position: relative;
-      height: 216px;
-      display: flex; justify-content: center;
-      padding: 0 8px;
-      border-top: var(--border-thin);
-      border-bottom: var(--border-main);
+      position: relative; height: 216px; display: flex; justify-content: center;
+      padding: 0 20px; border-bottom: var(--border-dark);
     }
     .wheel-highlight {
-      position: absolute;
-      left: 8px; right: 8px;
-      top: 50%;
-      height: 40px;
-      transform: translateY(-50%);
-      border-top: var(--border-thin);
-      border-bottom: var(--border-thin);
-      pointer-events: none; z-index: 0;
+      position: absolute; left: 20px; right: 20px; top: 50%;
+      height: 44px; transform: translateY(-50%);
+      background: var(--secondary-bg-color); pointer-events: none; z-index: 0;
     }
     .wheel {
-      flex: 1; height: 100%;
-      overflow-y: auto;
-      scroll-snap-type: y mandatory;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-      touch-action: pan-y;
-      position: relative; z-index: 1;
-      mask-image: linear-gradient(to bottom, transparent 0%, #000 25%, #000 75%, transparent 100%);
-      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 25%, #000 75%, transparent 100%);
+      flex: 1; height: 100%; overflow-y: auto; scroll-snap-type: y mandatory;
+      scrollbar-width: none; -webkit-overflow-scrolling: touch; position: relative; z-index: 1;
+      mask-image: linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%);
     }
     .wheel::-webkit-scrollbar { display: none; }
-    .wheel-inner { padding: 88px 0; }
+    .wheel-inner { padding: 86px 0; }
     .wheel-item {
-      height: 40px;
-      display: flex; align-items: center; justify-content: center;
-      scroll-snap-align: center;
-      font-family: var(--font-mono);
-      font-size: 20px; font-weight: 400;
-      color: var(--hint-color);
-      transition: color 0.15s, font-weight 0.15s;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
+      height: 44px; display: flex; align-items: center; justify-content: center;
+      scroll-snap-align: center; font-size: 20px; font-weight: 500;
+      color: var(--hint-color); transition: color 0.15s, font-weight 0.15s;
     }
-    .wheel-item.active { color: var(--text-color); font-weight: 700; }
+    .wheel-item.active { color: var(--text-color); font-weight: 800; }
 
-    /* ═══ 19. Edit body ═══ */
-    .edit-body {
-      padding: 20px;
-      display: flex; flex-direction: column; gap: 16px;
-    }
-    .edit-row { display: flex; gap: 8px; }
-    .edit-row .time-btn-wrapper { flex: 1; }
+    /* ═══ 17. Edit Sheet ═══ */
+    .edit-body { padding: 24px 20px; display: flex; flex-direction: column; gap: 20px; }
+    .edit-row { display: flex; gap: 16px; align-items: center; }
 
-    /* ═══ 20. Undo toast ═══ */
+    /* ═══ 18. Undo Toast ═══ */
     .undo-toast {
-      position: fixed;
-      left: 16px; right: 16px;
-      bottom: calc(84px + env(safe-area-inset-bottom));
-      max-width: 468px; margin: 0 auto;
-      background: var(--text-color);
-      color: var(--bg-color);
-      border: var(--border-main);
-      padding: 14px 18px;
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 16px; z-index: 200;
-      transform: translateY(120%);
-      opacity: 0;
-      transition: transform 0.3s var(--ease-out), opacity 0.3s;
-      pointer-events: none;
+      position: fixed; left: 20px; right: 20px; bottom: calc(80px + env(safe-area-inset-bottom));
+      max-width: 500px; margin: 0 auto; background: var(--text-color); color: var(--bg-color);
+      border: none; border-radius: 8px; padding: 16px; display: flex; align-items: center; justify-content: space-between;
+      transform: translateY(120%); opacity: 0; transition: transform 0.3s, opacity 0.3s; z-index: 200;
     }
-    body.kb-open .undo-toast { bottom: 16px; }
-    .undo-toast.visible {
-      transform: translateY(0);
-      opacity: 1;
-      pointer-events: auto;
-    }
-    .undo-toast-text {
-      font-family: var(--font-mono);
-      font-size: 13px; font-weight: 600;
-      flex: 1; min-width: 0;
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-    .undo-toast-btn {
-      background: none; border: none;
-      color: var(--accent-red);
-      font-family: var(--font-mono);
-      font-size: 13px; font-weight: 800;
-      text-transform: uppercase; letter-spacing: 0.5px;
-      cursor: pointer;
-      padding: 4px 8px;
-      margin: -4px -8px -4px 0;
-      flex-shrink: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .undo-toast-btn:active { opacity: 0.6; }
+    .undo-toast.visible { transform: translateY(0); opacity: 1; }
+    .undo-toast-text { font-size: 14px; font-weight: 500; }
+    .undo-toast-btn { background: none; border: none; color: var(--accent); font-weight: 700; font-size: 14px; cursor: pointer; }
 
-    /* ═══ 21. Welcome screen ═══ */
-    .welcome-screen {
-      position: fixed; inset: 0;
-      background: var(--bg-color);
-      z-index: 3000;
-      overflow: hidden;
-      transition: opacity 0.3s ease;
-    }
-    .welcome-screen.closing { opacity: 0; pointer-events: none; }
-    .welcome-canvas {
-      position: absolute; inset: 0;
-      width: 100%; height: 100%;
-      pointer-events: none; z-index: 1;
-    }
-    .welcome-check {
-      position: absolute;
-      font-family: var(--font-mono);
-      font-size: clamp(28px, 8.5vw, 42px);
-      font-weight: 700;
-      color: var(--accent-red);
-      opacity: 0;
-      pointer-events: none; line-height: 1;
-      z-index: 3;
-      will-change: transform, opacity;
-      transform: translate(-50%, -50%) scale(0);
-    }
-    .welcome-check.pop {
-      animation: welcomeCheckPop 0.55s var(--ease-bounce) forwards;
-    }
-    .welcome-inner {
-      position: absolute;
-      left: 0; right: 0;
-      top: 42vh; bottom: 0;
-      z-index: 2;
-      display: flex; flex-direction: column; align-items: center;
-      padding: 0 24px calc(32px + env(safe-area-inset-bottom));
-    }
-    .welcome-greeting {
-      font-family: var(--font-mono);
-      font-size: 28px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: -0.5px;
-      line-height: 1.2; margin-bottom: 12px;
-      text-align: center; color: var(--text-color);
-      min-height: 1.2em; word-break: break-word;
-      max-width: 100%;
-      opacity: 0; transform: translateY(8px);
-      transition: opacity 0.45s var(--ease-out), transform 0.45s var(--ease-out);
-    }
+    /* ═══ 19. Welcome Screen ═══ */
+    .welcome-screen { position: fixed; inset: 0; background: var(--bg-color); z-index: 3000; overflow: hidden; }
+    .welcome-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    .welcome-check { position: absolute; font-family: var(--font-mono); font-size: 42px; font-weight: 700; color: var(--accent); transform: translate(-50%, -50%) scale(0); }
+    .welcome-check.pop { animation: welcomeCheckPop 0.5s var(--ease-out) forwards; }
+    
+    .welcome-inner { position: absolute; left: 0; right: 0; top: 45vh; z-index: 2; display: flex; flex-direction: column; align-items: center; padding: 0 24px; }
+    .welcome-greeting { font-size: 32px; font-weight: 800; text-transform: uppercase; letter-spacing: -0.03em; margin-bottom: 12px; text-align: center; opacity: 0; transform: translateY(10px); transition: all 0.4s; }
     .welcome-greeting.shown { opacity: 1; transform: translateY(0); }
-    .welcome-subtitle {
-      font-family: var(--font-mono);
-      font-size: 14px; font-weight: 500;
-      color: var(--hint-color);
-      text-align: center;
-      min-height: 1.4em; line-height: 1.4;
-      opacity: 0; transform: translateY(8px);
-      transition: opacity 0.45s var(--ease-out), transform 0.45s var(--ease-out);
-    }
+    .welcome-subtitle { font-family: var(--font-mono); font-size: 13px; color: var(--hint-color); text-align: center; opacity: 0; transform: translateY(10px); transition: all 0.4s; }
     .welcome-subtitle.shown { opacity: 1; transform: translateY(0); }
+    
     .welcome-start-btn {
-      margin-top: auto;
-      padding: 16px 48px;
-      border: var(--border-main);
-      background: var(--text-color);
-      color: var(--bg-color);
-      font-family: var(--font-mono);
-      font-size: 14px; font-weight: 800;
-      text-transform: uppercase; letter-spacing: 1px;
-      cursor: pointer;
-      min-width: 180px;
-      opacity: 0; transform: translateY(8px);
-      pointer-events: none;
-      transition: opacity 0.4s ease, transform 0.4s ease;
-      -webkit-tap-highlight-color: transparent;
+      margin-top: 40px; padding: 16px 48px; border-radius: 50px;
+      border: none; background: var(--text-color); color: var(--bg-color);
+      font-family: inherit; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+      cursor: pointer; opacity: 0; transition: all 0.4s;
     }
-    .welcome-start-btn.visible {
-      opacity: 1; transform: translateY(0);
-      pointer-events: auto;
-    }
-    .welcome-start-btn.visible:active { opacity: 0.7; }
+    .welcome-start-btn.visible { opacity: 1; pointer-events: auto; }
 
-    /* ═══ 22. Animations ═══ */
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes collapseOut {
-      0% { opacity: 1; max-height: 300px; }
-      100% { opacity: 0; max-height: 0; }
-    }
-    @keyframes flashHighlight {
-      0%, 100% { background: transparent; }
-      30% { background: var(--secondary-bg-color); }
-    }
-    @keyframes checkboxPop {
-      0% { transform: scale(1); }
-      35% { transform: scale(0.8); }
-      65% { transform: scale(1.15); }
-      100% { transform: scale(1); }
-    }
+    /* ═══ 20. Animations ═══ */
+    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes welcomeCheckPop {
-      0%   { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-      35%  { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
-      65%  { transform: translate(-50%, -50%) scale(0.85); opacity: 1; }
+      0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+      50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
       100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-    }
-    @keyframes tabBounce {
-      0% { transform: translateY(0) scale(1); }
-      40% { transform: translateY(-3px) scale(1.08); }
-      100% { transform: translateY(0) scale(1); }
     }
   </style>
 </head>
@@ -988,7 +601,7 @@
     <div class="header-wrap">
       <h1 class="pill pill--interactive" id="month-label">Загрузка... <span class="chevron">▼</span></h1>
       <button class="icon-btn to-today-btn" id="to-today-btn" title="К сегодня">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="5" width="18" height="16" rx="3"/>
           <line x1="8" y1="3" x2="8" y2="7"/>
           <line x1="16" y1="3" x2="16" y2="7"/>
@@ -1015,34 +628,33 @@
       <div class="mini-timeline-labels" id="mini-timeline-labels"></div>
     </div>
 
-    <p id="progress"></p>
-
-    <div style="display: flex; margin-bottom: 12px;">
-      <button class="pill" id="category-pill">
+    <div class="meta-row">
+      <span id="progress"></span>
+      <button id="category-pill">
         <span class="cat-pill-dot" id="category-pill-dot"></span>
-        <span id="category-pill-label">Все задачи</span>
+        <span id="category-pill-label">ВСЕ ЗАДАЧИ</span>
         <span class="chevron">▼</span>
       </button>
     </div>
 
     <div class="add-form">
-      <input type="text" id="task-input" placeholder="Что нужно сделать?" maxlength="100">
-    </div>
-    <div class="add-form-2">
-      <button class="cat-toggle" id="cat-toggle">
-        <span class="cat-dot" id="cat-toggle-dot"></span>
-        <span id="cat-toggle-label">Личное</span>
-      </button>
-      <div class="time-btn-wrapper">
-        <div class="time-btn-display" id="time-btn-text">Во сколько?</div>
-        <input type="time" id="task-time" class="time-input-overlay">
+      <input type="text" id="task-input" placeholder="Новая задача..." maxlength="100">
+      <div class="add-form-2">
+        <button class="cat-toggle" id="cat-toggle">
+          <span class="cat-dot" id="cat-toggle-dot"></span>
+          <span id="cat-toggle-label">ЛИЧНОЕ</span>
+        </button>
+        <div class="time-btn-wrapper">
+          <div class="time-btn-display" id="time-btn-text">Время</div>
+          <input type="time" id="task-time" class="time-input-overlay">
+        </div>
+        <button id="add-btn">+</button>
       </div>
-      <button id="add-btn">+</button>
     </div>
 
     <div id="task-sections"></div>
     <div id="empty-state">
-      <p>На этот день задач нет</p>
+      <p>НЕТ ЗАДАЧ</p>
     </div>
   </div>
 
@@ -1058,7 +670,7 @@
     </div>
     <div id="projects-list"></div>
     <div id="projects-empty">
-      <p>Нет проектов</p>
+      <p>НЕТ ПРОЕКТОВ</p>
     </div>
   </div>
 
@@ -1084,7 +696,7 @@
 
   <div class="undo-toast" id="undo-toast">
     <span class="undo-toast-text" id="undo-toast-text">Задача удалена</span>
-    <button class="undo-toast-btn" id="undo-toast-btn">Отменить</button>
+    <button class="undo-toast-btn" id="undo-toast-btn">ОТМЕНИТЬ</button>
   </div>
 
   <div class="sheet-overlay picker-overlay" id="picker-overlay">
@@ -1122,7 +734,7 @@
         <span class="project-popover-title">Новый проект</span>
         <button class="project-popover-close" id="project-popover-close" aria-label="Закрыть">✕</button>
       </div>
-      <input type="text" id="project-popover-input" class="project-popover-input" placeholder="Название проекта" maxlength="30">
+      <input type="text" id="project-popover-input" class="project-popover-input" placeholder="Название" maxlength="30">
       <div class="project-palette" id="project-popover-palette"></div>
       <div class="project-popover-actions">
         <button class="btn-ghost" id="project-popover-cancel">Отмена</button>
@@ -1143,10 +755,10 @@
         <div class="edit-row">
           <button class="cat-toggle" id="edit-cat-toggle">
             <span class="cat-dot" id="edit-cat-toggle-dot"></span>
-            <span id="edit-cat-label">Личное</span>
+            <span id="edit-cat-label">ЛИЧНОЕ</span>
           </button>
           <div class="time-btn-wrapper">
-            <div class="time-btn-display" id="edit-time-btn-text">Во сколько?</div>
+            <div class="time-btn-display" id="edit-time-btn-text">Время</div>
             <input type="time" id="edit-time" class="time-input-overlay">
           </div>
         </div>
@@ -1155,7 +767,7 @@
   </div>
 
   <script>
-    // ════ JS — без изменений ════
+    // ════ JS без изменений ════
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
@@ -1770,11 +1382,11 @@
       if (!dot || !label) return;
       if (currentFilter === 'all') {
         dot.style.background = 'var(--hint-color)';
-        label.textContent = 'Все задачи';
+        label.textContent = 'ВСЕ ЗАДАЧИ';
       } else {
         const p = store.getProject(currentFilter);
         dot.style.background = p.color;
-        label.textContent = p.name;
+        label.textContent = p.name.toUpperCase();
       }
     }
     function updateProjectToggleUI() {
@@ -1783,7 +1395,7 @@
       if (!dot || !label) return;
       const p = store.getProject(addProjectId);
       dot.style.background = p.color;
-      label.textContent = p.name;
+      label.textContent = p.name.toUpperCase();
     }
     function updateEditProjectToggleUI() {
       const dot = document.getElementById('edit-cat-toggle-dot');
@@ -1791,7 +1403,7 @@
       if (!dot || !label) return;
       const p = store.getProject(editProjectId);
       dot.style.background = p.color;
-      label.textContent = p.name;
+      label.textContent = p.name.toUpperCase();
     }
     function updateProjectUI() {
       try {
@@ -2090,10 +1702,10 @@
           card.style.setProperty('--project-color', project.color);
           card.dataset.projectId = project.id;
           const statsText = total === 0
-            ? 'нет задач'
-            : done + ' из ' + total + ' · ' + percent + '%';
+            ? 'НЕТ ЗАДАЧ'
+            : done + ' ИЗ ' + total + ' · ' + percent + '%';
           const todayBadge = todayTotal > 0
-            ? `<span class="project-card-today">${todayDone}/${todayTotal} сегодня</span>`
+            ? `<span class="project-card-today">${todayDone}/${todayTotal} СЕГОДНЯ</span>`
             : '';
           card.innerHTML = `
             <div class="project-card-header">
@@ -2421,7 +2033,7 @@
             dot.className = 'mini-timeline-dot';
             dot.style.left = pct + '%';
             dot.dataset.taskId = store.tasks.indexOf(task);
-            dot.style.background = isOverdue(task) ? 'var(--danger-color)' : store.getProjectColor(task.projectId);
+            dot.style.background = isOverdue(task) ? 'var(--accent)' : store.getProjectColor(task.projectId);
             if (task.done) dot.classList.add('done');
             if (nextTask && store.tasks.indexOf(task) === store.tasks.indexOf(nextTask)) dot.classList.add('next');
             dot.title = task.time + ' — ' + task.text;
@@ -2459,13 +2071,6 @@
         const el = document.getElementById('task-card-' + id);
         if (!el) return;
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        const card = el.querySelector('.task-card');
-        if (card) {
-          card.classList.remove('flash');
-          void card.offsetWidth;
-          card.classList.add('flash');
-          setTimeout(() => card.classList.remove('flash'), 1000);
-        }
       } catch (e) {}
     }
     function updateDayFocus(dayTasks) {
@@ -2473,13 +2078,13 @@
         const progressEl = document.getElementById('progress');
         if (dayTasks.length === 0) { progressEl.textContent = ''; return; }
         const doneCount = dayTasks.filter(t => t.done).length;
-        if (doneCount === dayTasks.length) { progressEl.textContent = 'Все выполнены 🎉'; return; }
+        if (doneCount === dayTasks.length) { progressEl.textContent = 'ВСЕ ВЫПОЛНЕНЫ'; return; }
         const next = getNextUpcoming(dayTasks.filter(t => t.time));
         if (next) {
-          const text = next.text.length > 24 ? next.text.slice(0, 24) + '…' : next.text;
-          progressEl.textContent = `Выполнено ${doneCount} из ${dayTasks.length} · Дальше: ${text} в ${next.time}`;
+          const text = next.text.length > 20 ? next.text.slice(0, 20) + '…' : next.text;
+          progressEl.textContent = `${doneCount}/${dayTasks.length} · ${text}`;
         } else {
-          progressEl.textContent = `Выполнено ${doneCount} из ${dayTasks.length}`;
+          progressEl.textContent = `${doneCount}/${dayTasks.length}`;
         }
       } catch (e) {}
     }
@@ -2491,32 +2096,35 @@
       const wrapper = document.createElement('li');
       wrapper.className = 'task-item-wrapper';
       wrapper.id = 'task-card-' + globalIndex;
+      
+      const project = store.getProject(task.projectId);
+      
       if (skipSlideIn) wrapper.classList.add('no-slide');
       else if (doStagger) wrapper.style.animationDelay = (Math.min(position, 8) * 35) + 'ms';
-      const badge = isNext ? '<span class="next-badge">дальше</span>' : '';
+      
       const classes = [
         'task-card',
         task.done ? 'task-card--done' : '',
         overdue ? 'task-card--overdue' : '',
         isNext ? 'task-card--next' : ''
       ].filter(Boolean).join(' ');
+      
       wrapper.innerHTML = `
         <div class="${classes}">
           <button type="button" class="task-checkbox${task.done ? ' checked' : ''}${isJustChecked ? ' just-checked' : ''}" aria-label="Готово" aria-checked="${task.done}"></button>
           <div class="task-content">
             <span class="task-text">${escapeHtml(task.text)}</span>
-            ${task.time
-              ? `<span class="task-time">${escapeHtml(task.time)}${badge}</span>`
-              : `<span class="task-time empty">Без времени</span>`}
+            <span class="task-time">${task.time ? escapeHtml(task.time) : 'ВЕСЬ ДЕНЬ'}</span>
           </div>
-          <button class="delete-btn" aria-label="Удалить">✕</button>
+          <div class="task-project">${escapeHtml(project.name)}</div>
         </div>
       `;
+      
       const card = wrapper.querySelector('.task-card');
       const checkbox = wrapper.querySelector('.task-checkbox');
-      const crossBtn = wrapper.querySelector('.delete-btn');
+      
       checkbox.addEventListener('click', (e) => { e.stopPropagation(); toggleTask(globalIndex); });
-      crossBtn.addEventListener('click', (e) => { e.stopPropagation(); deleteTask(globalIndex); });
+      // Удаление теперь только через долгое нажатие (редактирование)
       attachLongPress(card, globalIndex);
       return wrapper;
     }
@@ -2529,8 +2137,8 @@
         emptyState.style.display = 'flex';
         const p = emptyState.querySelector('p');
         if (p) {
-          if (currentFilter === 'all') p.textContent = 'На этот день задач нет';
-          else p.textContent = 'В этом проекте на день задач нет';
+          if (currentFilter === 'all') p.textContent = 'НЕТ ЗАДАЧ НА ЭТОТ ДЕНЬ';
+          else p.textContent = 'НЕТ ЗАДАЧ В ЭТОМ ПРОЕКТЕ';
         }
         return;
       }
@@ -2552,10 +2160,10 @@
         });
       });
       const cfg = [
-        { key: 'morning', title: 'Утро' },
-        { key: 'day', title: 'День' },
-        { key: 'evening', title: 'Вечер' },
-        { key: 'notime', title: 'Без времени' }
+        { key: 'morning', title: 'УТРО' },
+        { key: 'day', title: 'ДЕНЬ' },
+        { key: 'evening', title: 'ВЕЧЕР' },
+        { key: 'notime', title: 'БЕЗ ВРЕМЕНИ' }
       ];
       let cardPosition = 0;
       cfg.forEach(c => {
@@ -2565,7 +2173,7 @@
         sectionEl.className = 'time-section';
         const titleEl = document.createElement('div');
         titleEl.className = 'time-section-title';
-        titleEl.innerHTML = `${c.title} <span class="time-section-count">${items.length}</span>`;
+        titleEl.textContent = c.title;
         const listEl = document.createElement('ul');
         listEl.className = 'section-task-list';
         items.forEach(t => {
@@ -2640,7 +2248,7 @@
           hideUndoToast();
         }
         const el = document.getElementById('task-card-' + index);
-        if (el) { el.classList.add('removing'); el.style.pointerEvents = 'none'; }
+        if (el) { el.style.opacity = '0'; el.style.pointerEvents = 'none'; }
         store.deleteTask(index);
         store.save();
         try { tg.HapticFeedback.impactOccurred('rigid'); } catch (e) {}
@@ -2715,13 +2323,13 @@
       const inp = document.getElementById('edit-time');
       const btn = document.getElementById('edit-time-btn-text');
       if (inp.value) { btn.textContent = inp.value; btn.classList.add('has-value'); }
-      else { btn.textContent = 'Во сколько?'; btn.classList.remove('has-value'); }
+      else { btn.textContent = 'Время'; btn.classList.remove('has-value'); }
     }
     function updateTimeBtn() {
       const timeInput = document.getElementById('task-time');
       const timeBtnText = document.getElementById('time-btn-text');
       if (timeInput.value) { timeBtnText.textContent = timeInput.value; timeBtnText.classList.add('has-value'); }
-      else { timeBtnText.textContent = 'Во сколько?'; timeBtnText.classList.remove('has-value'); }
+      else { timeBtnText.textContent = 'Время'; timeBtnText.classList.remove('has-value'); }
     }
 
     function switchView(view) {
@@ -2733,13 +2341,6 @@
       document.querySelectorAll('.tab-item').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.view === view);
       });
-      const activeBtn = document.querySelector('.tab-item[data-view="' + view + '"]');
-      if (activeBtn) {
-        activeBtn.classList.remove('tab-bounce');
-        void activeBtn.offsetWidth;
-        activeBtn.classList.add('tab-bounce');
-        setTimeout(() => activeBtn.classList.remove('tab-bounce'), 400);
-      }
       if (view === 'projects') renderProjectsView();
       try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
     }
